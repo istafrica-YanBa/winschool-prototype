@@ -1,0 +1,454 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 163%;
+  font-weight: 400;
+  letter-spacing: 0%;
+  color-scheme: light dark;
+  
+  /* WinSchool Color System Variables - Updated for new primary */
+  --winschool-primary: #fef3c7;
+  --winschool-primary-dark: #facc15;
+  --winschool-primary-darker: #eab308;
+  --winschool-content-text: #334155;
+  --winschool-heading-text: #64748B;
+  --winschool-sidebar-text: #475569;
+  --winschool-bg: #F8FAFC;
+  --winschool-success: #22C55E;
+  --winschool-warning: #FACC15;
+  --winschool-error: #EF4444;
+  --winschool-info: #3B82F6;
+  --winschool-neutral: #E5E7EB;
+  --winschool-dark-bg: #0F172A;
+  --winschool-light-text: #F8FAFC;
+  --winschool-sidebar-dark: #1E293B;
+  --winschool-card-dark: #334155;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--winschool-bg);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 163%;
+  font-weight: 400;
+  letter-spacing: 0%;
+  color: var(--winschool-content-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Set default Inter font styles for all text elements */
+p, span, div, li, td, th, label, input, textarea, select, button {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 163%;
+  font-weight: 400;
+  letter-spacing: 0%;
+}
+
+/* Override for headings to maintain hierarchy while using Inter */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0%;
+  line-height: 1.2;
+}
+
+/* Utility class for body text with exact specifications */
+.text-body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 163%;
+  font-weight: 400;
+  letter-spacing: 0%;
+}
+
+/* Large body text variant */
+.text-body-large {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 163%;
+  font-weight: 400;
+  letter-spacing: 0%;
+}
+
+/* Dark mode styles */
+.dark body {
+  background-color: var(--winschool-dark-bg);
+  color: var(--winschool-light-text);
+}
+
+/* Enhanced dark mode support for sidebar and content */
+.dark .bg-winschool-bg {
+  background-color: var(--winschool-dark-bg) !important;
+}
+
+.dark .bg-winschool-sidebar-dark {
+  background-color: #1E293B !important;
+}
+
+/* Main content area dark mode */
+.dark main {
+  background-color: var(--winschool-dark-bg) !important;
+}
+
+/* Card backgrounds in dark mode */
+.dark .bg-white {
+  background-color: var(--winschool-card-dark) !important;
+}
+
+/* Icon colors using primary color */
+.icon-primary {
+  color: var(--winschool-primary) !important;
+}
+
+.icon-primary-dark {
+  color: var(--winschool-primary-dark) !important;
+}
+
+/* Icon backgrounds using primary color */
+.icon-bg-primary {
+  background-color: var(--winschool-primary) !important;
+}
+
+.icon-bg-primary-dark {
+  background-color: var(--winschool-primary-dark) !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Focus styles for accessibility */
+.focus-ring:focus {
+  outline: 2px solid var(--winschool-primary-dark);
+  outline-offset: 2px;
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* Button styles using WinSchool color system - solid colors only */
+.btn-primary {
+  @apply text-slate-800 font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  background: var(--winschool-primary);
+  border: 1px solid var(--winschool-primary-dark);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 163%;
+  font-weight: 500;
+  letter-spacing: 0%;
+  color: #1e293b;
+  focus-ring-color: var(--winschool-primary-dark);
+}
+
+.btn-primary:hover {
+  background: var(--winschool-primary-dark);
+  border-color: var(--winschool-primary-darker);
+  transform: translateY(-1px);
+  color: #0f172a;
+}
+
+.dark .btn-primary {
+  background: var(--winschool-primary-dark);
+  border-color: var(--winschool-primary-darker);
+  color: #1f2937;
+}
+
+.dark .btn-primary:hover {
+  background: var(--winschool-primary-darker);
+  color: #111827;
+}
+
+.btn-secondary {
+  @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: var(--winschool-content-text);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 163%;
+  font-weight: 400;
+  letter-spacing: 0%;
+}
+
+.btn-secondary:hover {
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.dark .btn-secondary {
+  background-color: var(--winschool-card-dark);
+  border-color: #475569;
+  color: var(--winschool-light-text);
+}
+
+.dark .btn-secondary:hover {
+  background-color: var(--winschool-sidebar-dark);
+}
+
+/* Icon background solid colors - no gradients */
+.bg-winschool-primary {
+  background: var(--winschool-primary);
+  color: #1e293b; /* Dark text on yellow in light mode */
+}
+
+/* Dark mode adjustments for primary background */
+.dark .bg-winschool-primary {
+  background: var(--winschool-primary-dark); /* Slightly darker yellow in dark mode */
+  color: #1f2937; /* Dark text still works on the darker yellow */
+}
+
+.bg-winschool-success {
+  background: var(--winschool-success);
+  color: white; /* Keep white on green */
+}
+
+.bg-winschool-warning {
+  background: var(--winschool-warning);
+  color: #1e293b; /* Dark text on yellow warning */
+}
+
+.bg-winschool-error {
+  background: var(--winschool-error);
+  color: white; /* Keep white on red */
+}
+
+.bg-winschool-info {
+  background: var(--winschool-info);
+  color: white; /* Keep white on blue */
+}
+
+/* Typography utility classes */
+.text-winschool-content {
+  color: var(--winschool-content-text);
+}
+
+.text-winschool-heading {
+  color: var(--winschool-heading-text);
+}
+
+.text-winschool-sidebar {
+  color: var(--winschool-sidebar-text);
+}
+
+.dark .text-winschool-content {
+  color: var(--winschool-light-text);
+}
+
+.dark .text-winschool-heading {
+  color: #cbd5e1;
+}
+
+.dark .text-winschool-sidebar {
+  color: #94a3b8;
+}
+
+/* Dark mode support for common elements */
+.dark .border-gray-200 {
+  border-color: #475569 !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #64748b !important;
+}
+
+.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-gray-700 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-gray-800 {
+  color: var(--winschool-light-text) !important;
+}
+
+.dark .text-gray-900 {
+  color: var(--winschool-light-text) !important;
+}
+
+/* Sidebar specific dark mode support */
+.dark .sidebar-bg {
+  background-color: var(--winschool-sidebar-dark) !important;
+}
+
+/* Form elements dark mode */
+.dark input, 
+.dark textarea, 
+.dark select {
+  background-color: var(--winschool-card-dark);
+  border-color: #475569;
+  color: var(--winschool-light-text);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--winschool-primary-dark);
+  ring-color: var(--winschool-primary-dark);
+}
+
+/* Table dark mode */
+.dark table {
+  background-color: var(--winschool-card-dark);
+}
+
+.dark th {
+  background-color: var(--winschool-sidebar-dark);
+  color: var(--winschool-light-text);
+}
+
+.dark td {
+  border-color: #475569;
+  color: var(--winschool-light-text);
+}
+
+/* Modal and dropdown dark mode */
+.dark .modal-content,
+.dark .dropdown-content {
+  background-color: var(--winschool-card-dark);
+  border-color: #475569;
+}
+
+/* Removed problematic global color rules that were overriding Tailwind's dark mode */
+/* The following rules have been removed to allow Tailwind dark mode to work properly:
+   - Sidebar styles with forced colors
+   - Global heading color overrides
+   - Global text element color overrides
+   - .text-heading and .text-content with !important
+   - Global p, span, div, li, td color overrides
+*/
+
+/* These utility classes should be used directly in components instead of global styles */
+
+/* Menu item hover effects */
+.menu-item-hover {
+  border: none;
+  border-radius: 0px;
+  transition: border 0.2s ease-in-out;
+}
+
+.menu-item-hover:hover {
+  border: 1px solid #facc15 !important;
+}
+
+.menu-item-active {
+  border: 1px solid #facc15 !important;
+  border-radius: 0px;
+  color: #1e293b !important; /* Always dark text on yellow background */
+}
+
+/* Icons within active menu items */
+.menu-item-active svg,
+.menu-item-active .lucide {
+  color: #1e293b !important; /* Always dark icons on yellow background */
+}
+
+/* Dark mode menu item active state - keep dark text for contrast */
+.dark .menu-item-active {
+  color: #1e293b !important; /* Keep dark text in dark mode too */
+}
+
+.dark .menu-item-active svg,
+.dark .menu-item-active .lucide {
+  color: #1e293b !important; /* Keep dark icons in dark mode too */
+}
+
+/* Ensure hover states also follow the same pattern */
+.menu-item-active:hover {
+  color: #0f172a !important; /* Even darker text on hover */
+}
+
+.menu-item-active:hover svg,
+.menu-item-active:hover .lucide {
+  color: #0f172a !important; /* Even darker icons on hover */
+}
+
+.dark .menu-item-active:hover {
+  color: #0f172a !important; /* Keep dark text on hover in dark mode */
+}
+
+.dark .menu-item-active:hover svg,
+.dark .menu-item-active:hover .lucide {
+  color: #0f172a !important; /* Keep dark icons on hover in dark mode */
+}
+
+/* Group header hover effects */
+.group-header-hover {
+  border: none;
+  border-radius: 0px;
+  transition: border 0.2s ease-in-out;
+}
+
+.group-header-hover:hover {
+  border: 1px solid #facc15 !important;
+}
+
+/* Button hover effects */
+.button-hover {
+  border: none;
+  border-radius: 0px;
+  transition: border 0.2s ease-in-out;
+}
+
+.button-hover:hover {
+  border: 1px solid #facc15 !important;
+}
