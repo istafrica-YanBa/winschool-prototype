@@ -603,56 +603,41 @@ const router = createRouter({
           component: () => import('../views/ConflictResolutionView.vue'),
           meta: { roles: ['schooladmin', 'admin', 'principal'] }
         },
-        // Library Management Routes
+        // Library Routes
         {
           path: 'library',
-          component: () => import('../views/library/LibraryView.vue'),
-          meta: {
-            roles: ['ADMIN', 'librarian', 'schooladmin', 'admin', 'schoolstaff']
-          },
           children: [
-            {
-              path: '',
-              redirect: '/dashboard/library/books'
-            },
+            // Administrative routes (librarians only)
             {
               path: 'books',
               name: 'library-books',
               component: () => import('../views/library/BooksView.vue'),
               meta: {
-                roles: ['ADMIN', 'librarian', 'schooladmin', 'admin', 'schoolstaff']
+                roles: ['librarian']
               }
             },
             {
-              path: 'student-lending',
-              name: 'library-student-lending',
-              component: () => import('../views/library/StudentLendingView.vue'),
+              path: 'book-lending',
+              name: 'library-book-lending',
+              component: () => import('../views/library/BookLendingView.vue'),
               meta: {
-                roles: ['ADMIN', 'librarian', 'schooladmin', 'admin', 'schoolstaff']
+                roles: ['librarian']
               }
             },
             {
-              path: 'class-lending',
-              name: 'library-class-lending',
-              component: () => import('../views/library/ClassLendingView.vue'),
+              path: 'library-module',
+              name: 'library-library-module',
+              component: () => import('../views/budget/LibraryView.vue'),
               meta: {
-                roles: ['ADMIN', 'librarian', 'schooladmin', 'admin', 'schoolstaff']
+                roles: ['librarian']
               }
             },
             {
-              path: 'course-lending',
-              name: 'library-course-lending',
-              component: () => import('../views/library/CourseLendingView.vue'),
+              path: 'book-fees',
+              name: 'library-book-fees',
+              component: () => import('../views/budget/BookFeesView.vue'),
               meta: {
-                roles: ['ADMIN', 'librarian', 'schooladmin', 'admin', 'schoolstaff']
-              }
-            },
-            {
-              path: 'fees',
-              name: 'library-fees',
-              component: () => import('../views/library/FeesView.vue'),
-              meta: {
-                roles: ['ADMIN', 'librarian', 'schooladmin', 'admin', 'schoolstaff']
+                roles: ['librarian']
               }
             },
             {
@@ -660,7 +645,24 @@ const router = createRouter({
               name: 'library-reservations',
               component: () => import('../views/library/ReservationsView.vue'),
               meta: {
-                roles: ['ADMIN', 'librarian', 'schooladmin', 'admin', 'schoolstaff']
+                roles: ['librarian']
+              }
+            },
+            {
+              path: 'course-books',
+              name: 'library-course-books',
+              component: () => import('../views/library/CourseBookView.vue'),
+              meta: {
+                roles: ['librarian']
+              }
+            },
+            // User routes (all other roles)
+            {
+              path: 'history',
+              name: 'library-history',
+              component: () => import('../views/library/ReadingHistoryView.vue'),
+              meta: {
+                roles: ['student', 'teacher', 'schooladmin', 'admin', 'schoolstaff', 'principal']
               }
             }
           ]

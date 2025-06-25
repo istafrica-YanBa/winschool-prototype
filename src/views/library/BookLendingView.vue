@@ -1,41 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useBookStore } from '@/stores/library/book'
-import { useLoanStore } from '@/stores/library/loan'
-import { useStudentStore } from '@/stores/student'
-import Button from '@/components/ui/button.vue'
-import Input from '@/components/ui/input.vue'
-import Table from '@/components/ui/table.vue'
-import Modal from '@/components/ui/modal.vue'
-import DatePicker from '@/components/ui/datepicker.vue'
-import Chart from '@/components/ui/chart.vue'
-import BarcodeScanner from '@/components/library/BarcodeScanner.vue'
 import { useToast } from '@/composables/useToast'
-import type { Book, StudentLoan } from '@/types/library'
 import { 
   BookOpen, Users, GraduationCap, Building, 
   AlertCircle, Calendar, Search, Plus, RotateCcw, 
   Eye, Filter, Clock, User, Book
 } from 'lucide-vue-next'
 
-const bookStore = useBookStore()
-const loanStore = useLoanStore()
-const studentStore = useStudentStore()
-const { toast } = useToast()
-
-const books = ref<Book[]>([])
-const studentLoans = ref<StudentLoan[]>([])
-const selectedBook = ref<Book | null>(null)
-const selectedStudent = ref('')
-const showLendModal = ref(false)
-const showReturnModal = ref(false)
-const showScannerModal = ref(false)
-const dueDate = ref('')
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-const filterStatus = ref('all')
-const selectedLoanForReturn = ref<StudentLoan | null>(null)
+const { showToast } = useToast()
 
 // Active tab management
 const activeTab = ref('student')
@@ -76,9 +48,22 @@ const lendings = ref([
     status: 'overdue',
     notes: 'Research material'
   },
-  // Staff Lendings
   {
     id: 3,
+    type: 'student',
+    borrowerName: 'Lisa Wagner',
+    borrowerId: 'STU003',
+    bookTitle: 'Biology Textbook',
+    bookId: 'BK006',
+    isbn: '978-3-16-148415-5',
+    dateBorrowed: '2024-03-05',
+    dueDate: '2024-04-05',
+    status: 'active',
+    notes: 'Class assignment'
+  },
+  // Staff Lendings
+  {
+    id: 4,
     type: 'staff',
     borrowerName: 'Dr. Weber',
     borrowerId: 'STF001',
@@ -90,9 +75,22 @@ const lendings = ref([
     status: 'active',
     notes: 'Teaching reference'
   },
+  {
+    id: 5,
+    type: 'staff',
+    borrowerName: 'Prof. Meyer',
+    borrowerId: 'STF002',
+    bookTitle: 'Educational Psychology',
+    bookId: 'BK007',
+    isbn: '978-3-16-148416-2',
+    dateBorrowed: '2024-02-28',
+    dueDate: '2024-03-20',
+    status: 'overdue',
+    notes: 'Research project'
+  },
   // Class Lendings
   {
-    id: 4,
+    id: 6,
     type: 'class',
     borrowerName: 'Class 10A',
     borrowerId: 'CLS001',
@@ -102,11 +100,26 @@ const lendings = ref([
     dateBorrowed: '2024-03-05',
     dueDate: '2024-04-05',
     status: 'active',
+    copies: 25,
     notes: 'Class set for experiments'
+  },
+  {
+    id: 7,
+    type: 'class',
+    borrowerName: 'Class 9B',
+    borrowerId: 'CLS002',
+    bookTitle: 'History Atlas',
+    bookId: 'BK008',
+    isbn: '978-3-16-148417-9',
+    dateBorrowed: '2024-03-12',
+    dueDate: '2024-04-12',
+    status: 'active',
+    copies: 30,
+    notes: 'Geography project'
   },
   // Course Lendings
   {
-    id: 5,
+    id: 8,
     type: 'course',
     borrowerName: 'Mathematics Course',
     borrowerId: 'CRS001',
@@ -116,7 +129,22 @@ const lendings = ref([
     dateBorrowed: '2024-02-20',
     dueDate: '2024-05-20',
     status: 'active',
+    copies: 45,
     notes: 'Semester textbook'
+  },
+  {
+    id: 9,
+    type: 'course',
+    borrowerName: 'Physics Course',
+    borrowerId: 'CRS002',
+    bookTitle: 'Quantum Mechanics',
+    bookId: 'BK009',
+    isbn: '978-3-16-148418-6',
+    dateBorrowed: '2024-03-01',
+    dueDate: '2024-06-01',
+    status: 'active',
+    copies: 20,
+    notes: 'Advanced physics course'
   }
 ])
 
@@ -130,184 +158,14 @@ const newLending = ref({
   isbn: '',
   dateBorrowed: new Date().toISOString().split('T')[0],
   dueDate: '',
+  copies: 1,
   notes: ''
 })
 
-// Statistics
-const lendingStats = computed(() => [
-  { label: 'Active Loans', value: studentLoans.value.filter(loan => loan.status === 'active').length, color: '#10B981' },
-  { label: 'Overdue', value: studentLoans.value.filter(loan => loan.status === 'overdue').length, color: '#EF4444' },
-  { label: 'Returned', value: studentLoans.value.filter(loan => loan.status === 'returned').length, color: '#3B82F6' },
-  { label: 'Total Students', value: new Set(studentLoans.value.map(loan => loan.studentId)).size, color: '#8B5CF6' }
-])
-
-const monthlyLoans = computed(() => [
-  { label: 'Jan', value: 125 },
-  { label: 'Feb', value: 138 },
-  { label: 'Mar', value: 112 },
-  { label: 'Apr', value: 145 },
-  { label: 'May', value: 132 },
-  { label: 'Jun', value: 149 }
-])
-
-const classDistribution = computed(() => {
-  const distribution: { [key: string]: number } = {}
-  studentLoans.value.forEach(loan => {
-    if (loan.status === 'active') {
-      distribution[loan.studentClass] = (distribution[loan.studentClass] || 0) + 1
-    }
-  })
-  return Object.entries(distribution).map(([label, value]) => ({ label, value }))
-})
-
-const totalFines = computed(() => {
-  return studentLoans.value.reduce((total, loan) => total + loan.fineAmount, 0)
-})
-
-const overdueLoans = computed(() => {
-  return studentLoans.value.filter(loan => loan.status === 'overdue')
-})
-
-const filteredLoans = computed(() => {
-  let filtered = studentLoans.value
-
-  if (searchQuery.value) {
-    filtered = filtered.filter(loan => 
-      loan.bookTitle.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      loan.studentName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      loan.studentClass.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      loan.bookIsbn.includes(searchQuery.value)
-    )
-  }
-
-  if (filterStatus.value !== 'all') {
-    filtered = filtered.filter(loan => loan.status === filterStatus.value)
-  }
-
-  return filtered
-})
-
-const paginatedLoans = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  return filteredLoans.value.slice(start, start + itemsPerPage.value)
-})
-
-const totalPages = computed(() => Math.ceil(filteredLoans.value.length / itemsPerPage.value))
-
-const students = computed(() => studentStore.students)
-
-const handleLendBook = async (scannedStudentId?: string) => {
-  const finalStudentId = scannedStudentId || selectedStudent.value
-  
-  if (!selectedBook.value || !finalStudentId || !dueDate.value) {
-    toast('Please fill in all required fields', 'error')
-    return
-  }
-
-  const student = students.value.find(s => s.id === finalStudentId)
-  if (!student) {
-    toast('Invalid student selected', 'error')
-    return
-  }
-
-  try {
-    const newLoan: StudentLoan = {
-      id: Date.now().toString(),
-      bookId: selectedBook.value.id,
-      bookTitle: selectedBook.value.title,
-      bookIsbn: selectedBook.value.isbn,
-      studentId: student.id,
-      studentName: student.name,
-      studentClass: student.class,
-      studentEmail: student.email,
-      loanDate: new Date().toISOString().split('T')[0],
-      dueDate: dueDate.value,
-      returnDate: null,
-      status: 'active',
-      renewCount: 0,
-      maxRenewals: 2,
-      fineAmount: 0,
-      notes: `Book lent to ${student.name}`
-    }
-
-    studentLoans.value.unshift(newLoan)
-    
-    toast('Book successfully lent to student', 'success')
-    showLendModal.value = false
-    showScannerModal.value = false
-    resetForm()
-  } catch (error) {
-    toast('Failed to lend book to student', 'error')
-  }
-}
-
-const handleReturnBook = async () => {
-  if (!selectedLoanForReturn.value) return
-
-  try {
-    const loan = studentLoans.value.find(l => l.id === selectedLoanForReturn.value!.id)
-    if (loan) {
-      loan.status = 'returned'
-      loan.returnDate = new Date().toISOString().split('T')[0]
-      
-      // Calculate fine if overdue
-      const dueDate = new Date(loan.dueDate)
-      const returnDate = new Date()
-      if (returnDate > dueDate) {
-        const overdueDays = Math.ceil((returnDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-        loan.fineAmount = overdueDays * 1.50 // $1.50 per day
-      }
-      
-      toast('Book returned successfully', 'success')
-      showReturnModal.value = false
-      selectedLoanForReturn.value = null
-    }
-  } catch (error) {
-    toast('Failed to return book', 'error')
-  }
-}
-
-const handleRenewLoan = async (loanId: string) => {
-  try {
-    const loan = studentLoans.value.find(l => l.id === loanId)
-    if (loan && loan.renewCount < loan.maxRenewals) {
-      loan.renewCount++
-      const currentDueDate = new Date(loan.dueDate)
-      currentDueDate.setDate(currentDueDate.getDate() + 14) // Add 2 weeks
-      loan.dueDate = currentDueDate.toISOString().split('T')[0]
-      
-      toast('Loan renewed successfully', 'success')
-    } else {
-      toast('Maximum renewals reached', 'error')
-    }
-  } catch (error) {
-    toast('Failed to renew loan', 'error')
-  }
-}
-
-const resetForm = () => {
-  selectedBook.value = null
-  selectedStudent.value = ''
-  dueDate.value = ''
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    case 'overdue': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-    case 'returned': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-  }
-}
-
-const getDaysOverdue = (dueDate: string) => {
-  const due = new Date(dueDate)
-  const today = new Date()
-  if (today > due) {
-    return Math.ceil((today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24))
-  }
-  return 0
-}
+// Search and filter
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
 
 // Computed metrics for infographics
 const totalActiveLendings = computed(() => 
@@ -373,6 +231,15 @@ const getDaysUntilDue = (dueDate) => {
   return diffDays
 }
 
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'active': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+    case 'overdue': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+    case 'returned': return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300'
+    default: return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300'
+  }
+}
+
 const getStatusText = (status) => {
   switch (status) {
     case 'active': return 'Active'
@@ -384,6 +251,8 @@ const getStatusText = (status) => {
 
 const openLendingModal = () => {
   newLending.value.type = activeTab.value
+  // Reset copies to 1 for individual lending (student/staff) or set appropriate default for group lending
+  newLending.value.copies = (activeTab.value === 'class' || activeTab.value === 'course') ? 1 : 1
   showLendingModal.value = true
 }
 
@@ -403,11 +272,14 @@ const handleNewLending = async () => {
     }
     
     lendings.value.push(lending)
-    toast('Book lent successfully!', 'success')
+    const copiesText = (lending.type === 'class' || lending.type === 'course') && lending.copies > 1 
+      ? ` (${lending.copies} copies)` 
+      : ''
+    showToast(`Book lent successfully${copiesText}!`, 'success')
     showLendingModal.value = false
     resetLendingForm()
   } catch (error) {
-    toast('Failed to lend book', 'error')
+    showToast('Failed to lend book', 'error')
   } finally {
     isLoading.value = false
   }
@@ -420,11 +292,11 @@ const handleTakeBack = async () => {
     const index = lendings.value.findIndex(l => l.id === selectedLending.value.id)
     if (index !== -1) {
       lendings.value[index].status = 'returned'
-      toast('Book returned successfully!', 'success')
+      showToast('Book returned successfully!', 'success')
       showTakeBackModal.value = false
     }
   } catch (error) {
-    toast('Failed to process return', 'error')
+    showToast('Failed to process return', 'error')
   } finally {
     isLoading.value = false
   }
@@ -440,6 +312,7 @@ const resetLendingForm = () => {
     isbn: '',
     dateBorrowed: new Date().toISOString().split('T')[0],
     dueDate: '',
+    copies: 1,
     notes: ''
   }
 }
@@ -458,10 +331,7 @@ const getTabIcon = (tabName) => {
   }
 }
 
-onMounted(async () => {
-  books.value = await bookStore.getBooks()
-  studentLoans.value = mockStudentLoans
-  await studentStore.loadStudents()
+onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
 })
@@ -633,6 +503,9 @@ onMounted(async () => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-slate-600 dark:text-white">{{ lending.bookTitle }}</div>
+                    <div v-if="lending.copies && (lending.type === 'class' || lending.type === 'course')" class="text-xs text-slate-400 dark:text-gray-400">
+                      {{ lending.copies }} copies
+                    </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-gray-300 font-mono">
                     {{ lending.isbn }}
@@ -693,6 +566,9 @@ onMounted(async () => {
                 <div class="flex-1">
                   <h3 class="font-semibold text-slate-600 dark:text-white text-lg">{{ lending.borrowerName }}</h3>
                   <p class="text-slate-500 dark:text-gray-400 text-sm">{{ lending.bookTitle }}</p>
+                  <p v-if="lending.copies && (lending.type === 'class' || lending.type === 'course')" class="text-xs text-slate-400 dark:text-gray-400">
+                    {{ lending.copies }} copies
+                  </p>
                 </div>
                 <span :class="[
                   'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -844,6 +720,40 @@ onMounted(async () => {
                 :min="newLending.dateBorrowed"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
               />
+            </div>
+
+            <!-- Number of Copies (for Class and Course lending only) -->
+            <div v-if="activeTab === 'class' || activeTab === 'course'" class="md:col-span-2">
+              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Number of Copies *</label>
+              <div class="flex items-center gap-4">
+                <input
+                  v-model.number="newLending.copies"
+                  type="number"
+                  min="1"
+                  max="100"
+                  required
+                  class="w-32 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                />
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    @click="newLending.copies = Math.max(1, newLending.copies - 1)"
+                    class="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    -
+                  </button>
+                  <button
+                    type="button"
+                    @click="newLending.copies = Math.min(100, newLending.copies + 1)"
+                    class="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+                <span class="text-sm text-slate-500 dark:text-gray-400">
+                  {{ activeTab === 'class' ? 'copies for the entire class' : 'copies for the course' }}
+                </span>
+              </div>
             </div>
 
             <!-- Notes -->

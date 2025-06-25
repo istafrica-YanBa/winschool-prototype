@@ -273,7 +273,7 @@
                           ? 'menu-item-active bg-winschool-primary hover:bg-winschool-primary-dark' 
                           : 'menu-item-hover'
                       ]"
-                      @click="closeSidebarOnMobile"
+                      @click="handleMenuItemClick(item)"
                     >
                       <component :is="item.icon" class="h-4 w-4 mr-3" />
                       {{ item.name }}
@@ -396,7 +396,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
@@ -420,7 +420,7 @@ const user = computed(() => authStore.user)
 const isDarkMode = computed(() => themeStore.isDarkMode)
 const language = computed(() => themeStore.language)
 
-// Menu group state - all collapsed by default
+// Menu group state - initialize all collapsed
 const menuGroups = ref({
   academic: false,
   administration: false,
@@ -431,6 +431,10 @@ const menuGroups = ref({
   applications: false,
   finance: false,
   budget: false,
+  'library-simple': false,
+  'library-management': false,
+  'inventory-media': false,
+  'budget-orders': false,
   advanced: false,
   support: false
 })
@@ -465,6 +469,9 @@ const menuItems = computed(() => {
       createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'academic'),
       createMenuItem('Grades & Reports', 'Noten & Berichte', '/dashboard/academics', FileText, 'academic'),
       
+      // Library - Simplified for students
+      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
+      
       // Communication
       createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
       
@@ -484,6 +491,9 @@ const menuItems = computed(() => {
       createMenuItem('Grade Entry', 'Notenerfassung', '/dashboard/grade-entry', FileText, 'academic'),
       createMenuItem('Attendance & Behavior', 'Anwesenheit & Verhalten', '/dashboard/attendance-behavior', Calendar, 'academic'),
       createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
+      
+      // Library - Simplified for teachers
+      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
       
       // Planning
       createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'planning'),
@@ -533,6 +543,27 @@ const menuItems = computed(() => {
       createMenuItem('Fee Statements', 'Gebührenabrechnungen', '/dashboard/fee-statements', DollarSign, 'finance')
     ],
 
+    // New dedicated librarian role configuration
+    librarian: [
+      // Library Management - Full access for librarians only
+      createMenuItem('Books Inventory', 'Bücher-Inventar', '/dashboard/library/books', BookOpen, 'library-management'),
+      createMenuItem('Book Lending', 'Buchausleihe', '/dashboard/library/book-lending', Calendar, 'library-management'),
+      createMenuItem('Library Module', 'Bibliotheksmodul', '/dashboard/library/library-module', BookOpen, 'library-management'),
+      createMenuItem('Book Fees', 'Buchgebühren', '/dashboard/library/book-fees', DollarSign, 'library-management'),
+      createMenuItem('Reservations', 'Reservierungen', '/dashboard/library/reservations', Clock, 'library-management'),
+      createMenuItem('Course-Based Books', 'Kursbezogene Bücher', '/dashboard/library/course-books', BookOpen, 'library-management'),
+      
+      // Academic
+      createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
+      
+      // Communication
+      createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
+      
+      // Support
+      createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
+      createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support')
+    ],
+
     schooladmin: [
       // Academic Features
       createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
@@ -549,6 +580,9 @@ const menuItems = computed(() => {
       createMenuItem('Learning Field Assessments', 'Lernfeld-Bewertungen', '/dashboard/learning-field-assessments', FileText, 'academic'),
       createMenuItem('Timetable Learning Areas', 'Stundenplan Lernfelder', '/dashboard/timetable-learning-areas', Calendar, 'academic'),
       createMenuItem('Subject Allocation', 'Fachzuteilung', '/dashboard/subject-allocation-learning-areas', BookOpen, 'academic'),
+      
+      // Library - Simplified for school staff
+      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
       
       // Administration
       createMenuItem('Department Setup', 'Abteilungseinrichtung', '/dashboard/departments', Layers, 'administration'),
@@ -574,21 +608,6 @@ const menuItems = computed(() => {
       
       // Statistics and Analytics (Learning Areas Module)
       createMenuItem('Statistics', 'Statistiken', '/dashboard/statistics', BarChart3, 'system'),
-      
-      // Library Management - Dedicated Section
-      createMenuItem('Books Management', 'Bücherverwaltung', '/dashboard/library/books', BookOpen, 'library'),
-      createMenuItem('Student Lending', 'Schülerausleihe', '/dashboard/library/student-lending', Users, 'library'),
-      createMenuItem('Class Lending', 'Klassenausleihe', '/dashboard/library/class-lending', Users, 'library'),
-      createMenuItem('Course Lending', 'Kursausleihe', '/dashboard/library/course-lending', Target, 'library'),
-      createMenuItem('Library Fees', 'Bibliotheksgebühren', '/dashboard/library/fees', DollarSign, 'library'),
-      createMenuItem('Reservations', 'Reservierungen', '/dashboard/library/reservations', Clock, 'library'),
-      
-      // Library Management - Budget Subcategory
-      createMenuItem('Books Management', 'Bücherverwaltung', '/dashboard/budget-management/books', BookOpen, 'library-management'),
-      createMenuItem('Book Lending', 'Buchausleihe', '/dashboard/budget-management/book-lending', Calendar, 'library-management'),
-      createMenuItem('Library Module', 'Bibliotheksmodul', '/dashboard/budget-management/library', BookOpen, 'library-management'),
-      createMenuItem('Book Fees', 'Buchgebühren', '/dashboard/budget-management/book-fees', DollarSign, 'library-management'),
-      createMenuItem('Course-Based Books', 'Kursbezogene Bücher', '/dashboard/budget-management/course-books', Target, 'library-management'),
       
       // Inventory & Media - Budget Subcategory
       createMenuItem('Inventory Management', 'Bestandsverwaltung', '/dashboard/budget-management/inventory', Package, 'inventory-media'),
@@ -622,6 +641,9 @@ const menuItems = computed(() => {
       createMenuItem('Learning Field Assessments', 'Lernfeld-Bewertungen', '/dashboard/learning-field-assessments', FileText, 'academic'),
       createMenuItem('Timetable Learning Areas', 'Stundenplan Lernfelder', '/dashboard/timetable-learning-areas', Calendar, 'academic'),
       createMenuItem('Subject Allocation', 'Fachzuteilung', '/dashboard/subject-allocation-learning-areas', BookOpen, 'academic'),
+      
+      // Library - Simplified for principals
+      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
       
       // Administration
       createMenuItem('Reports (Academic & Financial)', 'Berichte (Akademisch & Finanziell)', '/dashboard/reports', BarChart3, 'administration'),
@@ -712,21 +734,6 @@ const menuItems = computed(() => {
       // Budget Management - Full Access
       createMenuItem('Budget Management', 'Budget-Management', '/dashboard/budget-management', DollarSign, 'system'),
       
-      // Library Management - Dedicated Section
-      createMenuItem('Books Management', 'Bücherverwaltung', '/dashboard/library/books', BookOpen, 'library'),
-      createMenuItem('Student Lending', 'Schülerausleihe', '/dashboard/library/student-lending', Users, 'library'),
-      createMenuItem('Class Lending', 'Klassenausleihe', '/dashboard/library/class-lending', Users, 'library'),
-      createMenuItem('Course Lending', 'Kursausleihe', '/dashboard/library/course-lending', Target, 'library'),
-      createMenuItem('Library Fees', 'Bibliotheksgebühren', '/dashboard/library/fees', DollarSign, 'library'),
-      createMenuItem('Reservations', 'Reservierungen', '/dashboard/library/reservations', Clock, 'library'),
-      
-      // Library Management - Budget Subcategory
-      createMenuItem('Books Management', 'Bücherverwaltung', '/dashboard/budget-management/books', BookOpen, 'library-management'),
-      createMenuItem('Book Lending', 'Buchausleihe', '/dashboard/budget-management/book-lending', Calendar, 'library-management'),
-      createMenuItem('Library Module', 'Bibliotheksmodul', '/dashboard/budget-management/library', BookOpen, 'library-management'),
-      createMenuItem('Book Fees', 'Buchgebühren', '/dashboard/budget-management/book-fees', DollarSign, 'library-management'),
-      createMenuItem('Course-Based Books', 'Kursbezogene Bücher', '/dashboard/budget-management/course-books', Target, 'library-management'),
-      
       // Inventory & Media - Budget Subcategory
       createMenuItem('Inventory Management', 'Bestandsverwaltung', '/dashboard/budget-management/inventory', Package, 'inventory-media'),
       createMenuItem('Media Management', 'Medienverwaltung', '/dashboard/budget-management/media', Upload, 'inventory-media'),
@@ -752,27 +759,12 @@ const menuItems = computed(() => {
       createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
       createMenuItem('Bookings', 'Buchungen', '/dashboard/academic/bookings', Calendar, 'academic'),
       
+      // Library - Simplified for school staff
+      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
+      
       // Administration
-      createMenuItem('Library Management', 'Bibliotheksverwaltung', '/dashboard/library-management', BookOpen, 'administration'),
       createMenuItem('Finance Tools', 'Finanz-Tools', '/dashboard/finances', DollarSign, 'administration'),
       createMenuItem('Attendance Tracking', 'Anwesenheitsverfolgung', '/dashboard/attendance-behavior', Calendar, 'administration'),
-      
-      // Library Management - Dedicated Section
-      createMenuItem('Books Management', 'Bücherverwaltung', '/dashboard/library/books', BookOpen, 'library'),
-      createMenuItem('Student Lending', 'Schülerausleihe', '/dashboard/library/student-lending', Users, 'library'),
-      createMenuItem('Class Lending', 'Klassenausleihe', '/dashboard/library/class-lending', Users, 'library'),
-      createMenuItem('Course Lending', 'Kursausleihe', '/dashboard/library/course-lending', Target, 'library'),
-      createMenuItem('Library Fees', 'Bibliotheksgebühren', '/dashboard/library/fees', DollarSign, 'library'),
-      createMenuItem('Reservations', 'Reservierungen', '/dashboard/library/reservations', Clock, 'library'),
-      
-      // Library Management - Budget Subcategory (Limited Access for Staff)
-      createMenuItem('Books Management', 'Bücherverwaltung', '/dashboard/budget-management/books', BookOpen, 'library-management'),
-      createMenuItem('Book Lending', 'Buchausleihe', '/dashboard/budget-management/book-lending', Calendar, 'library-management'),
-      createMenuItem('Library Module', 'Bibliotheksmodul', '/dashboard/budget-management/library', BookOpen, 'library-management'),
-      
-      // Inventory & Media - Budget Subcategory (Limited Access for Staff)
-      createMenuItem('Inventory Management', 'Bestandsverwaltung', '/dashboard/budget-management/inventory', Package, 'inventory-media'),
-      createMenuItem('Media Management', 'Medienverwaltung', '/dashboard/budget-management/media', Upload, 'inventory-media'),
       
       // Support
       createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
@@ -821,7 +813,7 @@ const groupDefinitions = computed(() => ({
     title: language.value === 'de' ? 'Budget-Management' : 'Budget Management',
     icon: DollarSign
   },
-  library: {
+  'library-simple': {
     title: language.value === 'de' ? 'Bibliothek' : 'Library',
     icon: BookOpen
   },
@@ -851,7 +843,7 @@ const groupDefinitions = computed(() => ({
 const regularMenuGroups = computed(() => [
   'academic', 'administration', 'planning', 'communication', 
   'system', 'reports', 'applications', 'finance', 'budget', 
-  'library', 'library-management', 'inventory-media', 'budget-orders', 'advanced'
+  'library-simple', 'library-management', 'inventory-media', 'budget-orders', 'advanced'
 ])
 
 // Group items by category
@@ -864,7 +856,7 @@ const reportsItems = computed(() => menuItems.value.filter(item => item.group ==
 const applicationsItems = computed(() => menuItems.value.filter(item => item.group === 'applications'))
 const financeItems = computed(() => menuItems.value.filter(item => item.group === 'finance'))
 const budgetItems = computed(() => menuItems.value.filter(item => item.group === 'budget'))
-const libraryItems = computed(() => menuItems.value.filter(item => item.group === 'library'))
+const librarySimpleItems = computed(() => menuItems.value.filter(item => item.group === 'library-simple'))
 const libraryManagementItems = computed(() => menuItems.value.filter(item => item.group === 'library-management'))
 const inventoryMediaItems = computed(() => menuItems.value.filter(item => item.group === 'inventory-media'))
 const budgetOrdersItems = computed(() => menuItems.value.filter(item => item.group === 'budget-orders'))
@@ -883,7 +875,7 @@ const getItemsForGroup = (groupKey: string) => {
     applications: applicationsItems.value,
     finance: financeItems.value,
     budget: budgetItems.value,
-    library: libraryItems.value,
+    'library-simple': librarySimpleItems.value,
     'library-management': libraryManagementItems.value,
     'inventory-media': inventoryMediaItems.value,
     'budget-orders': budgetOrdersItems.value,
@@ -907,7 +899,7 @@ const hasReportsItems = computed(() => reportsItems.value.length > 0)
 const hasApplicationsItems = computed(() => applicationsItems.value.length > 0)
 const hasFinanceItems = computed(() => financeItems.value.length > 0)
 const hasBudgetItems = computed(() => budgetItems.value.length > 0)
-const hasLibraryItems = computed(() => libraryItems.value.length > 0)
+const hasLibrarySimpleItems = computed(() => librarySimpleItems.value.length > 0)
 const hasLibraryManagementItems = computed(() => libraryManagementItems.value.length > 0)
 const hasInventoryMediaItems = computed(() => inventoryMediaItems.value.length > 0)
 const hasBudgetOrdersItems = computed(() => budgetOrdersItems.value.length > 0)
@@ -959,6 +951,22 @@ const closeSidebarOnMobile = () => {
   }
 }
 
+const handleMenuItemClick = (item) => {
+  console.log('Menu item clicked:', item.name, item.path)
+  console.log('Current user role:', user.value?.role)
+  console.log('Target path:', item.path)
+  
+  // Close sidebar on mobile
+  closeSidebarOnMobile()
+  
+  try {
+    // Force navigation
+    router.push(item.path)
+  } catch (error) {
+    console.error('Navigation error:', error)
+  }
+}
+
 const setLanguage = (lang: 'en' | 'de') => {
   themeStore.setLanguage(lang)
   showLanguageDropdown.value = false
@@ -985,7 +993,18 @@ const shouldApplyPadding = computed(() => {
   return !routes.includes(route.path)
 })
 
+// Watch for user role changes and expand relevant menu groups
+watch(user, (newUser) => {
+  if (newUser?.role === 'librarian') {
+    menuGroups.value['library-management'] = true
+  }
+}, { immediate: true })
+
 onMounted(() => {
   authStore.initializeAuth()
+  // Auto-expand relevant menu groups for specific roles
+  if (user.value?.role === 'librarian') {
+    menuGroups.value['library-management'] = true
+  }
 })
 </script>

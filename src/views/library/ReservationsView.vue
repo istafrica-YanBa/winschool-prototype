@@ -1,609 +1,911 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useBookStore } from '@/stores/library/book'
-import { useReservationStore } from '@/stores/library/reservation'
-import { useAuthStore } from '@/stores/auth'
-import type { Book, BookReservation } from '@/types/library'
-import Button from '@/components/ui/button.vue'
-import Input from '@/components/ui/input.vue'
-import Table from '@/components/ui/table.vue'
-import Modal from '@/components/ui/modal.vue'
-import Chart from '@/components/ui/chart.vue'
-import BarcodeScanner from '@/components/library/BarcodeScanner.vue'
+import { ref, computed, onMounted } from 'vue'
 import { useToast } from '@/composables/useToast'
+import { 
+  BookOpen, Download, Plus, Search, CheckCircle, XCircle, 
+  Users, History, Clock, Mail, TrendingUp, X
+} from 'lucide-vue-next'
 
-const bookStore = useBookStore()
-const reservationStore = useReservationStore()
-const authStore = useAuthStore()
-const { toast } = useToast()
+const { showToast } = useToast()
 
-const reservations = ref<BookReservation[]>([])
-const books = ref<Book[]>([])
-const selectedBook = ref<Book | null>(null)
-const showReserveModal = ref(false)
-const showScannerModal = ref(false)
+// UI State
+const activeTab = ref('active')
 const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-const studentId = ref('')
-const reservationNotes = ref('')
-const filterStatus = ref('all')
+const showAddModal = ref(false)
+const showApproveModal = ref(false)
+const showRejectModal = ref(false)
+const showFulfillModal = ref(false)
+const showHistoryModal = ref(false)
+const selectedReservation = ref(null)
+const selectedUser = ref(null)
+const rejectionReason = ref('')
 
-// Mock reservations data
-const mockReservations: BookReservation[] = [
-  {
-    id: '1',
-    bookId: '1',
-    bookTitle: 'Advanced Mathematics',
-    bookIsbn: '978-0-123456-78-9',
-    studentId: 'STU001',
-    studentName: 'John Doe',
-    studentClass: '10A',
-    requestDate: '2024-01-15',
-    requestedBy: 'STU001',
-    status: 'pending',
-    priority: 'normal',
-    notes: 'Needed for upcoming exam preparation',
-    reservedUntil: '2024-02-15'
-  },
-  {
-    id: '2',
-    bookId: '2',
-    bookTitle: 'Physics Fundamentals',
-    bookIsbn: '978-0-234567-89-0',
-    studentId: 'STU002',
-    studentName: 'Jane Smith',
-    studentClass: '11B',
-    requestDate: '2024-01-12',
-    requestedBy: 'teacher001',
-    status: 'approved',
-    priority: 'high',
-    notes: 'Required for lab experiments',
-    reservedUntil: '2024-02-12',
-    approvedBy: 'librarian001',
-    approvedDate: '2024-01-13'
-  },
-  {
-    id: '3',
-    bookId: '3',
-    bookTitle: 'Literature Analysis',
-    bookIsbn: '978-0-345678-90-1',
-    studentId: 'STU003',
-    studentName: 'Mike Johnson',
-    studentClass: '12A',
-    requestDate: '2024-01-10',
-    requestedBy: 'STU003',
-    status: 'fulfilled',
-    priority: 'normal',
-    notes: 'For thesis research',
-    reservedUntil: '2024-02-10',
-    approvedBy: 'librarian001',
-    approvedDate: '2024-01-11',
-    fulfilledDate: '2024-01-14'
-  },
-  {
-    id: '4',
-    bookId: '4',
-    bookTitle: 'World History',
-    bookIsbn: '978-0-456789-01-2',
-    studentId: 'STU004',
-    studentName: 'Sarah Wilson',
-    studentClass: '9C',
-    requestDate: '2024-01-18',
-    requestedBy: 'parent001',
-    status: 'rejected',
-    priority: 'low',
-    notes: 'Book already borrowed by student',
-    reservedUntil: '2024-02-18',
-    rejectedBy: 'librarian001',
-    rejectedDate: '2024-01-19',
-    rejectionReason: 'Student already has maximum allowed books'
-  },
-  {
-    id: '5',
-    bookId: '5',
-    bookTitle: 'Chemistry Basics',
-    bookIsbn: '978-0-567890-12-3',
-    studentId: 'STU005',
-    studentName: 'David Brown',
-    studentClass: '10B',
-    requestDate: '2024-01-20',
-    requestedBy: 'STU005',
-    status: 'expired',
-    priority: 'normal',
-    notes: 'Never picked up',
-    reservedUntil: '2024-01-25'
-  }
-]
-
-// User access control
-const userRole = computed(() => authStore.user?.role || 'student')
-const canMakeReservation = computed(() => 
-  ['student', 'teacher', 'schoolstaff', 'schooladmin', 'admin'].includes(userRole.value)
-)
-const canApproveReservations = computed(() => 
-  ['librarian', 'schoolstaff', 'schooladmin', 'admin'].includes(userRole.value)
-)
-
-// Statistics
-const reservationStats = computed(() => [
-  { label: 'Pending', value: reservations.value.filter(r => r.status === 'pending').length, color: '#F59E0B' },
-  { label: 'Approved', value: reservations.value.filter(r => r.status === 'approved').length, color: '#10B981' },
-  { label: 'Fulfilled', value: reservations.value.filter(r => r.status === 'fulfilled').length, color: '#3B82F6' },
-  { label: 'Rejected', value: reservations.value.filter(r => r.status === 'rejected').length, color: '#EF4444' }
-])
-
-const monthlyReservations = computed(() => [
-  { label: 'Jan', value: 45 },
-  { label: 'Feb', value: 52 },
-  { label: 'Mar', value: 38 },
-  { label: 'Apr', value: 61 },
-  { label: 'May', value: 47 },
-  { label: 'Jun', value: 55 }
-])
-
-const priorityDistribution = computed(() => {
-  const distribution: { [key: string]: number } = {}
-  reservations.value.forEach(reservation => {
-    distribution[reservation.priority] = (distribution[reservation.priority] || 0) + 1
-  })
-  return Object.entries(distribution).map(([label, value]) => ({ 
-    label: label.charAt(0).toUpperCase() + label.slice(1), 
-    value 
-  }))
+// Filters
+const filters = ref({
+  status: '',
+  method: '',
+  dateFrom: '',
+  dateTo: ''
 })
 
+// Form Data
+const newReservation = ref({
+  userId: '',
+  bookId: '',
+  notes: ''
+})
+
+// Tabs
+const tabs = [
+  { id: 'active', name: 'Active Reservations' },
+  { id: 'history', name: 'History' }
+]
+
+// Mock Data - Enhanced Reservations
+const reservations = ref([
+  {
+    id: 1,
+    userId: 'U001',
+    userName: 'Emma Thompson',
+    userType: 'Student',
+    bookId: 'B001',
+    bookTitle: 'Advanced Mathematics',
+    isbn: '978-0123456789',
+    method: 'SELF_SERVICE',
+    status: 'PENDING',
+    priority: 1,
+    requestDate: '2024-01-15',
+    approvedDate: null,
+    fulfilledDate: null,
+    rejectedDate: null,
+    notes: 'Needed for calculus exam preparation'
+  },
+  {
+    id: 2,
+    userId: 'U002',
+    userName: 'James Wilson',
+    userType: 'Student',
+    bookId: 'B002',
+    bookTitle: 'Physics Fundamentals',
+    isbn: '978-0987654321',
+    method: 'BARCODE',
+    status: 'APPROVED',
+    priority: 1,
+    requestDate: '2024-01-12',
+    approvedDate: '2024-01-13',
+    fulfilledDate: null,
+    rejectedDate: null,
+    notes: null
+  },
+  {
+    id: 3,
+    userId: 'U003',
+    userName: 'Sofia Garcia',
+    userType: 'Staff',
+    bookId: 'B003',
+    bookTitle: 'Chemistry Lab Manual',
+    isbn: '978-0456789123',
+    method: 'MANUAL',
+    status: 'FULFILLED',
+    priority: 1,
+    requestDate: '2024-01-10',
+    approvedDate: '2024-01-11',
+    fulfilledDate: '2024-01-14',
+    rejectedDate: null,
+    notes: 'For semester lab sessions'
+  },
+  {
+    id: 4,
+    userId: 'U004',
+    userName: 'Michael Chen',
+    userType: 'Student',
+    bookId: 'B001',
+    bookTitle: 'Advanced Mathematics',
+    isbn: '978-0123456789',
+    method: 'SELF_SERVICE',
+    status: 'PENDING',
+    priority: 2,
+    requestDate: '2024-01-16',
+    approvedDate: null,
+    fulfilledDate: null,
+    rejectedDate: null,
+    notes: null
+  },
+  {
+    id: 5,
+    userId: 'U005',
+    userName: 'Anna Rodriguez',
+    userType: 'Teacher',
+    bookId: 'B004',
+    bookTitle: 'English Literature',
+    isbn: '978-0789123456',
+    method: 'GROUP',
+    status: 'REJECTED',
+    priority: 1,
+    requestDate: '2024-01-08',
+    approvedDate: null,
+    fulfilledDate: null,
+    rejectedDate: '2024-01-09',
+    notes: 'Requested for entire class - multiple copies needed'
+  }
+])
+
+const users = ref([
+  { id: 'U001', name: 'Emma Thompson', type: 'Student', email: 'emma.t@school.edu' },
+  { id: 'U002', name: 'James Wilson', type: 'Student', email: 'james.w@school.edu' },
+  { id: 'U003', name: 'Sofia Garcia', type: 'Staff', email: 'sofia.g@school.edu' },
+  { id: 'U004', name: 'Michael Chen', type: 'Student', email: 'michael.c@school.edu' },
+  { id: 'U005', name: 'Anna Rodriguez', type: 'Teacher', email: 'anna.r@school.edu' }
+])
+
+const books = ref([
+  { id: 'B001', title: 'Advanced Mathematics', isbn: '978-0123456789', availability: 2 },
+  { id: 'B002', title: 'Physics Fundamentals', isbn: '978-0987654321', availability: 1 },
+  { id: 'B003', title: 'Chemistry Lab Manual', isbn: '978-0456789123', availability: 3 },
+  { id: 'B004', title: 'English Literature', isbn: '978-0789123456', availability: 5 }
+])
+
+// Computed Properties for Infographics
+const pendingCount = computed(() => {
+  return reservations.value.filter(r => r.status === 'PENDING').length
+})
+
+const approvedCount = computed(() => {
+  return reservations.value.filter(r => r.status === 'APPROVED').length
+})
+
+const rejectedCount = computed(() => {
+  const oneWeekAgo = new Date()
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+  return reservations.value.filter(r => 
+    r.status === 'REJECTED' && 
+    r.rejectedDate && 
+    new Date(r.rejectedDate) >= oneWeekAgo
+  ).length
+})
+
+const fulfilledThisWeek = computed(() => {
+  const oneWeekAgo = new Date()
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+  return reservations.value.filter(r => 
+    r.status === 'FULFILLED' && 
+    r.fulfilledDate && 
+    new Date(r.fulfilledDate) >= oneWeekAgo
+  ).length
+})
+
+const topReservedBook = computed(() => {
+  const bookCounts = {}
+  reservations.value.forEach(r => {
+    if (r.status !== 'REJECTED') {
+      bookCounts[r.bookTitle] = (bookCounts[r.bookTitle] || 0) + 1
+    }
+  })
+  
+  const entries = Object.entries(bookCounts)
+  if (entries.length === 0) {
+    return { title: 'No reservations', count: 0 }
+  }
+  
+  const topBook = entries.reduce((a, b) => a[1] > b[1] ? a : b)
+  return {
+    title: topBook[0],
+    count: topBook[1]
+  }
+})
+
+// Filtered and computed data
 const filteredReservations = computed(() => {
   let filtered = reservations.value
 
+  // Filter by tab
+  if (activeTab.value === 'active') {
+    filtered = filtered.filter(r => ['PENDING', 'APPROVED'].includes(r.status))
+  } else {
+    filtered = filtered.filter(r => ['FULFILLED', 'REJECTED'].includes(r.status))
+  }
+  
+  // Search filter
   if (searchQuery.value) {
-    filtered = filtered.filter(reservation => 
-      reservation.bookTitle.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      reservation.studentName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      reservation.studentClass.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(r => 
+      r.userName.toLowerCase().includes(query) ||
+      r.bookTitle.toLowerCase().includes(query) ||
+      r.isbn.includes(query)
     )
   }
-
-  if (filterStatus.value !== 'all') {
-    filtered = filtered.filter(reservation => reservation.status === filterStatus.value)
+  
+  // Status filter
+  if (filters.value.status) {
+    filtered = filtered.filter(r => r.status === filters.value.status)
   }
-
-  // If user is student, only show their reservations
-  if (userRole.value === 'student') {
-    filtered = filtered.filter(reservation => reservation.studentId === authStore.user?.id)
+  
+  // Method filter
+  if (filters.value.method) {
+    filtered = filtered.filter(r => r.method === filters.value.method)
+  }
+  
+  // Date filters
+  if (filters.value.dateFrom) {
+    filtered = filtered.filter(r => r.requestDate >= filters.value.dateFrom)
+  }
+  
+  if (filters.value.dateTo) {
+    filtered = filtered.filter(r => r.requestDate <= filters.value.dateTo)
   }
 
   return filtered
 })
 
-const paginatedReservations = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  return filteredReservations.value.slice(start, start + itemsPerPage.value)
-})
+// Utility functions
+const getStatusColor = (status) => {
+  const colors = {
+    'PENDING': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+    'APPROVED': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    'FULFILLED': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    'REJECTED': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+  }
+  return colors[status] || 'bg-gray-100 text-gray-800'
+}
 
-const totalPages = computed(() => Math.ceil(filteredReservations.value.length / itemsPerPage.value))
+const getMethodColor = (method) => {
+  const colors = {
+    'MANUAL': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    'SELF_SERVICE': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    'BARCODE': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    'GROUP': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+  }
+  return colors[method] || 'bg-gray-100 text-gray-800'
+}
 
-const handleCreateReservation = async (scannedStudentId?: string) => {
-  const finalStudentId = scannedStudentId || studentId.value
-  
-  if (!selectedBook.value || !finalStudentId) {
-    toast('Please fill in all required fields', 'error')
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  } catch (error) {
+    return dateString
+  }
+}
+
+const formatMethod = (method) => {
+  const methodNames = {
+    'MANUAL': 'Manual',
+    'SELF_SERVICE': 'Self-Service',
+    'BARCODE': 'Barcode',
+    'GROUP': 'Group Request'
+  }
+  return methodNames[method] || method
+}
+
+const clearFilters = () => {
+  filters.value = {
+    status: '',
+    method: '',
+    dateFrom: '',
+    dateTo: ''
+  }
+  searchQuery.value = ''
+}
+
+// Modal handlers
+const openApproveModal = (reservation) => {
+  selectedReservation.value = reservation
+  showApproveModal.value = true
+}
+
+const openRejectModal = (reservation) => {
+  selectedReservation.value = reservation
+  rejectionReason.value = ''
+  showRejectModal.value = true
+}
+
+const openFulfillModal = (reservation) => {
+  selectedReservation.value = reservation
+  showFulfillModal.value = true
+}
+
+const viewUserHistory = (userId) => {
+  selectedUser.value = users.value.find(u => u.id === userId)
+  showHistoryModal.value = true
+}
+
+const getUserReservations = (userId) => {
+  return reservations.value.filter(r => r.userId === userId)
+}
+
+// Action handlers
+const handleAddReservation = async () => {
+  try {
+    const user = users.value.find(u => u.id === newReservation.value.userId)
+    const book = books.value.find(b => b.id === newReservation.value.bookId)
+    
+    if (!user || !book) {
+      showToast('Please select both user and book', 'error')
     return
   }
 
-  try {
-    const newReservation: BookReservation = {
-      id: Date.now().toString(),
-      bookId: selectedBook.value.id,
-      bookTitle: selectedBook.value.title,
-      bookIsbn: selectedBook.value.isbn,
-      studentId: finalStudentId,
-      studentName: `Student ${finalStudentId}`, // In real app, would fetch from student store
-      studentClass: '10A', // In real app, would fetch from student data
+    const newReservationRecord = {
+      id: Date.now(),
+      userId: user.id,
+      userName: user.name,
+      userType: user.type,
+      bookId: book.id,
+      bookTitle: book.title,
+      isbn: book.isbn,
+      method: 'MANUAL',
+      status: 'PENDING',
+      priority: 1,
       requestDate: new Date().toISOString().split('T')[0],
-      requestedBy: authStore.user?.id || finalStudentId,
-      status: 'pending',
-      priority: 'normal',
-      notes: reservationNotes.value,
-      reservedUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
+      approvedDate: null,
+      fulfilledDate: null,
+      rejectedDate: null,
+      notes: newReservation.value.notes
     }
-
-    reservations.value.unshift(newReservation)
     
-    toast('Reservation created successfully', 'success')
-    showReserveModal.value = false
-    showScannerModal.value = false
-    resetForm()
-  } catch (error) {
-    toast('Failed to create reservation', 'error')
-  }
-}
-
-const handleApproveReservation = async (reservationId: string) => {
-  try {
-    const reservation = reservations.value.find(r => r.id === reservationId)
-    if (reservation) {
-      reservation.status = 'approved'
-      reservation.approvedBy = authStore.user?.id
-      reservation.approvedDate = new Date().toISOString().split('T')[0]
-      toast('Reservation approved', 'success')
+    reservations.value.unshift(newReservationRecord)
+    showToast('Manual reservation created successfully', 'success')
+    showAddModal.value = false
+    
+    // Reset form
+    newReservation.value = {
+      userId: '',
+      bookId: '',
+      notes: ''
     }
   } catch (error) {
-    toast('Failed to approve reservation', 'error')
+    showToast('Failed to create reservation', 'error')
   }
 }
 
-const handleRejectReservation = async (reservationId: string, reason: string) => {
+const handleApproveReservation = async () => {
+  if (!selectedReservation.value) return
+  
   try {
-    const reservation = reservations.value.find(r => r.id === reservationId)
-    if (reservation) {
-      reservation.status = 'rejected'
-      reservation.rejectedBy = authStore.user?.id
-      reservation.rejectedDate = new Date().toISOString().split('T')[0]
-      reservation.rejectionReason = reason
-      toast('Reservation rejected', 'success')
-    }
+    selectedReservation.value.status = 'APPROVED'
+    selectedReservation.value.approvedDate = new Date().toISOString().split('T')[0]
+    
+    showToast('Reservation approved successfully', 'success')
+    showApproveModal.value = false
+    selectedReservation.value = null
   } catch (error) {
-    toast('Failed to reject reservation', 'error')
+    showToast('Failed to approve reservation', 'error')
   }
 }
 
-const handleFulfillReservation = async (reservationId: string) => {
+const handleRejectReservation = async () => {
+  if (!selectedReservation.value) return
+  
   try {
-    const reservation = reservations.value.find(r => r.id === reservationId)
-    if (reservation) {
-      reservation.status = 'fulfilled'
-      reservation.fulfilledDate = new Date().toISOString().split('T')[0]
-      toast('Reservation fulfilled', 'success')
+    selectedReservation.value.status = 'REJECTED'
+    selectedReservation.value.rejectedDate = new Date().toISOString().split('T')[0]
+    
+    if (rejectionReason.value) {
+      selectedReservation.value.notes = selectedReservation.value.notes 
+        ? `${selectedReservation.value.notes} | Rejection reason: ${rejectionReason.value}`
+        : `Rejection reason: ${rejectionReason.value}`
     }
+    
+    showToast('Reservation rejected successfully', 'success')
+    showRejectModal.value = false
+    selectedReservation.value = null
+    rejectionReason.value = ''
   } catch (error) {
-    toast('Failed to fulfill reservation', 'error')
+    showToast('Failed to reject reservation', 'error')
   }
 }
 
-const resetForm = () => {
-  selectedBook.value = null
-  studentId.value = ''
-  reservationNotes.value = ''
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-    case 'approved': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    case 'fulfilled': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-    case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-    case 'expired': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+const handleFulfillReservation = async () => {
+  if (!selectedReservation.value) return
+  
+  try {
+    selectedReservation.value.status = 'FULFILLED'
+    selectedReservation.value.fulfilledDate = new Date().toISOString().split('T')[0]
+    
+    showToast('Reservation fulfilled - proceeding to lending workflow', 'success')
+    showFulfillModal.value = false
+    selectedReservation.value = null
+  } catch (error) {
+    showToast('Failed to fulfill reservation', 'error')
   }
 }
 
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-    case 'normal': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-    case 'low': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+const exportReservations = async (format = 'csv') => {
+  try {
+    showToast(`Exporting reservations as ${format.toUpperCase()}...`, 'info')
+    
+    // Simulate export process
+    setTimeout(() => {
+      showToast('Export completed successfully', 'success')
+    }, 2000)
+  } catch (error) {
+    showToast('Failed to export reservations', 'error')
   }
 }
 
-onMounted(async () => {
-  books.value = await bookStore.getBooks()
-  reservations.value = mockReservations
+onMounted(() => {
+  console.log('Book Reservations Management loaded')
 })
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Header and Actions -->
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 font-inter">
+    <div class="p-6 space-y-8">
+      <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Book Reservations</h1>
-        <p class="text-gray-600 dark:text-gray-400">Manage book reservations and approval workflow</p>
+          <h1 class="text-3xl font-bold text-slate-600 dark:text-white flex items-center gap-3">
+            <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+              <BookOpen class="w-5 h-5 text-white" />
+            </div>
+            Book Reservations
+          </h1>
+          <p class="mt-2 text-slate-500 dark:text-gray-400">
+            Manage reservation requests and queue system for library books
+          </p>
       </div>
-      <div class="flex space-x-3">
-        <Button 
-          v-if="canMakeReservation"
-          @click="showScannerModal = true"
-          variant="outline"
-        >
-          Scan Student ID
-        </Button>
-        <Button 
-          v-if="canMakeReservation"
-          @click="showReserveModal = true"
-          variant="primary"
-        >
-          New Reservation
-        </Button>
+        <div class="flex gap-3">
+          <button
+            @click="exportReservations('csv')"
+            class="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
+          >
+            <Download class="w-5 h-5" />
+            Export
+          </button>
+          <button
+            @click="showAddModal = true"
+            class="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors font-medium shadow-sm"
+          >
+            <Plus class="w-5 h-5" />
+            Manual Reservation
+          </button>
+        </div>
+      </div>
+
+      <!-- Infographics Dashboard -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <!-- Pending Requests -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-500 dark:text-gray-400">Pending Requests</p>
+              <p class="text-2xl font-bold text-slate-600 dark:text-white mt-1">{{ pendingCount }}</p>
+              <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">Awaiting approval</p>
+            </div>
+            <div class="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg" title="Number of pending reservation requests">
+              <Mail class="w-5 h-5 text-yellow-600" />
+            </div>
       </div>
     </div>
 
-    <!-- Statistics Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Reservation Status Overview -->
-      <Chart 
-        :data="reservationStats" 
-        type="pie" 
-        title="Reservation Status" 
-      />
-      
-      <!-- Monthly Reservations -->
-      <Chart 
-        :data="monthlyReservations" 
-        type="bar" 
-        title="Monthly Reservations" 
-        height="200px"
-      />
-      
-      <!-- Priority Distribution -->
-      <Chart 
-        :data="priorityDistribution" 
-        type="bar" 
-        title="Request Priority" 
-        height="200px"
-      />
+        <!-- Approved Reservations -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-500 dark:text-gray-400">Approved</p>
+              <p class="text-2xl font-bold text-slate-600 dark:text-white mt-1">{{ approvedCount }}</p>
+              <p class="text-xs text-green-600 dark:text-green-400 mt-1">Ready for pickup</p>
+            </div>
+            <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg" title="Number of approved reservations">
+              <CheckCircle class="w-5 h-5 text-green-600" />
+            </div>
+          </div>
     </div>
 
-    <!-- Search and Filters -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Input
-          v-model="searchQuery"
-          placeholder="Search by book, student, or class..."
-          class="md:col-span-2"
-        />
-        <select 
-          v-model="filterStatus"
-          class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="fulfilled">Fulfilled</option>
-          <option value="rejected">Rejected</option>
-          <option value="expired">Expired</option>
-        </select>
+        <!-- Rejected Requests -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-500 dark:text-gray-400">Rejected</p>
+              <p class="text-2xl font-bold text-slate-600 dark:text-white mt-1">{{ rejectedCount }}</p>
+              <p class="text-xs text-red-600 dark:text-red-400 mt-1">This week</p>
+            </div>
+            <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg" title="Number of rejected reservations">
+              <XCircle class="w-5 h-5 text-red-600" />
       </div>
-      <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
-        Total: {{ filteredReservations.length }} reservations
       </div>
     </div>
 
-    <!-- Pending Approvals (for staff/librarians) -->
-    <div v-if="canApproveReservations && reservations.filter(r => r.status === 'pending').length > 0" 
-         class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-      <h3 class="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
-        Pending Approvals ({{ reservations.filter(r => r.status === 'pending').length }})
-      </h3>
-      <div class="grid gap-3">
-        <div v-for="reservation in reservations.filter(r => r.status === 'pending').slice(0, 3)" 
-             :key="reservation.id"
-             class="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded border">
+        <!-- Fulfilled This Week -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
           <div>
-            <div class="font-medium text-gray-900 dark:text-gray-100">{{ reservation.bookTitle }}</div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">{{ reservation.studentName }} ({{ reservation.studentClass }})</div>
+              <p class="text-sm font-medium text-slate-500 dark:text-gray-400">Fulfilled</p>
+              <p class="text-2xl font-bold text-slate-600 dark:text-white mt-1">{{ fulfilledThisWeek }}</p>
+              <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">This week</p>
+            </div>
+            <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg" title="Number of reservations fulfilled this week">
+              <Clock class="w-5 h-5 text-blue-600" />
+            </div>
           </div>
-          <div class="flex space-x-2">
-            <Button size="sm" variant="primary" @click="handleApproveReservation(reservation.id)">
-              Approve
-            </Button>
-            <Button size="sm" variant="outline" @click="handleRejectReservation(reservation.id, 'Manual rejection')">
-              Reject
-            </Button>
-          </div>
+        </div>
+
+        <!-- Top Reserved Book -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-500 dark:text-gray-400">Most Reserved</p>
+              <p class="text-lg font-bold text-slate-600 dark:text-white mt-1">{{ topReservedBook.title }}</p>
+              <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">{{ topReservedBook.count }} requests</p>
+            </div>
+            <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg" title="Most frequently reserved book">
+              <TrendingUp class="w-5 h-5 text-purple-600" />
+            </div>
         </div>
       </div>
     </div>
 
-    <!-- Reservations Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">All Reservations</h2>
+      <!-- Tabs -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="border-b border-gray-200 dark:border-gray-700">
+          <nav class="flex space-x-8 px-6" aria-label="Tabs">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              @click="activeTab = tab.id"
+              :class="[
+                activeTab === tab.id
+                  ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300',
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+              ]"
+            >
+              {{ tab.name }}
+            </button>
+          </nav>
       </div>
       
-      <Table>
-        <template #header>
-          <tr>
-            <th class="text-left">Book</th>
-            <th class="text-left">Student</th>
-            <th class="text-left">Request Date</th>
-            <th class="text-left">Priority</th>
-            <th class="text-left">Status</th>
-            <th class="text-left">Notes</th>
-            <th class="text-left">Actions</th>
-          </tr>
-        </template>
-        <template #body>
-          <tr v-for="reservation in paginatedReservations" :key="reservation.id" class="border-b border-gray-200 dark:border-gray-700">
-            <td class="py-3">
-              <div>
-                <div class="font-medium text-gray-900 dark:text-gray-100">{{ reservation.bookTitle }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">ISBN: {{ reservation.bookIsbn }}</div>
+        <!-- Tab Content -->
+        <div class="p-6">
+          <!-- Search and Filters -->
+          <div class="flex flex-col lg:flex-row gap-4 mb-6">
+            <!-- Search -->
+            <div class="flex-1">
+              <div class="relative">
+                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Search by student name, book title, or ISBN..."
+                  class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                />
               </div>
-            </td>
-            <td class="py-3">
-              <div>
-                <div class="font-medium text-gray-900 dark:text-gray-100">{{ reservation.studentName }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">{{ reservation.studentClass }}</div>
               </div>
-            </td>
-            <td class="py-3">{{ new Date(reservation.requestDate).toLocaleDateString() }}</td>
-            <td class="py-3">
-              <span
-                :class="getPriorityColor(reservation.priority)"
-                class="px-2 py-1 rounded-full text-sm font-medium capitalize"
+            
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-3">
+              <select
+                v-model="filters.status"
+                class="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
               >
-                {{ reservation.priority }}
-              </span>
-            </td>
-            <td class="py-3">
-              <span
-                :class="getStatusColor(reservation.status)"
-                class="px-2 py-1 rounded-full text-sm font-medium capitalize"
+                <option value="">All Status</option>
+                <option value="PENDING">Pending</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="FULFILLED">Fulfilled</option>
+              </select>
+              
+              <select
+                v-model="filters.method"
+                class="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
               >
+                <option value="">All Methods</option>
+                <option value="MANUAL">Manual</option>
+                <option value="SELF_SERVICE">Self Service</option>
+                <option value="BARCODE">Barcode</option>
+                <option value="GROUP">Group</option>
+              </select>
+              
+              <button
+                v-if="filters.status || filters.method || searchQuery"
+                @click="clearFilters"
+                class="px-4 py-3 text-sm text-slate-600 dark:text-gray-300 hover:text-slate-800 dark:hover:text-gray-100 transition-colors"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+
+          <!-- Reservations List -->
+          <div class="space-y-4">
+            <div v-for="reservation in filteredReservations" :key="reservation.id" 
+                 class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
+              <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex-1">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-1">
+                      <h3 class="font-semibold text-slate-600 dark:text-white">{{ reservation.userName }}</h3>
+                      <p class="text-sm text-slate-500 dark:text-gray-400">{{ reservation.userType }} • {{ reservation.bookTitle }}</p>
+                      <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">ISBN: {{ reservation.isbn }}</p>
+                      <p v-if="reservation.notes" class="text-sm text-slate-600 dark:text-gray-300 mt-2">{{ reservation.notes }}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+                  <div class="text-right">
+                    <div class="text-sm text-slate-500 dark:text-gray-400">{{ formatDate(reservation.requestDate) }}</div>
+                    <div class="flex gap-2 mt-2">
+                      <span :class="getStatusColor(reservation.status)" class="px-2 py-1 text-xs font-medium rounded-full">
                 {{ reservation.status }}
               </span>
-            </td>
-            <td class="py-3">
-              <div class="text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">
-                {{ reservation.notes || '-' }}
+                      <span :class="getMethodColor(reservation.method)" class="px-2 py-1 text-xs font-medium rounded-full">
+                        {{ formatMethod(reservation.method) }}
+                      </span>
+                    </div>
               </div>
-            </td>
-            <td class="py-3">
-              <div class="flex space-x-2">
-                <Button
-                  v-if="reservation.status === 'pending' && canApproveReservations"
-                  variant="primary"
-                  size="sm"
-                  @click="handleApproveReservation(reservation.id)"
+                  
+                  <div v-if="activeTab === 'active'" class="flex gap-2">
+                    <button
+                      v-if="reservation.status === 'PENDING'"
+                      @click="openApproveModal(reservation)"
+                      class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors"
                 >
                   Approve
-                </Button>
-                <Button
-                  v-if="reservation.status === 'approved' && canApproveReservations"
-                  variant="primary"
-                  size="sm"
-                  @click="handleFulfillReservation(reservation.id)"
+                    </button>
+                    <button
+                      v-if="reservation.status === 'PENDING'"
+                      @click="openRejectModal(reservation)"
+                      class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition-colors"
+                    >
+                      Reject
+                    </button>
+                    <button
+                      v-if="reservation.status === 'APPROVED'"
+                      @click="openFulfillModal(reservation)"
+                      class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors"
                 >
                   Fulfill
-                </Button>
-                <Button
-                  v-if="reservation.status === 'pending' && canApproveReservations"
-                  variant="outline"
-                  size="sm"
-                  @click="handleRejectReservation(reservation.id, 'Manual rejection')"
-                >
-                  Reject
-                </Button>
+                    </button>
+                    <button
+                      @click="viewUserHistory(reservation.userId)"
+                      class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+                    >
+                      History
+                    </button>
+                  </div>
+                </div>
               </div>
-            </td>
-          </tr>
-        </template>
-      </Table>
-      
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="p-4 border-t border-gray-200 dark:border-gray-700">
-        <div class="flex justify-between items-center">
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Page {{ currentPage }} of {{ totalPages }}
-          </div>
-          <div class="flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="currentPage === 1"
-              @click="currentPage--"
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="currentPage === totalPages"
-              @click="currentPage++"
-            >
-              Next
-            </Button>
+            </div>
+            
+            <div v-if="filteredReservations.length === 0" class="text-center py-12">
+              <div class="text-slate-500 dark:text-gray-400">No reservations found</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- New Reservation Modal -->
-    <Modal 
-      v-if="showReserveModal"
-      title="Create New Reservation"
-      @close="showReserveModal = false"
-    >
-      <form @submit.prevent="handleCreateReservation()" class="space-y-4">
-        <!-- Book Selection -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Select Book
-          </label>
-          <select 
-            v-model="selectedBook"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-            required
-          >
-            <option value="">Choose a book...</option>
-            <option 
-              v-for="book in books" 
-              :key="book.id" 
-              :value="book"
+    <!-- Add Manual Reservation Modal -->
+    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold text-slate-600 dark:text-white">Add Manual Reservation</h3>
+            <button @click="showAddModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <X class="h-6 w-6" />
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">User</label>
+              <select
+                v-model="newReservation.userId"
+                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              >
+                <option value="">Select User</option>
+                <option v-for="user in users" :key="user.id" :value="user.id">
+                  {{ user.name }} ({{ user.type }})
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Book</label>
+              <select
+                v-model="newReservation.bookId"
+                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              >
+                <option value="">Select Book</option>
+                <option v-for="book in books" :key="book.id" :value="book.id">
+                  {{ book.title }} ({{ book.availability }} available)
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Notes</label>
+              <textarea
+                v-model="newReservation.notes"
+                rows="3"
+                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                placeholder="Optional notes about the reservation..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 mt-6">
+            <button
+              @click="showAddModal = false"
+              class="px-4 py-2 text-slate-600 dark:text-gray-300 hover:text-slate-800 dark:hover:text-gray-100 transition-colors"
             >
-              {{ book.title }} (Available: {{ book.availableCopies }})
-            </option>
-          </select>
+              Cancel
+            </button>
+            <button
+              @click="handleAddReservation"
+              class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors"
+            >
+              Create Reservation
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Approve Modal -->
+    <div v-if="showApproveModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold text-slate-600 dark:text-white">Approve Reservation</h3>
+            <button @click="showApproveModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <X class="h-6 w-6" />
+            </button>
+          </div>
+
+          <p class="text-slate-600 dark:text-gray-300 mb-6">
+            Are you sure you want to approve this reservation for <strong>{{ selectedReservation?.userName }}</strong>?
+          </p>
+
+          <div class="flex justify-end gap-3">
+            <button
+              @click="showApproveModal = false"
+              class="px-4 py-2 text-slate-600 dark:text-gray-300 hover:text-slate-800 dark:hover:text-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="handleApproveReservation"
+              class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors"
+            >
+              Approve
+            </button>
+          </div>
+        </div>
+      </div>
         </div>
 
-        <!-- Student ID (only for staff/librarians) -->
-        <div v-if="userRole !== 'student'">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Student ID
-          </label>
-          <Input
-            v-model="studentId"
-            placeholder="Enter student ID"
-            required
-          />
+    <!-- Reject Modal -->
+    <div v-if="showRejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold text-slate-600 dark:text-white">Reject Reservation</h3>
+            <button @click="showRejectModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <X class="h-6 w-6" />
+            </button>
         </div>
 
-        <!-- Notes -->
+          <div class="space-y-4">
+            <p class="text-slate-600 dark:text-gray-300">
+              Rejecting reservation for <strong>{{ selectedReservation?.userName }}</strong>
+            </p>
+
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Notes (Optional)
-          </label>
+              <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Reason (Optional)</label>
           <textarea
-            v-model="reservationNotes"
+                v-model="rejectionReason"
             rows="3"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-            placeholder="Any additional notes for this reservation..."
+                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="Reason for rejection..."
           ></textarea>
+            </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-end space-x-3">
-          <Button
-            type="button"
-            variant="outline"
-            @click="showReserveModal = false"
+          <div class="flex justify-end gap-3 mt-6">
+            <button
+              @click="showRejectModal = false"
+              class="px-4 py-2 text-slate-600 dark:text-gray-300 hover:text-slate-800 dark:hover:text-gray-100 transition-colors"
           >
             Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            :disabled="!selectedBook || (userRole !== 'student' && !studentId)"
-          >
-            Create Reservation
-          </Button>
+            </button>
+            <button
+              @click="handleRejectReservation"
+              class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+            >
+              Reject
+            </button>
+          </div>
         </div>
-      </form>
-    </Modal>
+      </div>
+    </div>
 
-    <!-- Scanner Modal -->
-    <Modal 
-      v-if="showScannerModal"
-      title="Scan Student ID"
-      @close="showScannerModal = false"
-    >
-      <div class="space-y-4">
-        <p class="text-gray-600 dark:text-gray-400">
-          Scan a student ID barcode to quickly create a reservation
-        </p>
-        
-        <BarcodeScanner @code-scanned="handleCreateReservation" />
-        
-        <Button
-          variant="outline"
-          @click="showScannerModal = false"
-          class="w-full"
+    <!-- Fulfill Modal -->
+    <div v-if="showFulfillModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold text-slate-600 dark:text-white">Fulfill Reservation</h3>
+            <button @click="showFulfillModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <X class="h-6 w-6" />
+            </button>
+          </div>
+
+          <p class="text-slate-600 dark:text-gray-300 mb-6">
+            Mark this reservation as fulfilled and proceed to book lending for <strong>{{ selectedReservation?.userName }}</strong>?
+          </p>
+
+          <div class="flex justify-end gap-3">
+            <button
+              @click="showFulfillModal = false"
+              class="px-4 py-2 text-slate-600 dark:text-gray-300 hover:text-slate-800 dark:hover:text-gray-100 transition-colors"
         >
           Cancel
-        </Button>
+            </button>
+            <button
+              @click="handleFulfillReservation"
+              class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+            >
+              Complete Lending
+            </button>
+          </div>
+        </div>
       </div>
-    </Modal>
+    </div>
+
+    <!-- User History Modal -->
+    <div v-if="showHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-600 dark:text-white">Reservation History</h3>
+              <p v-if="selectedUser" class="text-sm text-slate-500 dark:text-gray-400">
+                {{ selectedUser.name }} ({{ selectedUser.type }}) - {{ selectedUser.email }}
+              </p>
+            </div>
+            <button @click="showHistoryModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <X class="h-6 w-6" />
+            </button>
+          </div>
+
+          <div v-if="selectedUser" class="space-y-4">
+            <div v-for="reservation in getUserReservations(selectedUser.id)" :key="reservation.id" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <div class="font-medium text-slate-600 dark:text-white">{{ reservation.bookTitle }}</div>
+                  <div class="text-sm text-slate-500 dark:text-gray-400">{{ reservation.isbn }}</div>
+                  <div class="text-sm text-slate-500 dark:text-gray-400 mt-1">{{ reservation.notes || 'No notes' }}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-slate-500 dark:text-gray-400">{{ formatDate(reservation.requestDate) }}</div>
+                  <span 
+                    :class="getStatusColor(reservation.status)"
+                    class="px-2 py-1 text-xs font-medium rounded-full mt-1 inline-block"
+                  >
+                    {{ reservation.status }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div v-if="getUserReservations(selectedUser.id).length === 0" class="text-center py-8">
+              <div class="text-slate-500 dark:text-gray-400">No reservation history found for this user.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template> 
+
+<style scoped>
+.font-inter {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+</style> 

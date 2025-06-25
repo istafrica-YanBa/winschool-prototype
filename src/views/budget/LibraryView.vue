@@ -1,262 +1,562 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 sm:p-6">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 font-inter">
+    <div class="p-6 space-y-8">
     <!-- Header -->
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
-      <div class="flex items-start">
-        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-winschool-primary rounded-xl flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
-          <BookOpen class="h-5 w-5 sm:h-7 sm:w-7 text-slate-800" />
-        </div>
-        <div class="min-w-0 flex-1">
-          <h1 class="text-2xl sm:text-3xl font-bold text-slate-500 dark:text-slate-400 leading-tight">
-            {{ language === 'de' ? 'Bibliotheksmodul' : 'Library Module' }}
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-slate-600 dark:text-white flex items-center gap-3">
+            <Settings class="w-8 h-8 text-yellow-500" />
+            Library Configuration
           </h1>
-          <p class="mt-1 sm:mt-2 text-sm sm:text-base text-slate-800 dark:text-slate-50">
-            {{ language === 'de' ? 'Vereinfachte Buchausleihe mit Ein- und Auscheckfunktionen' : 'Simplified book lending with check-in and check-out functions' }}
+          <p class="text-slate-500 dark:text-gray-400 mt-2">
+            Configure system-wide library policies, lending rules, and automation settings
           </p>
         </div>
-      </div>
-      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
-        <button @click="showFilters = !showFilters" class="w-full sm:w-auto bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-50 hover:bg-slate-200 dark:hover:bg-slate-600 font-medium px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-sm sm:text-base">
-          <Filter class="h-4 w-4 mr-2" />
-          {{ language === 'de' ? 'Filter' : 'Filters' }}
+        <div class="flex gap-3">
+          <button
+            @click="resetToDefaults"
+            class="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
+          >
+            <RotateCcw class="w-5 h-5" />
+            Reset to Defaults
         </button>
-        <button @click="showLendBook = true" class="w-full sm:w-auto bg-winschool-primary hover:bg-winschool-primary-dark text-slate-800 font-medium px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-sm sm:text-base">
-          <LogOut class="h-4 w-4 mr-2" />
-          {{ language === 'de' ? 'Buch ausleihen' : 'Check Out Book' }}
+          <button
+            @click="saveAllSettings"
+            :disabled="isSaving"
+            class="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors font-medium shadow-sm disabled:opacity-50"
+          >
+            <Save class="w-5 h-5" />
+            {{ isSaving ? 'Saving...' : 'Save All Changes' }}
         </button>
       </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6">
-      <div v-for="stat in libraryStats" :key="stat.title" class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-3 sm:p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center">
-          <div :class="stat.iconBg" class="p-2 sm:p-3 rounded-lg mb-2 sm:mb-0 sm:mr-4 self-start sm:self-auto">
-            <component :is="stat.icon" class="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+      <!-- Infographics Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Active Policies -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-500 dark:text-gray-400">Active Policies</p>
+              <p class="text-2xl font-bold text-slate-600 dark:text-white mt-1">{{ activePolicies }}</p>
+            </div>
+            <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <CheckCircle class="w-5 h-5 text-green-600" />
           </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 truncate">{{ stat.title }}</p>
-            <p class="text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-50">{{ stat.value }}</p>
-            <p :class="stat.changeColor" class="text-xs sm:text-sm truncate">{{ stat.change }}</p>
+          </div>
+        </div>
+
+        <!-- Max Books Total -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-500 dark:text-gray-400">Max Books (Total)</p>
+              <p class="text-2xl font-bold text-slate-600 dark:text-white mt-1">{{ totalMaxBooks }}</p>
+            </div>
+            <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <BookOpen class="w-5 h-5 text-blue-600" />
+      </div>
+    </div>
+        </div>
+
+        <!-- Reservation Slots -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between">
+        <div>
+              <p class="text-sm font-medium text-slate-500 dark:text-gray-400">Reservation Slots</p>
+              <p class="text-2xl font-bold text-slate-600 dark:text-white mt-1">{{ totalReservationSlots }}</p>
+            </div>
+            <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <Calendar class="w-5 h-5 text-purple-600" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Automation Level -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between">
+        <div>
+              <p class="text-sm font-medium text-slate-500 dark:text-gray-400">Automation Level</p>
+              <p class="text-2xl font-bold text-slate-600 dark:text-white mt-1">
+                {{ Object.values(automationSettings).filter(Boolean).length }}/4
+              </p>
+            </div>
+            <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+              <Settings class="w-5 h-5 text-orange-600" />
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Navigation Tabs -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div class="border-b border-gray-200 dark:border-gray-700">
+          <nav class="flex space-x-8 px-6 overflow-x-auto">
+            <button
+              v-for="section in [
+                { id: 'lending-rules', label: 'Lending Rules' },
+                { id: 'return-behavior', label: 'Return Behavior' },
+                { id: 'reservations', label: 'Reservations' },
+                { id: 'lending-modes', label: 'Lending Modes' },
+                { id: 'automation', label: 'Automation' }
+              ]"
+              :key="section.id"
+              @click="activeSection = section.id"
+              :class="[
+                'py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap',
+                activeSection === section.id
+                  ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              ]"
+            >
+              <component :is="getSectionIcon(section.id)" class="w-4 h-4" />
+              {{ section.label }}
+            </button>
+          </nav>
     </div>
 
-    <!-- Filters Panel -->
-    <div v-if="showFilters" class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 mb-6">
-      <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-50 mb-4">
-        {{ language === 'de' ? 'Filter' : 'Filters' }}
-      </h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            {{ language === 'de' ? 'Status' : 'Status' }}
-          </label>
-          <select v-model="filters.status" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
-            <option value="">{{ language === 'de' ? 'Alle Status' : 'All Status' }}</option>
-            <option value="Checked Out">{{ language === 'de' ? 'Ausgeliehen' : 'Checked Out' }}</option>
-            <option value="Overdue">{{ language === 'de' ? 'Überfällig' : 'Overdue' }}</option>
-            <option value="Returned">{{ language === 'de' ? 'Zurückgegeben' : 'Returned' }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            {{ language === 'de' ? 'Fälligkeitszeitraum' : 'Due Period' }}
-          </label>
-          <select v-model="filters.duePeriod" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
-            <option value="">{{ language === 'de' ? 'Alle Zeiträume' : 'All Periods' }}</option>
-            <option value="today">{{ language === 'de' ? 'Heute fällig' : 'Due Today' }}</option>
-            <option value="week">{{ language === 'de' ? 'Diese Woche fällig' : 'Due This Week' }}</option>
-            <option value="overdue">{{ language === 'de' ? 'Überfällig' : 'Overdue' }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            {{ language === 'de' ? 'Benutzertyp' : 'User Type' }}
-          </label>
-          <select v-model="filters.userType" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
-            <option value="">{{ language === 'de' ? 'Alle Typen' : 'All Types' }}</option>
-            <option value="Student">{{ language === 'de' ? 'Schüler' : 'Student' }}</option>
-            <option value="Teacher">{{ language === 'de' ? 'Lehrer' : 'Teacher' }}</option>
-            <option value="Staff">{{ language === 'de' ? 'Personal' : 'Staff' }}</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 mb-6">
-      <div class="relative">
-        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+        <!-- Section Content -->
+        <div class="p-6">
+          <!-- Lending Rules Section -->
+          <div v-if="activeSection === 'lending-rules'" class="space-y-8">
+            <div>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Default Loan Periods</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Students (days)</label>
+                  <input
+                    v-model.number="lendingRules.defaultLoanPeriods.students"
+                    type="number"
+                    min="1"
+                    max="365"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Staff (days)</label>
+                  <input
+                    v-model.number="lendingRules.defaultLoanPeriods.staff"
+                    type="number"
+                    min="1"
+                    max="365"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Classes (days)</label>
+                  <input
+                    v-model.number="lendingRules.defaultLoanPeriods.classes"
+                    type="number"
+                    min="1"
+                    max="365"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Courses (days)</label>
         <input
-          v-model="searchQuery"
-          type="text"
-          :placeholder="language === 'de' ? 'Nach Büchern oder Benutzern suchen...' : 'Search books or users...'"
-          class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    v-model.number="lendingRules.defaultLoanPeriods.courses"
+                    type="number"
+                    min="1"
+                    max="365"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
         />
       </div>
     </div>
-
-    <!-- Library Transactions Table -->
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden">
-      <div class="p-6">
-        <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-50 mb-6">
-          {{ language === 'de' ? 'Bibliothekstransaktionen' : 'Library Transactions' }}
-        </h2>
-        
-        <!-- Desktop Table -->
-        <div class="hidden md:block overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="border-b border-gray-200 dark:border-slate-600">
-                <th class="text-left py-3 px-4 font-medium text-slate-700 dark:text-slate-300">{{ language === 'de' ? 'Buch' : 'Book' }}</th>
-                <th class="text-left py-3 px-4 font-medium text-slate-700 dark:text-slate-300">{{ language === 'de' ? 'Benutzer' : 'User' }}</th>
-                <th class="text-left py-3 px-4 font-medium text-slate-700 dark:text-slate-300">{{ language === 'de' ? 'Ausgeliehen am' : 'Checked Out' }}</th>
-                <th class="text-left py-3 px-4 font-medium text-slate-700 dark:text-slate-300">{{ language === 'de' ? 'Fällig am' : 'Due Date' }}</th>
-                <th class="text-left py-3 px-4 font-medium text-slate-700 dark:text-slate-300">{{ language === 'de' ? 'Status' : 'Status' }}</th>
-                <th class="text-left py-3 px-4 font-medium text-slate-700 dark:text-slate-300">{{ language === 'de' ? 'Aktionen' : 'Actions' }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="transaction in filteredTransactions" :key="transaction.id" class="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700">
-                <td class="py-3 px-4">
-                  <div class="font-medium text-slate-800 dark:text-slate-200">{{ transaction.bookTitle }}</div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">{{ transaction.isbn }}</div>
-                </td>
-                <td class="py-3 px-4">
-                  <div class="font-medium text-slate-800 dark:text-slate-200">{{ transaction.userName }}</div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">{{ transaction.userType }}</div>
-                </td>
-                <td class="py-3 px-4 text-slate-700 dark:text-slate-300">{{ formatDate(transaction.checkOutDate) }}</td>
-                <td class="py-3 px-4 text-slate-700 dark:text-slate-300">{{ formatDate(transaction.dueDate) }}</td>
-                <td class="py-3 px-4">
-                  <span class="px-2 py-1 text-xs font-medium rounded-full" :class="getStatusColor(transaction.status)">
-                    {{ language === 'de' ? getStatusTranslation(transaction.status) : transaction.status }}
-                  </span>
-                </td>
-                <td class="py-3 px-4">
-                  <div class="flex space-x-2">
-                    <button v-if="transaction.status === 'Checked Out'" @click="checkInBook(transaction)" class="p-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300" :title="language === 'de' ? 'Einchecken' : 'Check In'">
-                      <CheckCircle class="h-4 w-4" />
-                    </button>
-                    <button v-if="transaction.status === 'Checked Out'" @click="renewLoan(transaction)" class="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" :title="language === 'de' ? 'Verlängern' : 'Renew'">
-                      <RotateCcw class="h-4 w-4" />
-                    </button>
-                    <button @click="viewTransactionDetails(transaction)" class="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300" :title="language === 'de' ? 'Details anzeigen' : 'View Details'">
-                      <Eye class="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
 
-        <!-- Mobile Cards -->
-        <div class="md:hidden space-y-4">
-          <div v-for="transaction in filteredTransactions" :key="transaction.id" class="bg-gray-50 dark:bg-slate-700 rounded-lg p-4">
-            <div class="flex justify-between items-start mb-2">
               <div>
-                <h3 class="font-medium text-slate-800 dark:text-slate-200">{{ transaction.bookTitle }}</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400">{{ transaction.isbn }}</p>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Renewal Settings</h3>
+              <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <button
+                  @click="lendingRules.renewalsEnabled = !lendingRules.renewalsEnabled"
+                  class="flex items-center gap-3"
+                >
+                  <component
+                    :is="lendingRules.renewalsEnabled ? ToggleRight : ToggleLeft"
+                    :class="lendingRules.renewalsEnabled ? 'text-yellow-500' : 'text-gray-400'"
+                    class="w-8 h-8"
+                  />
+                  <span class="text-slate-600 dark:text-white font-medium">Enable Renewals</span>
+                </button>
+                <span class="text-sm text-slate-500 dark:text-gray-400">
+                  Allow users to extend their loan periods
+                </span>
               </div>
-              <span class="px-2 py-1 text-xs font-medium rounded-full" :class="getStatusColor(transaction.status)">
-                {{ language === 'de' ? getStatusTranslation(transaction.status) : transaction.status }}
-              </span>
             </div>
-            <div class="space-y-2">
-              <div class="flex justify-between">
-                <span class="text-sm text-slate-500 dark:text-slate-400">{{ language === 'de' ? 'Benutzer:' : 'User:' }}</span>
-                <span class="text-sm text-slate-700 dark:text-slate-300">{{ transaction.userName }} ({{ transaction.userType }})</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-slate-500 dark:text-slate-400">{{ language === 'de' ? 'Fällig am:' : 'Due Date:' }}</span>
-                <span class="text-sm text-slate-700 dark:text-slate-300">{{ formatDate(transaction.dueDate) }}</span>
-              </div>
-              <div class="flex justify-end space-x-2 mt-3">
-                <button v-if="transaction.status === 'Checked Out'" @click="checkInBook(transaction)" class="p-2 bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900 dark:text-green-400 dark:hover:bg-green-800 rounded-lg">
-                  <CheckCircle class="h-4 w-4" />
-                </button>
-                <button v-if="transaction.status === 'Checked Out'" @click="renewLoan(transaction)" class="p-2 bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-400 dark:hover:bg-blue-800 rounded-lg">
-                  <RotateCcw class="h-4 w-4" />
-                </button>
-                <button @click="viewTransactionDetails(transaction)" class="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 rounded-lg">
-                  <Eye class="h-4 w-4" />
-                </button>
+
+            <div>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Maximum Concurrent Books</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Students</label>
+                  <input
+                    v-model.number="lendingRules.maxConcurrentBooks.students"
+                    type="number"
+                    min="1"
+                    max="50"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Staff</label>
+                  <input
+                    v-model.number="lendingRules.maxConcurrentBooks.staff"
+                    type="number"
+                    min="1"
+                    max="100"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Classes</label>
+                  <input
+                    v-model.number="lendingRules.maxConcurrentBooks.classes"
+                    type="number"
+                    min="1"
+                    max="200"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Courses</label>
+                  <input
+                    v-model.number="lendingRules.maxConcurrentBooks.courses"
+                    type="number"
+                    min="1"
+                    max="500"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Return Behavior Section -->
+          <div v-if="activeSection === 'return-behavior'" class="space-y-8">
+            <div>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Late Return Policy</h3>
+              <div class="space-y-4">
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <button
+                    @click="returnBehavior.acceptLateReturns = !returnBehavior.acceptLateReturns"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="returnBehavior.acceptLateReturns ? ToggleRight : ToggleLeft"
+                      :class="returnBehavior.acceptLateReturns ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Accept Late Returns</span>
+                  </button>
+                </div>
+                
+                <div v-if="returnBehavior.acceptLateReturns" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Grace Period (days)</label>
+                    <input
+                      v-model.number="returnBehavior.gracePeriodDays"
+                      type="number"
+                      min="0"
+                      max="30"
+                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                    />
+                    <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">Days after due date before penalties apply</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Penalty Threshold</label>
+                    <input
+                      v-model.number="returnBehavior.penaltyThreshold"
+                      type="number"
+                      min="1"
+                      max="10"
+                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                    />
+                    <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">Number of overdue returns before blocking lending</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Return Processing</h3>
+              <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <button
+                  @click="returnBehavior.autoReturnConfirmation = !returnBehavior.autoReturnConfirmation"
+                  class="flex items-center gap-3"
+                >
+                  <component
+                    :is="returnBehavior.autoReturnConfirmation ? ToggleRight : ToggleLeft"
+                    :class="returnBehavior.autoReturnConfirmation ? 'text-yellow-500' : 'text-gray-400'"
+                    class="w-8 h-8"
+                  />
+                  <span class="text-slate-600 dark:text-white font-medium">Auto-Return Confirmation</span>
+                </button>
+                <span class="text-sm text-slate-500 dark:text-gray-400">
+                  Automatically confirm returns when barcode is scanned
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reservation Settings Section -->
+          <div v-if="activeSection === 'reservations'" class="space-y-8">
+            <div>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Reservation Methods</h3>
+              <div class="space-y-4">
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <button
+                    @click="reservationSettings.manualReservationsEnabled = !reservationSettings.manualReservationsEnabled"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="reservationSettings.manualReservationsEnabled ? ToggleRight : ToggleLeft"
+                      :class="reservationSettings.manualReservationsEnabled ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Manual Reservations</span>
+                  </button>
+                </div>
+                
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <button
+                    @click="reservationSettings.barcodeReservationsEnabled = !reservationSettings.barcodeReservationsEnabled"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="reservationSettings.barcodeReservationsEnabled ? ToggleRight : ToggleLeft"
+                      :class="reservationSettings.barcodeReservationsEnabled ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Barcode Reservations</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Reservation Limits</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Students</label>
+                  <input
+                    v-model.number="reservationSettings.maxReservationSlots.students"
+                    type="number"
+                    min="0"
+                    max="20"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Staff</label>
+                  <input
+                    v-model.number="reservationSettings.maxReservationSlots.staff"
+                    type="number"
+                    min="0"
+                    max="50"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Classes</label>
+                  <input
+                    v-model.number="reservationSettings.maxReservationSlots.classes"
+                    type="number"
+                    min="0"
+                    max="100"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Courses</label>
+                  <input
+                    v-model.number="reservationSettings.maxReservationSlots.courses"
+                    type="number"
+                    min="0"
+                    max="200"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                  />
         </div>
       </div>
     </div>
 
-    <!-- Lend Book Modal -->
-    <div v-if="showLendBook" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-md w-full">
-        <div class="p-6">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-50">
-              {{ language === 'de' ? 'Buch ausleihen' : 'Lend Book' }}
-            </h3>
-            <button @click="showLendBook = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-              <X class="h-6 w-6" />
-            </button>
+            <div>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Auto-Expiry Settings</h3>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 dark:text-gray-300 mb-2">Auto-Expiry Period (days)</label>
+                <input
+                  v-model.number="reservationSettings.autoExpiryDays"
+                  type="number"
+                  min="1"
+                  max="30"
+                  class="w-full max-w-xs px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                />
+                <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">Days before unclaimed reservations expire automatically</p>
+              </div>
+            </div>
           </div>
           
-          <form @submit.prevent="submitLendBook" class="space-y-4">
+          <!-- Lending Modes Section -->
+          <div v-if="activeSection === 'lending-modes'" class="space-y-8">
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                {{ language === 'de' ? 'Buch auswählen' : 'Select Book' }}
-              </label>
-              <select v-model="newLending.bookId" required class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
-                <option value="">{{ language === 'de' ? 'Buch auswählen...' : 'Select a book...' }}</option>
-                <option v-for="book in availableBooks" :key="book.id" :value="book.id">
-                  {{ book.title }} ({{ book.isbn }})
-                </option>
-              </select>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Individual Lending Mode</h3>
+              <div class="space-y-4">
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <button
+                    @click="lendingModes.singleBookMode = !lendingModes.singleBookMode"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="lendingModes.singleBookMode ? ToggleRight : ToggleLeft"
+                      :class="lendingModes.singleBookMode ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Single Book Mode</span>
+                  </button>
+                  <span class="text-sm text-slate-500 dark:text-gray-400">
+                    Allow only one book per student at a time
+                  </span>
+                </div>
+                
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <button
+                    @click="lendingModes.multiLendingEnabled = !lendingModes.multiLendingEnabled"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="lendingModes.multiLendingEnabled ? ToggleRight : ToggleLeft"
+                      :class="lendingModes.multiLendingEnabled ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Multi-Lending</span>
+                  </button>
+                  <span class="text-sm text-slate-500 dark:text-gray-400">
+                    Allow multiple books per user (subject to concurrent limits)
+                  </span>
+                </div>
+              </div>
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                {{ language === 'de' ? 'Benutzer auswählen' : 'Select User' }}
-              </label>
-              <select v-model="newLending.userId" required class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
-                <option value="">{{ language === 'de' ? 'Benutzer auswählen...' : 'Select a user...' }}</option>
-                <option v-for="user in users" :key="user.id" :value="user.id">
-                  {{ user.name }} ({{ user.type }})
-                </option>
-              </select>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Group Lending Permissions</h3>
+              <div class="space-y-4">
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <button
+                    @click="lendingModes.groupLendingEnabled.classes = !lendingModes.groupLendingEnabled.classes"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="lendingModes.groupLendingEnabled.classes ? ToggleRight : ToggleLeft"
+                      :class="lendingModes.groupLendingEnabled.classes ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Class Lending</span>
+                  </button>
+                  <span class="text-sm text-slate-500 dark:text-gray-400">
+                    Enable lending books to entire classes
+                  </span>
+                </div>
+                
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <button
+                    @click="lendingModes.groupLendingEnabled.courses = !lendingModes.groupLendingEnabled.courses"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="lendingModes.groupLendingEnabled.courses ? ToggleRight : ToggleLeft"
+                      :class="lendingModes.groupLendingEnabled.courses ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Course Lending</span>
+                  </button>
+                  <span class="text-sm text-slate-500 dark:text-gray-400">
+                    Enable lending books to course groups
+                  </span>
+                </div>
+              </div>
+            </div>
+            </div>
+            
+          <!-- Automation Section -->
+          <div v-if="activeSection === 'automation'" class="space-y-8">
+            <div>
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Auto-Lending</h3>
+              <div class="space-y-4">
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <button
+                    @click="automationSettings.autoLendingOnCourseJoin = !automationSettings.autoLendingOnCourseJoin"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="automationSettings.autoLendingOnCourseJoin ? ToggleRight : ToggleLeft"
+                      :class="automationSettings.autoLendingOnCourseJoin ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Auto-Lend on Course Join</span>
+                  </button>
+                  <span class="text-sm text-slate-500 dark:text-gray-400">
+                    Automatically lend course books when student joins a course
+                  </span>
+                </div>
+                
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <button
+                    @click="automationSettings.autoLendingOnClassUpdate = !automationSettings.autoLendingOnClassUpdate"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="automationSettings.autoLendingOnClassUpdate ? ToggleRight : ToggleLeft"
+                      :class="automationSettings.autoLendingOnClassUpdate ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Auto-Lend on Class Update</span>
+                  </button>
+                  <span class="text-sm text-slate-500 dark:text-gray-400">
+                    Automatically update lending when class lists change
+                  </span>
+                </div>
+              </div>
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                {{ language === 'de' ? 'Fälligkeitsdatum' : 'Due Date' }}
-              </label>
-              <input
-                v-model="newLending.dueDate"
-                type="date"
-                required
-                class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
-              />
-            </div>
-            
-            <div class="flex justify-end space-x-3 pt-4">
+              <h3 class="text-xl font-semibold text-slate-600 dark:text-white mb-4">Notifications & Blocking</h3>
+              <div class="space-y-4">
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <button
-                type="button"
-                @click="showLendBook = false"
-                class="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
-              >
-                {{ language === 'de' ? 'Abbrechen' : 'Cancel' }}
+                    @click="automationSettings.autoReminderEmails = !automationSettings.autoReminderEmails"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="automationSettings.autoReminderEmails ? ToggleRight : ToggleLeft"
+                      :class="automationSettings.autoReminderEmails ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Auto-Reminder Emails</span>
               </button>
+                  <span class="text-sm text-slate-500 dark:text-gray-400">
+                    Send automatic email reminders for due books
+                  </span>
+                </div>
+                
+                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <button
-                type="submit"
-                class="px-4 py-2 bg-gradient-to-r from-indigo-700 to-blue-600 hover:from-indigo-800 hover:to-blue-700 text-white font-medium rounded-lg"
-              >
-                {{ language === 'de' ? 'Ausleihen' : 'Lend Book' }}
+                    @click="automationSettings.autoBlockingEnabled = !automationSettings.autoBlockingEnabled"
+                    class="flex items-center gap-3"
+                  >
+                    <component
+                      :is="automationSettings.autoBlockingEnabled ? ToggleRight : ToggleLeft"
+                      :class="automationSettings.autoBlockingEnabled ? 'text-yellow-500' : 'text-gray-400'"
+                      class="w-8 h-8"
+                    />
+                    <span class="text-slate-600 dark:text-white font-medium">Auto-Blocking</span>
               </button>
+                  <span class="text-sm text-slate-500 dark:text-gray-400">
+                    Automatically block users with unpaid fees or lost books
+                  </span>
+                </div>
+              </div>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
@@ -265,274 +565,166 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useLanguageStore } from '@/stores/language'
+import { useToast } from '@/composables/useToast'
 import {
-  Library,
-  ChevronRight,
-  Filter,
-  Plus,
-  Search,
-  BookOpen,
-  Users,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  RotateCcw,
-  Eye,
-  X,
-  BarChart3,
-  LogOut
+  Settings, Save, BookOpen, Users, GraduationCap, Building, 
+  Clock, RotateCcw, Mail, Shield, AlertCircle, CheckCircle,
+  ToggleLeft, ToggleRight, Calendar, Hash, FileText, Bell
 } from 'lucide-vue-next'
 
-const languageStore = useLanguageStore()
-const language = computed(() => languageStore.language)
+const { showToast } = useToast()
 
-// Reactive data
-const showFilters = ref(false)
-const showLendBook = ref(false)
-const searchQuery = ref('')
+// UI State
+const isSaving = ref(false)
+const activeSection = ref('lending-rules')
 
-const filters = ref({
-  status: '',
-  duePeriod: '',
-  userType: ''
+// Configuration Settings
+const lendingRules = ref({
+  defaultLoanPeriods: {
+    students: 14,
+    staff: 30,
+    classes: 45,
+    courses: 90
+  },
+  renewalsEnabled: true,
+  maxConcurrentBooks: {
+    students: 3,
+    staff: 10,
+    classes: 50,
+    courses: 100
+  }
 })
 
-const newLending = ref({
-  bookId: '',
-  userId: '',
-  dueDate: ''
+const returnBehavior = ref({
+  acceptLateReturns: true,
+  gracePeriodDays: 7,
+  penaltyThreshold: 3,
+  autoReturnConfirmation: true
 })
 
-// Mock data
-const libraryTransactions = ref([
-  {
-    id: 1,
-    bookId: 'B001',
-    bookTitle: 'Advanced Mathematics',
-    isbn: '978-0123456789',
-    userId: 'U001',
-    userName: 'John Smith',
-    userType: 'Student',
-    checkOutDate: '2024-01-15',
-    dueDate: '2024-02-15',
-    status: 'Checked Out'
+const reservationSettings = ref({
+  manualReservationsEnabled: true,
+  barcodeReservationsEnabled: true,
+  maxReservationSlots: {
+    students: 2,
+    staff: 5,
+    classes: 10,
+    courses: 20
   },
-  {
-    id: 2,
-    bookId: 'B002',
-    bookTitle: 'Physics Fundamentals',
-    isbn: '978-0987654321',
-    userId: 'U002',
-    userName: 'Sarah Johnson',
-    userType: 'Teacher',
-    checkOutDate: '2024-01-10',
-    dueDate: '2024-01-25',
-    status: 'Overdue'
-  },
-  {
-    id: 3,
-    bookId: 'B003',
-    bookTitle: 'Chemistry Lab Manual',
-    isbn: '978-0456789123',
-    userId: 'U003',
-    userName: 'Mike Davis',
-    userType: 'Student',
-    checkOutDate: '2024-01-20',
-    dueDate: '2024-02-20',
-    status: 'Checked Out'
-  },
-  {
-    id: 4,
-    bookId: 'B004',
-    bookTitle: 'English Literature',
-    isbn: '978-0789123456',
-    userId: 'U004',
-    userName: 'Emma Wilson',
-    userType: 'Student',
-    checkOutDate: '2024-01-01',
-    dueDate: '2024-01-31',
-    status: 'Returned'
+  autoExpiryDays: 7
+})
+
+const lendingModes = ref({
+  singleBookMode: false,
+  multiLendingEnabled: true,
+  groupLendingEnabled: {
+    classes: true,
+    courses: true
   }
-])
+})
 
-const availableBooks = ref([
-  { id: 'B005', title: 'Biology Textbook', isbn: '978-0123789456' },
-  { id: 'B006', title: 'World History', isbn: '978-0456123789' },
-  { id: 'B007', title: 'Computer Science Basics', isbn: '978-0789456123' }
-])
+const automationSettings = ref({
+  autoLendingOnCourseJoin: false,
+  autoLendingOnClassUpdate: false,
+  autoReminderEmails: true,
+  autoBlockingEnabled: true
+})
 
-const users = ref([
-  { id: 'U005', name: 'Alex Brown', type: 'Student' },
-  { id: 'U006', name: 'Lisa Garcia', type: 'Teacher' },
-  { id: 'U007', name: 'Tom Anderson', type: 'Staff' }
-])
+// Computed stats for infographics
+const activePolicies = computed(() => {
+  let count = 0
+  if (lendingRules.value.renewalsEnabled) count++
+  if (returnBehavior.value.acceptLateReturns) count++
+  if (reservationSettings.value.manualReservationsEnabled) count++
+  if (reservationSettings.value.barcodeReservationsEnabled) count++
+  if (lendingModes.value.multiLendingEnabled) count++
+  if (automationSettings.value.autoReminderEmails) count++
+  return count
+})
 
-// Computed properties
-const libraryStats = computed(() => [
-  {
-    title: language.value === 'de' ? 'Aktive Ausleihen' : 'Active Loans',
-    value: libraryTransactions.value.filter(t => t.status === 'Checked Out').length.toString(),
-    change: language.value === 'de' ? '+3 diese Woche' : '+3 this week',
-    changeColor: 'text-green-600 dark:text-green-400',
-    icon: BookOpen,
-    iconBg: 'bg-blue-500'
-  },
-  {
-    title: language.value === 'de' ? 'Überfällige Bücher' : 'Overdue Books',
-    value: libraryTransactions.value.filter(t => t.status === 'Overdue').length.toString(),
-    change: language.value === 'de' ? '-1 seit gestern' : '-1 since yesterday',
-    changeColor: 'text-red-600 dark:text-red-400',
-    icon: AlertTriangle,
-    iconBg: 'bg-red-500'
-  },
-  {
-    title: language.value === 'de' ? 'Aktive Benutzer' : 'Active Users',
-    value: new Set(libraryTransactions.value.filter(t => t.status === 'Checked Out').map(t => t.userId)).size.toString(),
-    change: language.value === 'de' ? '+2 neue Nutzer' : '+2 new users',
-    changeColor: 'text-green-600 dark:text-green-400',
-    icon: Users,
-    iconBg: 'bg-green-500'
-  },
-  {
-    title: language.value === 'de' ? 'Heute fällig' : 'Due Today',
-    value: '2',
-    change: language.value === 'de' ? 'Erinnerungen gesendet' : 'Reminders sent',
-    changeColor: 'text-yellow-600 dark:text-yellow-400',
-    icon: Clock,
-    iconBg: 'bg-yellow-500'
-  }
-])
+const totalMaxBooks = computed(() => {
+  return Object.values(lendingRules.value.maxConcurrentBooks).reduce((sum, val) => sum + val, 0)
+})
 
-const filteredTransactions = computed(() => {
-  let transactions = libraryTransactions.value
-
-  // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    transactions = transactions.filter(
-      t => t.bookTitle.toLowerCase().includes(query) ||
-           t.userName.toLowerCase().includes(query) ||
-           t.isbn.toLowerCase().includes(query)
-    )
-  }
-
-  // Apply status filter
-  if (filters.value.status) {
-    transactions = transactions.filter(t => t.status === filters.value.status)
-  }
-
-  // Apply due period filter
-  if (filters.value.duePeriod) {
-    const today = new Date()
-    const todayStr = today.toISOString().split('T')[0]
-    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-
-    transactions = transactions.filter(t => {
-      switch (filters.value.duePeriod) {
-        case 'today':
-          return t.dueDate === todayStr
-        case 'week':
-          return t.dueDate <= weekFromNow && t.dueDate >= todayStr
-        case 'overdue':
-          return t.dueDate < todayStr && t.status === 'Checked Out'
-        default:
-          return true
-      }
-    })
-  }
-
-  // Apply user type filter
-  if (filters.value.userType) {
-    transactions = transactions.filter(t => t.userType === filters.value.userType)
-  }
-
-  return transactions
+const totalReservationSlots = computed(() => {
+  return Object.values(reservationSettings.value.maxReservationSlots).reduce((sum, val) => sum + val, 0)
 })
 
 // Methods
-const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString(language.value === 'de' ? 'de-DE' : 'en-US')
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Checked Out':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-    case 'Overdue':
-      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-    case 'Returned':
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+const saveAllSettings = async () => {
+  try {
+    isSaving.value = true
+    
+    // Simulate API call to save settings
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    showToast('Library configuration saved successfully!', 'success')
+  } catch (error) {
+    showToast('Failed to save configuration', 'error')
+  } finally {
+    isSaving.value = false
   }
 }
 
-const getStatusTranslation = (status: string) => {
-  const translations: { [key: string]: string } = {
-    'Checked Out': 'Ausgeliehen',
-    'Overdue': 'Überfällig',
-    'Returned': 'Zurückgegeben'
+const resetToDefaults = () => {
+  if (confirm('Are you sure you want to reset all settings to default values?')) {
+    // Reset all settings to default values
+    lendingRules.value = {
+      defaultLoanPeriods: { students: 14, staff: 30, classes: 45, courses: 90 },
+      renewalsEnabled: true,
+      maxConcurrentBooks: { students: 3, staff: 10, classes: 50, courses: 100 }
+    }
+    
+    returnBehavior.value = {
+      acceptLateReturns: true,
+      gracePeriodDays: 7,
+      penaltyThreshold: 3,
+      autoReturnConfirmation: true
+    }
+    
+    reservationSettings.value = {
+      manualReservationsEnabled: true,
+      barcodeReservationsEnabled: true,
+      maxReservationSlots: { students: 2, staff: 5, classes: 10, courses: 20 },
+      autoExpiryDays: 7
+    }
+    
+    lendingModes.value = {
+      singleBookMode: false,
+      multiLendingEnabled: true,
+      groupLendingEnabled: { classes: true, courses: true }
+    }
+    
+    automationSettings.value = {
+      autoLendingOnCourseJoin: false,
+      autoLendingOnClassUpdate: false,
+      autoReminderEmails: true,
+      autoBlockingEnabled: true
+    }
+    
+    showToast('Settings reset to defaults', 'success')
   }
-  return translations[status] || status
 }
 
-const checkInBook = (transaction: any) => {
-  transaction.status = 'Returned'
-  transaction.returnDate = new Date().toISOString().split('T')[0]
-  // In a real app, this would make an API call
-}
-
-const renewLoan = (transaction: any) => {
-  const currentDueDate = new Date(transaction.dueDate)
-  const newDueDate = new Date(currentDueDate.getTime() + 14 * 24 * 60 * 60 * 1000) // Add 2 weeks
-  transaction.dueDate = newDueDate.toISOString().split('T')[0]
-  // In a real app, this would make an API call
-}
-
-const viewTransactionDetails = (transaction: any) => {
-  // In a real app, this would show detailed transaction information
-  console.log('View transaction details:', transaction)
-}
-
-const submitLendBook = () => {
-  const selectedBook = availableBooks.value.find(b => b.id === newLending.value.bookId)
-  const selectedUser = users.value.find(u => u.id === newLending.value.userId)
-  
-  if (selectedBook && selectedUser) {
-    const newTransaction = {
-      id: Date.now(),
-      bookId: selectedBook.id,
-      bookTitle: selectedBook.title,
-      isbn: selectedBook.isbn,
-      userId: selectedUser.id,
-      userName: selectedUser.name,
-      userType: selectedUser.type,
-      checkOutDate: new Date().toISOString().split('T')[0],
-      dueDate: newLending.value.dueDate,
-      status: 'Checked Out'
-    }
-    
-    libraryTransactions.value.unshift(newTransaction)
-    
-    // Remove book from available books
-    availableBooks.value = availableBooks.value.filter(b => b.id !== selectedBook.id)
-    
-    // Reset form
-    newLending.value = {
-      bookId: '',
-      userId: '',
-      dueDate: ''
-    }
-    
-    showLendBook.value = false
+const getSectionIcon = (section) => {
+  switch (section) {
+    case 'lending-rules': return Clock
+    case 'return-behavior': return RotateCcw
+    case 'reservations': return BookOpen
+    case 'lending-modes': return Users
+    case 'automation': return Settings
+    default: return FileText
   }
 }
 
 onMounted(() => {
-  // Set default due date to 2 weeks from now
-  const defaultDueDate = new Date()
-  defaultDueDate.setDate(defaultDueDate.getDate() + 14)
-  newLending.value.dueDate = defaultDueDate.toISOString().split('T')[0]
+  // Load existing settings from API
+  console.log('Loading library configuration...')
 })
 </script> 
+
+<style scoped>
+.font-inter {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+</style> 
