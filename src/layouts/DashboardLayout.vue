@@ -13,7 +13,6 @@
             >
               <Menu class="h-6 w-6" />
             </button>
-            
             <!-- Logo and Name Section -->
             <div class="flex flex-col ml-4 lg:ml-0">
               <!-- Logo and WinSchool Name -->
@@ -24,13 +23,9 @@
                 <span class="text-xl font-bold text-slate-800 dark:text-slate-50">WinSchool</span>
               </div>
             </div>
-
             <!-- Vertical Separator and Breadcrumb -->
             <div v-if="breadcrumbSegments.length > 0" class="hidden lg:flex items-center" :style="{ marginLeft: sidebarCollapsed ? '54px' : '64px' }">
-              <!-- Vertical Line -->
               <div class="h-6 w-px bg-slate-300 dark:bg-slate-600 mr-6"></div>
-              
-              <!-- Breadcrumb -->
               <nav class="flex items-center space-x-2 text-sm" aria-label="Breadcrumb">
                 <router-link 
                   to="/dashboard" 
@@ -40,9 +35,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                   </svg>
                 </router-link>
-                
                 <template v-for="(segment, index) in breadcrumbSegments" :key="index">
-                  <span class="text-slate-400 dark:text-slate-500">></span>
+                  <span class="text-slate-400 dark:text-slate-500">&gt;</span>
                   <router-link
                     v-if="segment.to && index < breadcrumbSegments.length - 1"
                     :to="segment.to"
@@ -60,7 +54,6 @@
               </nav>
             </div>
           </div>
-
           <!-- Right side -->
           <div class="flex items-center space-x-4">
             <!-- Notifications -->
@@ -68,7 +61,6 @@
               <Bell class="h-6 w-6" />
               <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
             </button>
-
             <!-- Language Toggle -->
             <div class="relative">
               <button 
@@ -78,7 +70,6 @@
                 <Globe class="h-6 w-6" />
                 <ChevronDown class="h-4 w-4 ml-1" />
               </button>
-              
               <!-- Language Dropdown -->
               <div 
                 v-if="showLanguageDropdown"
@@ -100,7 +91,6 @@
                 </button>
               </div>
             </div>
-
             <!-- Theme Toggle -->
             <button 
               @click="toggleTheme"
@@ -108,7 +98,6 @@
             >
               <component :is="isDarkMode ? Sun : Moon" class="h-6 w-6" />
             </button>
-
             <!-- User Menu -->
             <div class="relative">
               <button 
@@ -126,7 +115,6 @@
                 </div>
                 <ChevronDown class="h-4 w-4 text-slate-600 dark:text-slate-400" />
               </button>
-
               <!-- User Dropdown -->
               <div 
                 v-if="showUserMenu"
@@ -196,7 +184,6 @@
               </svg>
             </button>
           </div>
-
           <!-- Collapse Button for Collapsed State -->
           <div v-if="sidebarCollapsed" class="p-4 border-b border-gray-200 dark:border-slate-700">
             <button 
@@ -207,7 +194,6 @@
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m13 5 7 7-7 7M5 5l7 7-7 7" />
               </svg>
-              
               <!-- Tooltip for collapsed expand button -->
               <div class="absolute left-full ml-2 px-3 py-2 bg-slate-800 dark:bg-slate-700 text-slate-50 text-xs shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap"
                    style="border-radius: 0px; border: 1px solid #facc15;">
@@ -215,7 +201,6 @@
               </div>
             </button>
           </div>
-
           <!-- Main Navigation -->
           <nav class="flex-1 py-6 overflow-y-auto">
             <div class="space-y-1">
@@ -233,7 +218,6 @@
               >
                 <Home class="h-5 w-5" :class="sidebarCollapsed ? '' : 'mr-3'" />
                 <span v-if="!sidebarCollapsed" style="font-weight: 700 !important;">{{ language === 'de' ? 'Dashboard' : 'Dashboard' }}</span>
-                
                 <!-- Tooltip for collapsed state -->
                 <div 
                   v-if="sidebarCollapsed" 
@@ -243,7 +227,6 @@
                   {{ language === 'de' ? 'Dashboard' : 'Dashboard' }}
                 </div>
               </router-link>
-
               <!-- Regular Menu Groups (excluding support) -->
               <template v-for="(groupKey, index) in regularMenuGroups" :key="groupKey">
                 <div v-if="hasItemsForGroup(groupKey)" class="pt-2">
@@ -402,6 +385,7 @@ import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 import { useBreadcrumbs } from '../composables/useBreadcrumbs'
 import { GraduationCap, Menu, Bell, Globe, Sun, Moon, ChevronDown, User, LogOut, Settings, HelpCircle, Home, Users, BookOpen, DollarSign, Calendar, MessageSquare, FileText, BarChart3, Shield, Building, UserPlus, Target, Award, Layers, Brain, Zap, Smartphone, Link, Database, Upload, Clock, Search, Glasses as MagnifyingGlass, Printer, FileOutput, Plus, Layout, Edit, UserCheck, AlertTriangle, Briefcase, Key, TrendingUp, Package, LifeBuoy, Download, DoorOpen } from 'lucide-vue-next'
+import { RuneButton, RuneLink } from '@ist/commonui-components'
 
 const router = useRouter()
 const route = useRoute()
@@ -469,9 +453,6 @@ const menuItems = computed(() => {
       createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'academic'),
       createMenuItem('Grades & Reports', 'Noten & Berichte', '/dashboard/academics', FileText, 'academic'),
       
-      // Library - Simplified for students
-      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
-      
       // Communication
       createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
       
@@ -491,9 +472,6 @@ const menuItems = computed(() => {
       createMenuItem('Grade Entry', 'Notenerfassung', '/dashboard/grade-entry', FileText, 'academic'),
       createMenuItem('Attendance & Behavior', 'Anwesenheit & Verhalten', '/dashboard/attendance-behavior', Calendar, 'academic'),
       createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
-      
-      // Library - Simplified for teachers
-      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
       
       // Planning
       createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'planning'),
@@ -763,6 +741,7 @@ const menuItems = computed(() => {
       createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
       
       // Administration
+      createMenuItem('GDPR', 'DSGVO', '/dashboard/gdpr', Shield, 'administration'),
       createMenuItem('Finance Tools', 'Finanz-Tools', '/dashboard/finances', DollarSign, 'administration'),
       createMenuItem('Attendance Tracking', 'Anwesenheitsverfolgung', '/dashboard/attendance-behavior', Calendar, 'administration'),
       

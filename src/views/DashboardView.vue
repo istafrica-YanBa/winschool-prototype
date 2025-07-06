@@ -31,6 +31,7 @@
     <PrincipalDashboard v-else-if="user?.role === 'principal'" />
     <InspectorDashboard v-else-if="user?.role === 'inspector'" />
     <LibrarianDashboard v-else-if="user?.role === 'librarian'" />
+    <SchoolStaffDashboard v-else-if="user?.role === 'schoolstaff'" />
     <SuperAdminDashboard v-else-if="user?.role === 'superadmin'" />
     <div v-else class="text-center text-slate-500 dark:text-slate-400">
       {{ language === 'de' ? 'Dashboard nicht verfügbar' : 'Dashboard not available' }}
@@ -51,6 +52,7 @@ import PrincipalDashboard from '../components/dashboards/PrincipalDashboard.vue'
 import InspectorDashboard from '../components/dashboards/InspectorDashboard.vue'
 import SuperAdminDashboard from '../components/dashboards/SuperAdminDashboard.vue'
 import LibrarianDashboard from '../components/dashboards/LibrarianDashboard.vue'
+import SchoolStaffDashboard from '../components/dashboards/SchoolStaffDashboard.vue'
 
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
@@ -70,7 +72,7 @@ const dashboardComponents = {
   inspector: InspectorDashboard,
   superadmin: SuperAdminDashboard,
   schooladmin: AdminDashboard, // School admin uses the same dashboard as regular admin for now
-  schoolstaff: AdminDashboard // School staff uses the same dashboard as admin for now
+  schoolstaff: SchoolStaffDashboard // School staff now has its own dedicated dashboard
 }
 
 const dashboardComponent = computed(() => {

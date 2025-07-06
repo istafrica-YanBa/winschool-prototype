@@ -1,32 +1,40 @@
 <template>
-  <nav class="flex items-center space-x-2 text-sm mb-6" aria-label="Breadcrumb">
-    <router-link 
-      to="/dashboard" 
-      class="flex items-center text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-    >
-      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-      </svg>
-      Dashboard
-    </router-link>
-    
-    <template v-for="(item, index) in items" :key="index">
-      <span class="text-slate-400 dark:text-slate-500">/</span>
-      <router-link
-        v-if="item.to && index < items.length - 1"
-        :to="item.to"
-        class="text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+  <nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+      <li 
+        v-for="(item, index) in items" 
+        :key="index"
+        class="inline-flex items-center"
       >
-        {{ item.label }}
-      </router-link>
-      <span
-        v-else
-        class="font-bold text-slate-700 dark:text-slate-300"
-        style="color: #64748B;"
-      >
-        {{ item.label }}
-      </span>
-    </template>
+        <div v-if="index > 0" class="flex items-center">
+          <span class="mx-2 text-gray-400 dark:text-gray-500">{{ separator }}</span>
+        </div>
+        
+        <router-link
+          v-if="item.to && index < items.length - 1"
+          :to="item.to"
+          class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white"
+        >
+          {{ item.label }}
+        </router-link>
+        
+        <a
+          v-else-if="item.href && index < items.length - 1"
+          :href="item.href"
+          class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white"
+        >
+          {{ item.label }}
+        </a>
+        
+        <span
+          v-else
+          class="text-sm font-medium text-gray-500 dark:text-gray-400"
+          aria-current="page"
+        >
+          {{ item.label }}
+        </span>
+      </li>
+    </ol>
   </nav>
 </template>
 
@@ -34,13 +42,23 @@
 interface BreadcrumbItem {
   label: string
   to?: string
+  href?: string
 }
 
 interface Props {
   items: BreadcrumbItem[]
+  separator?: string
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  separator: '/'
+})
+</script>
+
+<script lang="ts">
+export default {
+  name: 'Breadcrumb'
+}
 </script>
 
 <style scoped>

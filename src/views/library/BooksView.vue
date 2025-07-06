@@ -2,8 +2,10 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { BookOpen, Search, Scan, Plus, Edit, Trash2, BarChart3, Users, CheckCircle, AlertCircle, Filter } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 
 const { showToast } = useToast()
+const router = useRouter()
 
 // Reactive data
 const books = ref([
@@ -53,9 +55,6 @@ const books = ref([
 
 // UI State
 const searchQuery = ref('')
-const showAddModal = ref(false)
-const showEditModal = ref(false)
-const selectedBook = ref(null)
 const isLoading = ref(false)
 const isMobile = ref(false)
 const currentPage = ref(1)
@@ -164,7 +163,6 @@ const handleAddBook = async () => {
     
     books.value.push(bookToAdd)
     showToast('Book added successfully!', 'success')
-    showAddModal.value = false
     resetForm()
   } catch (error) {
     showToast('Failed to add book', 'error')
@@ -181,7 +179,6 @@ const handleEditBook = async () => {
     if (index !== -1) {
       books.value[index] = { ...selectedBook.value }
       showToast('Book updated successfully!', 'success')
-    showEditModal.value = false
     }
   } catch (error) {
     showToast('Failed to update book', 'error')
@@ -204,24 +201,12 @@ const handleDeleteBook = async (book) => {
   }
 }
 
-const openEditModal = (book) => {
-  selectedBook.value = { ...book }
-  showEditModal.value = true
+const goToBookDetail = (book) => {
+  router.push(`/dashboard/library/library-books/${book.id}`)
 }
 
-const scanBarcode = () => {
-  // Mock barcode scanning - in real implementation, this would open camera/scanner
-  const mockBarcode = `BRC${Date.now().toString().slice(-9)}`
-  
-  if (showAddModal.value) {
-    newBook.value.barcode = mockBarcode
-    showToast('Barcode scanned successfully!', 'success')
-  } else if (showEditModal.value && selectedBook.value) {
-    selectedBook.value.barcode = mockBarcode
-    showToast('Barcode scanned successfully!', 'success')
-  } else {
-    showToast('Please open Add/Edit modal first', 'info')
-  }
+const goToAddBook = () => {
+  router.push('/dashboard/library/library-books/new')
 }
 
 // Check if mobile
@@ -323,20 +308,12 @@ watch(searchQuery, () => {
               placeholder="Search by title, author, ISBN, or inventory number..."
               class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             />
-    </div>
+          </div>
 
           <!-- Action Buttons -->
           <div class="flex gap-3">
             <button
-              @click="scanBarcode"
-              class="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-slate-600 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
-            >
-              <Scan class="w-5 h-5" />
-              Scan Barcode
-            </button>
-            
-            <button
-              @click="showAddModal = true"
+              @click="goToAddBook"
               class="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors font-medium shadow-sm"
             >
               <Plus class="w-5 h-5" />
@@ -386,7 +363,7 @@ watch(searchQuery, () => {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                   <button
-                    @click="openEditModal(book)"
+                    @click="goToBookDetail(book)"
                     class="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                   >
                     <Edit class="w-4 h-4 mr-1" />
@@ -397,10 +374,10 @@ watch(searchQuery, () => {
                     class="inline-flex items-center px-3 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
                   >
                     <Trash2 class="w-4 h-4 mr-1" />
-              Delete
+                    Delete
                   </button>
-          </td>
-        </tr>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -436,7 +413,7 @@ watch(searchQuery, () => {
             
             <div class="flex gap-2">
               <button
-                @click="openEditModal(book)"
+                @click="goToBookDetail(book)"
                 class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-sm"
               >
                 <Edit class="w-4 h-4" />
@@ -477,268 +454,6 @@ watch(searchQuery, () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Add Book Modal -->
-    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-xl font-bold text-slate-600 dark:text-white">Add New Book</h3>
-          <p class="text-slate-500 dark:text-gray-400 mt-1">Enter the book details to add to inventory</p>
-        </div>
-        
-        <form @submit.prevent="handleAddBook" class="p-6 space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Title (Required) -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Title *</label>
-              <input
-                v-model="newBook.title"
-                type="text"
-                required
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                placeholder="Enter book title"
-              />
-            </div>
-
-            <!-- Author (Required) -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Author *</label>
-              <input
-                v-model="newBook.author"
-                type="text"
-                required
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                placeholder="Enter author name"
-              />
-            </div>
-
-            <!-- ISBN (Required) -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">ISBN *</label>
-              <input
-                v-model="newBook.isbn"
-                type="text"
-                required
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                placeholder="978-3-16-148410-0"
-              />
-            </div>
-
-            <!-- Barcode (Optional) -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Barcode</label>
-              <div class="flex gap-2">
-                <input
-                  v-model="newBook.barcode"
-                  type="text"
-                  class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="Enter or scan barcode"
-                />
-                <button
-                  type="button"
-                  @click="scanBarcode"
-                  class="px-4 py-3 bg-gray-100 dark:bg-gray-700 text-slate-600 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                >
-                  <Scan class="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            <!-- Signature (Optional) -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Signature</label>
-              <input
-                v-model="newBook.signature"
-                type="text"
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                placeholder="Auto-generated if empty"
-              />
-            </div>
-
-            <!-- Total Copies -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Total Copies *</label>
-              <input
-                v-model.number="newBook.totalCopies"
-                type="number"
-                min="1"
-                required
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              />
-            </div>
-
-            <!-- Category -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Category</label>
-              <select
-                v-model="newBook.category"
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              >
-                <option value="">Select category</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Literature">Literature</option>
-                <option value="Physics">Physics</option>
-                <option value="Chemistry">Chemistry</option>
-                <option value="History">History</option>
-                <option value="Biology">Biology</option>
-              </select>
-            </div>
-          </div>
-
-                     <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-             <button
-               type="button"
-               @click="showAddModal = false; resetForm()"
-               class="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
-             >
-               Cancel
-             </button>
-             <button
-               type="submit"
-               :disabled="isLoading"
-               class="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors font-medium shadow-sm disabled:opacity-50 flex items-center gap-2"
-             >
-               <Plus class="w-5 h-5" />
-               {{ isLoading ? 'Adding...' : 'Add Book' }}
-             </button>
-           </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Edit Book Modal -->
-    <div v-if="showEditModal && selectedBook" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-xl font-bold text-slate-600 dark:text-white">Edit Book</h3>
-          <p class="text-slate-500 dark:text-gray-400 mt-1">Update the book details</p>
-        </div>
-        
-        <form @submit.prevent="handleEditBook" class="p-6 space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Title -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Title *</label>
-              <input
-                v-model="selectedBook.title"
-                type="text"
-                required
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              />
-            </div>
-
-            <!-- Author -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Author *</label>
-              <input
-                v-model="selectedBook.author"
-                type="text"
-                required
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              />
-            </div>
-
-            <!-- ISBN -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">ISBN *</label>
-              <input
-                v-model="selectedBook.isbn"
-                type="text"
-                required
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              />
-            </div>
-
-            <!-- Barcode -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Barcode</label>
-              <div class="flex gap-2">
-                <input
-                  v-model="selectedBook.barcode"
-                  type="text"
-                  class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                />
-                <button
-                  type="button"
-                  @click="scanBarcode"
-                  class="px-4 py-3 bg-gray-100 dark:bg-gray-700 text-slate-600 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                >
-                  <Scan class="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            <!-- Signature -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Signature</label>
-              <input
-                v-model="selectedBook.signature"
-                type="text"
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              />
-            </div>
-
-            <!-- Inventory Number -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Inventory Number *</label>
-              <input
-                v-model="selectedBook.inventoryNumber"
-                type="text"
-                required
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              />
-            </div>
-
-            <!-- Total Copies -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Total Copies *</label>
-              <input
-                v-model.number="selectedBook.totalCopies"
-                type="number"
-                min="1"
-                required
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              />
-            </div>
-
-            <!-- Category -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 dark:text-gray-300 mb-2">Category</label>
-              <select
-                v-model="selectedBook.category"
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              >
-                <option value="">Select category</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Literature">Literature</option>
-                <option value="Physics">Physics</option>
-                <option value="Chemistry">Chemistry</option>
-                <option value="History">History</option>
-                <option value="Biology">Biology</option>
-              </select>
-            </div>
-          </div>
-
-                     <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-             <button
-               type="button"
-               @click="showEditModal = false"
-               class="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
-             >
-               Cancel
-             </button>
-             <button
-               type="submit"
-               :disabled="isLoading"
-               class="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors font-medium shadow-sm disabled:opacity-50 flex items-center gap-2"
-             >
-               <Edit class="w-5 h-5" />
-               {{ isLoading ? 'Saving...' : 'Save Changes' }}
-             </button>
-           </div>
-        </form>
       </div>
     </div>
   </div>

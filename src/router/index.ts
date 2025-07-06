@@ -530,6 +530,13 @@ const router = createRouter({
           component: () => import('../views/budget/CourseAdministrationView.vue'),
           meta: { roles: ['schooladmin', 'admin', 'superadmin'] }
         },
+        // GDPR Management
+        {
+          path: 'gdpr',
+          name: 'GDPR',
+          component: () => import('../views/GDPRView.vue'),
+          meta: { roles: ['schoolstaff', 'schooladmin', 'admin', 'superadmin'] }
+        },
         // Printing Templates
         {
           path: 'printing-templates',
@@ -656,14 +663,26 @@ const router = createRouter({
                 roles: ['librarian']
               }
             },
-            // User routes (all other roles)
+            // User routes (administrative roles only - students and teachers no longer have library access)
             {
               path: 'history',
               name: 'library-history',
               component: () => import('../views/library/ReadingHistoryView.vue'),
               meta: {
-                roles: ['student', 'teacher', 'schooladmin', 'admin', 'schoolstaff', 'principal']
+                roles: ['schooladmin', 'admin', 'schoolstaff', 'principal']
               }
+            },
+            {
+              path: 'library-books/:id',
+              name: 'BookDetails',
+              component: () => import('../views/library/BookDetailsView.vue'),
+              meta: { roles: ['librarian', 'admin'] }
+            },
+            {
+              path: 'library-books/new',
+              name: 'AddBook',
+              component: () => import('../views/library/BookDetailsView.vue'),
+              meta: { roles: ['librarian', 'admin'] }
             }
           ]
         }

@@ -20,36 +20,26 @@
       <form @submit.prevent="handleLogin" class="mt-8 space-y-6">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 space-y-4 border border-slate-200 dark:border-slate-700">
           <!-- Email Input -->
-          <div>
-            <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2" style="font-family: 'Inter', system-ui, sans-serif;">
-              {{ language === 'de' ? 'E-Mail-Adresse' : 'Email Address' }}
-            </label>
-            <input
-              id="email"
-              v-model="credentials.email"
-              type="email"
-              required
-              class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-winschool-primary-dark focus:border-winschool-primary-dark bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-colors"
-              style="font-family: 'Inter', system-ui, sans-serif;"
-              :placeholder="language === 'de' ? 'ihre.email@winschool.de' : 'your.email@winschool.de'"
-            />
-          </div>
+          <RuneInput
+            id="email"
+            v-model="credentials.email"
+            type="text"
+            :label="language === 'de' ? 'E-Mail-Adresse' : 'Email Address'"
+            :placeholder="language === 'de' ? 'ihre.email@winschool.de' : 'your.email@winschool.de'"
+            required
+          />
 
           <!-- Password Input -->
           <div>
-            <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2" style="font-family: 'Inter', system-ui, sans-serif;">
-              {{ language === 'de' ? 'Passwort' : 'Password' }}
-            </label>
+            <RuneInput
+              id="password"
+              v-model="credentials.password"
+              :type="showPassword ? 'text' : 'text'"
+              :label="language === 'de' ? 'Passwort' : 'Password'"
+              :placeholder="language === 'de' ? 'Ihr Passwort' : 'Your password'"
+              required
+            />
             <div class="relative">
-              <input
-                id="password"
-                v-model="credentials.password"
-                :type="showPassword ? 'text' : 'password'"
-                required
-                class="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-winschool-primary-dark focus:border-winschool-primary-dark bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-colors"
-                style="font-family: 'Inter', system-ui, sans-serif;"
-                :placeholder="language === 'de' ? 'Ihr Passwort' : 'Your password'"
-              />
               <button
                 type="button"
                 @click="showPassword = !showPassword"
@@ -62,31 +52,31 @@
 
           <!-- Remember Me & Forgot Password -->
           <div class="flex items-center justify-between">
-            <label class="flex items-center">
-              <input
-                v-model="credentials.rememberMe"
-                type="checkbox"
-                class="w-4 h-4 text-winschool-primary-dark border-gray-300 dark:border-slate-500 rounded focus:ring-winschool-primary-dark bg-white dark:bg-slate-700 transition-colors"
-              />
-              <span class="ml-2 text-sm text-slate-800 dark:text-slate-300" style="font-family: 'Inter', system-ui, sans-serif;">
-                {{ language === 'de' ? 'Angemeldet bleiben' : 'Remember me' }}
-              </span>
-            </label>
-            <a href="#" class="text-sm text-winschool-primary-dark hover:text-amber-600 dark:text-winschool-primary hover:dark:text-amber-300 transition-colors" style="font-family: 'Inter', system-ui, sans-serif;">
+            <RuneCheckbox
+              v-model="credentials.rememberMe"
+              :label="language === 'de' ? 'Angemeldet bleiben' : 'Remember me'"
+              wcag-label="Remember me checkbox"
+            />
+            <RuneLink
+              href="#"
+              wcag-label="Forgot password link"
+            >
               {{ language === 'de' ? 'Passwort vergessen?' : 'Forgot password?' }}
-            </a>
+            </RuneLink>
           </div>
 
           <!-- Login Button -->
-          <button
+          <RuneButton
             type="submit"
             :disabled="isLoading"
-            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-slate-800 bg-winschool-primary hover:bg-winschool-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-winschool-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            style="font-family: 'Inter', system-ui, sans-serif;"
-          >
-            <Loader2 v-if="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-slate-800" />
-            {{ language === 'de' ? 'Anmelden' : 'Sign In' }}
-          </button>
+            :text="language === 'de' ? 'Anmelden' : 'Sign In'"
+            variant="primary"
+            size="lg"
+            :loading="isLoading"
+            loading-placement="left"
+            wcag-label="Sign in button"
+            class="w-full"
+          />
         </div>
       </form>
 
@@ -107,42 +97,78 @@
         </p>
         <div class="space-y-2 text-xs text-white">
           <div class="grid grid-cols-2 gap-2">
-            <button @click="setDemoCredentials('superadmin')" class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-left transition-all" style="font-family: 'Inter', system-ui, sans-serif;">
-              <strong>{{ language === 'de' ? 'Super Admin' : 'Super Admin' }}</strong><br>
-              <span class="text-slate-200">superadmin@winschool.de</span>
-            </button>
-            <button @click="setDemoCredentials('schooladmin')" class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-left transition-all" style="font-family: 'Inter', system-ui, sans-serif;">
-              <strong>{{ language === 'de' ? 'Schul-Admin' : 'School Admin' }}</strong><br>
-              <span class="text-slate-200">schooladmin@winschool.de</span>
-            </button>
-            <button @click="setDemoCredentials('student')" class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-left transition-all" style="font-family: 'Inter', system-ui, sans-serif;">
-              <strong>{{ language === 'de' ? 'Schüler' : 'Student' }}</strong><br>
-              <span class="text-slate-200">student@winschool.de</span>
-            </button>
-            <button @click="setDemoCredentials('parent')" class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-left transition-all" style="font-family: 'Inter', system-ui, sans-serif;">
-              <strong>{{ language === 'de' ? 'Eltern' : 'Parent' }}</strong><br>
-              <span class="text-slate-200">parent@winschool.de</span>
-            </button>
-            <button @click="setDemoCredentials('teacher')" class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-left transition-all" style="font-family: 'Inter', system-ui, sans-serif;">
-              <strong>{{ language === 'de' ? 'Lehrer' : 'Teacher' }}</strong><br>
-              <span class="text-slate-200">teacher@winschool.de</span>
-            </button>
-            <button @click="setDemoCredentials('schoolstaff')" class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-left transition-all" style="font-family: 'Inter', system-ui, sans-serif;">
-              <strong>{{ language === 'de' ? 'Schulpersonal' : 'School Staff' }}</strong><br>
-              <span class="text-slate-200">schoolstaff@winschool.de</span>
-            </button>
-            <button @click="setDemoCredentials('librarian')" class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-left transition-all" style="font-family: 'Inter', system-ui, sans-serif;">
-              <strong>{{ language === 'de' ? 'Bibliothekar' : 'Librarian' }}</strong><br>
-              <span class="text-slate-200">librarian@winschool.de</span>
-            </button>
-            <button @click="setDemoCredentials('principal')" class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-left transition-all" style="font-family: 'Inter', system-ui, sans-serif;">
-              <strong>{{ language === 'de' ? 'Direktor' : 'Principal' }}</strong><br>
-              <span class="text-slate-200">principal@winschool.de</span>
-            </button>
-            <button @click="setDemoCredentials('inspector')" class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-left transition-all" style="font-family: 'Inter', system-ui, sans-serif;">
-              <strong>{{ language === 'de' ? 'Inspektor' : 'Inspector' }}</strong><br>
-              <span class="text-slate-200">inspector@winschool.de</span>
-            </button>
+            <RuneButton
+              @click="setDemoCredentials('superadmin')"
+              :text="language === 'de' ? 'Super Admin' : 'Super Admin'"
+              variant="secondary"
+              size="sm"
+              wcag-label="Demo super admin button"
+              class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
+            />
+            <RuneButton
+              @click="setDemoCredentials('schooladmin')"
+              :text="language === 'de' ? 'Schul-Admin' : 'School Admin'"
+              variant="secondary"
+              size="sm"
+              wcag-label="Demo school admin button"
+              class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
+            />
+            <RuneButton
+              @click="setDemoCredentials('student')"
+              :text="language === 'de' ? 'Schüler' : 'Student'"
+              variant="secondary"
+              size="sm"
+              wcag-label="Demo student button"
+              class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
+            />
+            <RuneButton
+              @click="setDemoCredentials('parent')"
+              :text="language === 'de' ? 'Eltern' : 'Parent'"
+              variant="secondary"
+              size="sm"
+              wcag-label="Demo parent button"
+              class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
+            />
+            <RuneButton
+              @click="setDemoCredentials('teacher')"
+              :text="language === 'de' ? 'Lehrer' : 'Teacher'"
+              variant="secondary"
+              size="sm"
+              wcag-label="Demo teacher button"
+              class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
+            />
+            <RuneButton
+              @click="setDemoCredentials('schoolstaff')"
+              :text="language === 'de' ? 'Schulpersonal' : 'School Staff'"
+              variant="secondary"
+              size="sm"
+              wcag-label="Demo school staff button"
+              class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
+            />
+            <RuneButton
+              @click="setDemoCredentials('librarian')"
+              :text="language === 'de' ? 'Bibliothekar' : 'Librarian'"
+              variant="secondary"
+              size="sm"
+              wcag-label="Demo librarian button"
+              class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
+            />
+            <RuneButton
+              @click="setDemoCredentials('principal')"
+              :text="language === 'de' ? 'Direktor' : 'Principal'"
+              variant="secondary"
+              size="sm"
+              wcag-label="Demo principal button"
+              class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
+            />
+            <RuneButton
+              @click="setDemoCredentials('inspector')"
+              :text="language === 'de' ? 'Inspektor' : 'Inspector'"
+              variant="secondary"
+              size="sm"
+              wcag-label="Demo inspector button"
+              class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
+            />
           </div>
           <p class="text-center mt-2 text-slate-200" style="font-family: 'Inter', system-ui, sans-serif;">
             {{ language === 'de' ? 'Passwort: demo123 (für alle Rollen)' : 'Password: demo123 (for all roles)' }}
@@ -152,22 +178,22 @@
 
       <!-- Language and Theme Toggle -->
       <div class="flex justify-center space-x-4">
-        <button 
+        <RuneButton
           @click="toggleLanguage"
-          class="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400 hover:text-winschool-primary-dark dark:hover:text-winschool-primary transition-colors"
-          style="font-family: 'Inter', system-ui, sans-serif;"
-        >
-          <Globe class="h-4 w-4" />
-          <span>{{ language === 'de' ? 'English' : 'Deutsch' }}</span>
-        </button>
-        <button 
+          :text="language === 'de' ? 'English' : 'Deutsch'"
+          variant="tertiary"
+          size="sm"
+          :icon="{ left: 'globe-alt' }"
+          wcag-label="Toggle language button"
+        />
+        <RuneButton
           @click="toggleTheme"
-          class="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400 hover:text-winschool-primary-dark dark:hover:text-winschool-primary transition-colors"
-          style="font-family: 'Inter', system-ui, sans-serif;"
-        >
-          <component :is="isDarkMode ? Sun : Moon" class="h-4 w-4" />
-          <span>{{ isDarkMode ? (language === 'de' ? 'Hell' : 'Light') : (language === 'de' ? 'Dunkel' : 'Dark') }}</span>
-        </button>
+          :text="isDarkMode ? (language === 'de' ? 'Hell' : 'Light') : (language === 'de' ? 'Dunkel' : 'Dark')"
+          variant="tertiary"
+          size="sm"
+          :icon="{ left: isDarkMode ? 'sun' : 'moon' }"
+          wcag-label="Toggle theme button"
+        />
       </div>
     </div>
   </div>
@@ -178,7 +204,8 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
-import { GraduationCap, Loader2, Globe, Sun, Moon, Eye, EyeOff } from 'lucide-vue-next'
+import { GraduationCap, Eye, EyeOff } from 'lucide-vue-next'
+import { RuneButton, RuneInput, RuneCheckbox, RuneLink } from '@ist/commonui-components'
 
 const router = useRouter()
 const authStore = useAuthStore()

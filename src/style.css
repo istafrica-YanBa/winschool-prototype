@@ -452,3 +452,40 @@ h1, h2, h3, h4, h5, h6 {
 .button-hover:hover {
   border: 1px solid #facc15 !important;
 }
+
+/* --- Custom RuneInput styling for light mode --- */
+html:not(.dark) .rune-input input {
+  background-color: #f8fafc !important;
+  color: #222 !important;
+  font-size: 1.125rem !important;
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  border-radius: 0.5rem !important;
+  min-height: 3rem !important;
+}
+
+/* --- General override for all inputs inside forms (login, etc.) --- */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"] {
+  background-color: #f8fafc !important;
+  color: #222 !important;
+  font-size: 1.0625rem !important;      /* Slightly larger text (17px) */
+  padding-top: 0.875rem !important;     /* py-3.5 (14px) */
+  padding-bottom: 0.875rem !important;
+  padding-left: 1rem !important;        /* px-4 */
+  padding-right: 1rem !important;
+  border-radius: 0.5rem !important;     /* rounded-lg */
+  min-height: 2.75rem !important;       /* 44px, slightly taller */
+  box-sizing: border-box !important;
+}
+
+/* Optionally, you can also style the dark mode if needed */
+/*
+html.dark .rune-input input {
+  background-color: #1e293b !important;
+  color: #fff !important;
+}
+*/
