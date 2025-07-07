@@ -26,32 +26,11 @@
             <!-- Vertical Separator and Breadcrumb -->
             <div v-if="breadcrumbSegments.length > 0" class="hidden lg:flex items-center" :style="{ marginLeft: sidebarCollapsed ? '54px' : '64px' }">
               <div class="h-6 w-px bg-slate-300 dark:bg-slate-600 mr-6"></div>
-              <nav class="flex items-center space-x-2 text-sm" aria-label="Breadcrumb">
-                <router-link 
-                  to="/dashboard" 
-                  class="flex items-center text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                  </svg>
-                </router-link>
-                <template v-for="(segment, index) in breadcrumbSegments" :key="index">
-                  <span class="text-slate-400 dark:text-slate-500">&gt;</span>
-                  <router-link
-                    v-if="segment.to && index < breadcrumbSegments.length - 1"
-                    :to="segment.to"
-                    class="text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-                  >
-                    {{ segment.label }}
-                  </router-link>
-                  <span
-                    v-else
-                    class="font-bold text-slate-700 dark:text-slate-300"
-                  >
-                    {{ segment.label }}
-                  </span>
-                </template>
-              </nav>
+              <RuneBreadcrumbs
+                truncate
+                max-width=""
+                :items="breadcrumbItems"
+              />
             </div>
           </div>
           <!-- Right side -->
@@ -385,7 +364,7 @@ import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 import { useBreadcrumbs } from '../composables/useBreadcrumbs'
 import { GraduationCap, Menu, Bell, Globe, Sun, Moon, ChevronDown, User, LogOut, Settings, HelpCircle, Home, Users, BookOpen, DollarSign, Calendar, MessageSquare, FileText, BarChart3, Shield, Building, UserPlus, Target, Award, Layers, Brain, Zap, Smartphone, Link, Database, Upload, Clock, Search, Glasses as MagnifyingGlass, Printer, FileOutput, Plus, Layout, Edit, UserCheck, AlertTriangle, Briefcase, Key, TrendingUp, Package, LifeBuoy, Download, DoorOpen } from 'lucide-vue-next'
-import { RuneButton, RuneLink } from '@ist/commonui-components'
+import { RuneButton, RuneLink, RuneBreadcrumbs } from '@ist/commonui-components'
 
 const router = useRouter()
 const route = useRoute()
@@ -394,6 +373,22 @@ const themeStore = useThemeStore()
 
 // Breadcrumbs
 const { breadcrumbSegments } = useBreadcrumbs()
+
+// Convert breadcrumb segments to RuneBreadcrumbs format
+const breadcrumbItems = computed(() => {
+  const items = [
+    { label: 'Home', href: '/dashboard' }
+  ]
+  
+  breadcrumbSegments.value.forEach(segment => {
+    items.push({
+      label: segment.label,
+      href: segment.to || ''
+    })
+  })
+  
+  return items
+})
 
 const sidebarOpen = ref(false)
 const sidebarCollapsed = ref(false)

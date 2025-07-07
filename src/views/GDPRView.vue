@@ -30,11 +30,10 @@
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             {{ language === 'de' ? 'Vorname' : 'First Name' }}
           </label>
-          <input
+          <RuneInput
             v-model="searchFilters.firstName"
-            type="text"
-            class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-50"
             :placeholder="language === 'de' ? 'Vorname eingeben...' : 'Enter first name...'"
+            wcagLabel="First Name Input"
           />
         </div>
         
@@ -42,11 +41,10 @@
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             {{ language === 'de' ? 'Nachname' : 'Last Name' }}
           </label>
-          <input
+          <RuneInput
             v-model="searchFilters.lastName"
-            type="text"
-            class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-50"
             :placeholder="language === 'de' ? 'Nachname eingeben...' : 'Enter last name...'"
+            wcagLabel="Last Name Input"
           />
         </div>
         
@@ -54,10 +52,10 @@
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             {{ language === 'de' ? 'Datum (Bis)' : 'Date (Until)' }}
           </label>
-          <input
+          <RuneDatePicker
             v-model="searchFilters.date"
-            type="date"
-            class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-50"
+            wcagLabel="Date Input"
+            :placeholder="language === 'de' ? 'Datum wählen...' : 'Pick a date...'"
           />
         </div>
       </div>
@@ -88,11 +86,10 @@
       <!-- Archive Search Toggle -->
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center">
-          <input
+          <RuneCheckbox
             v-model="searchFilters.includeArchive"
-            type="checkbox"
             id="includeArchive"
-            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
+            wcagLabel="Include Archive Checkbox"
           />
           <label for="includeArchive" class="ml-2 text-sm font-medium text-slate-700 dark:text-slate-300">
             {{ language === 'de' ? 'In Archiv suchen' : 'Search in archive' }}
@@ -131,75 +128,11 @@
 
       <!-- Desktop Table View -->
       <div class="hidden md:block overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr class="border-b border-slate-200 dark:border-slate-700">
-              <th class="text-left py-3 px-4">
-                <input
-                  type="checkbox"
-                  :checked="allSelected"
-                  @change="toggleAllUsers"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                />
-              </th>
-              <th class="text-left py-3 px-4 font-medium text-slate-500 dark:text-slate-400">
-                {{ language === 'de' ? 'Name' : 'Name' }}
-              </th>
-              <th class="text-left py-3 px-4 font-medium text-slate-500 dark:text-slate-400">
-                {{ language === 'de' ? 'Rolle' : 'Role' }}
-              </th>
-              <th class="text-left py-3 px-4 font-medium text-slate-500 dark:text-slate-400">
-                {{ language === 'de' ? 'E-Mail' : 'Email' }}
-              </th>
-              <th class="text-left py-3 px-4 font-medium text-slate-500 dark:text-slate-400">
-                {{ language === 'de' ? 'Adresse' : 'Address' }}
-              </th>
-              <th class="text-left py-3 px-4 font-medium text-slate-500 dark:text-slate-400">
-                {{ language === 'de' ? 'Beitrittsdatum' : 'Joining Date' }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in searchResults" :key="user.id" class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">
-              <td class="py-3 px-4">
-                <input
-                  type="checkbox"
-                  :checked="selectedUsers.includes(user.id)"
-                  @change="toggleUser(user.id)"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                />
-              </td>
-              <td class="py-3 px-4">
-                <div class="flex items-center">
-                  <img
-                    :src="user.avatar"
-                    :alt="user.name"
-                    class="h-8 w-8 rounded-full object-cover mr-3"
-                  />
-                  <div>
-                    <p class="font-medium text-slate-800 dark:text-slate-50">{{ user.name }}</p>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">ID: {{ user.id }}</p>
-                  </div>
-                </div>
-              </td>
-              <td class="py-3 px-4">
-                <span :class="getRoleColor(user.role)" class="px-2 py-1 text-xs font-medium rounded-full">
-                  {{ getRoleDisplayName(user.role) }}
-                </span>
-              </td>
-              <td class="py-3 px-4 text-slate-800 dark:text-slate-50">{{ user.email }}</td>
-              <td class="py-3 px-4 text-slate-600 dark:text-slate-400">
-                <div class="text-sm">
-                  <p>{{ user.address.street }}</p>
-                  <p>{{ user.address.city }}, {{ user.address.country }}</p>
-                </div>
-              </td>
-              <td class="py-3 px-4 text-slate-500 dark:text-slate-400">
-                {{ formatDate(user.joiningDate) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <RuneDataTable
+          :columns="dataTableColumns"
+          :rows="dataTableRows.value"
+          :rowKey="'id'"
+        />
       </div>
 
       <!-- Mobile Card View -->
@@ -207,16 +140,17 @@
         <div v-for="user in searchResults" :key="user.id" class="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 space-y-3">
           <div class="flex items-start justify-between">
             <div class="flex items-center flex-1">
-              <input
-                type="checkbox"
+              <RuneCheckbox
                 :checked="selectedUsers.includes(user.id)"
                 @change="toggleUser(user.id)"
                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded mr-3"
+                wcagLabel="Select user checkbox"
               />
-              <img
+              <RuneAvatar
                 :src="user.avatar"
                 :alt="user.name"
                 class="h-10 w-10 rounded-full object-cover mr-3"
+                wcagLabel="User avatar for {{ user.name }}"
               />
               <div class="flex-1 min-w-0">
                 <h3 class="font-medium text-slate-800 dark:text-slate-50 truncate">{{ user.name }}</h3>
@@ -254,13 +188,13 @@
     </div>
 
     <!-- Export Modal -->
-    <div v-if="showExportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <RuneModal v-if="showExportModal" @close="showExportModal = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" wcagLabel="Export GDPR Report Modal">
       <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-md w-full p-6">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-50">
             {{ language === 'de' ? 'DSGVO-Bericht exportieren' : 'Export GDPR Report' }}
           </h3>
-          <button @click="showExportModal = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+          <button @click="showExportModal = false">
             <X class="h-6 w-6" />
           </button>
         </div>
@@ -304,12 +238,12 @@
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               {{ language === 'de' ? 'Passwort für Export' : 'Export Password' }}
             </label>
-            <input
+            <RuneInput
               v-model="exportOptions.password"
               type="password"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-50"
               :placeholder="language === 'de' ? 'Sicheres Passwort eingeben...' : 'Enter secure password...'"
               required
+              wcagLabel="Export Password Input"
             />
           </div>
 
@@ -333,12 +267,12 @@
           </button>
         </div>
       </div>
-    </div>
+    </RuneModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, h } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { 
   Shield, Search, Download, FileText, Printer, X,
@@ -473,6 +407,59 @@ const canExport = computed(() => {
   return exportOptions.value.password.length >= 6 && 
          selectedUsers.value.length > 0
 })
+
+const dataTableColumns = [
+  {
+    key: 'select',
+    label: '',
+    width: 48,
+    render: (row) => h(RuneCheckbox, {
+      checked: selectedUsers.value.includes(row.id),
+      onChange: () => toggleUser(row.id),
+      'aria-label': 'Select user',
+    })
+  },
+  {
+    key: 'name',
+    label: language.value === 'de' ? 'Name' : 'Name',
+    render: (row) => h('div', { class: 'flex items-center' }, [
+      h(RuneAvatar, {
+        src: row.avatar,
+        alt: row.name,
+        class: 'h-8 w-8 rounded-full object-cover mr-3',
+        wcagLabel: `User avatar for ${row.name}`
+      }),
+      h('div', {}, [
+        h('p', { class: 'font-medium text-slate-800 dark:text-slate-50' }, row.name),
+        h('p', { class: 'text-sm text-slate-500 dark:text-slate-400' }, `ID: ${row.id}`)
+      ])
+    ])
+  },
+  {
+    key: 'role',
+    label: language.value === 'de' ? 'Rolle' : 'Role',
+    render: (row) => h('span', { class: getRoleColor(row.role) + ' px-2 py-1 text-xs font-medium rounded-full' }, getRoleDisplayName(row.role))
+  },
+  {
+    key: 'email',
+    label: language.value === 'de' ? 'E-Mail' : 'Email',
+  },
+  {
+    key: 'address',
+    label: language.value === 'de' ? 'Adresse' : 'Address',
+    render: (row) => h('div', { class: 'text-sm' }, [
+      h('p', {}, row.address.street),
+      h('p', {}, `${row.address.city}, ${row.address.country}`)
+    ])
+  },
+  {
+    key: 'joiningDate',
+    label: language.value === 'de' ? 'Beitrittsdatum' : 'Joining Date',
+    render: (row) => formatDate(row.joiningDate)
+  }
+]
+
+const dataTableRows = computed(() => searchResults.value)
 
 // Methods
 const toggleRole = (roleValue: string) => {

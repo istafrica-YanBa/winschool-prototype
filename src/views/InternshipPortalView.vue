@@ -1,7 +1,11 @@
 <template>
   <div class="space-y-6">
     <!-- Breadcrumb Navigation -->
-    <Breadcrumb :segments="breadcrumbSegments" />
+    <RuneBreadcrumbs
+      truncate
+      max-width=""
+      :items="breadcrumbItems"
+    />
     
     <!-- Header -->
     <div class="flex justify-between items-center">
@@ -38,14 +42,15 @@
 import { computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { Plus, Briefcase } from 'lucide-vue-next'
-import Breadcrumb from '../components/Breadcrumb.vue'
+import { RuneBreadcrumbs } from '@ist/commonui-components'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
-// Breadcrumb segments
-const breadcrumbSegments = [
-  { label: 'Advanced', to: '/dashboard' },
-  { label: 'Internship Portal' }
+// Breadcrumb items for RuneBreadcrumbs
+const breadcrumbItems = [
+  { label: 'Home', href: '/dashboard' },
+  { label: 'Advanced', href: '/dashboard' },
+  { label: 'Internship Portal', href: '' }
 ]
 </script> 

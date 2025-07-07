@@ -1,5 +1,12 @@
 <template>
   <div class="advanced-modules bg-gray-50 dark:bg-gray-900 min-h-screen p-3 sm:p-6">
+    <!-- Breadcrumb Navigation -->
+    <RuneBreadcrumbs
+      truncate
+      max-width=""
+      :items="breadcrumbItems"
+    />
+    
     <!-- Header -->
     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
       <div class="flex items-start">
@@ -191,13 +198,31 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
+import { RuneBreadcrumbs } from '@ist/commonui-components'
 import { 
   Settings, Plus, LifeBuoy, CheckCircle, Circle, Eye, X, Play,
   Shield, BookOpen, BarChart3, FileText, Users, Calendar
 } from 'lucide-vue-next'
+import {
+  RuneButton,
+  RuneInput,
+  RuneCheckbox,
+  RuneSelect,
+  RuneTable,
+  RuneModal,
+  RuneAvatar,
+  // ...any others you need
+} from '@ist/commonui-components'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
+
+// Breadcrumb items for RuneBreadcrumbs
+const breadcrumbItems = [
+  { label: 'Home', href: '/dashboard' },
+  { label: 'Advanced System', href: '/dashboard' },
+  { label: 'Advanced Modules', href: '' }
+]
 
 const filterCategory = ref('')
 const filterStatus = ref('')

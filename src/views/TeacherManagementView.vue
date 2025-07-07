@@ -1,5 +1,12 @@
 <template>
   <div class="teacher-management bg-gray-50 dark:bg-gray-900 min-h-screen p-3 sm:p-6">
+    <!-- Breadcrumb Navigation -->
+    <RuneBreadcrumbs
+      truncate
+      max-width=""
+      :items="breadcrumbItems"
+    />
+    
     <!-- Header -->
     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
       <div class="flex items-start">
@@ -774,11 +781,19 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from '../stores/theme'
+import { RuneBreadcrumbs } from '@ist/commonui-components'
 import { Search, Clock, Calendar, UserPlus, Eye, Edit, X, Trash2 } from 'lucide-vue-next'
 
 const router = useRouter()
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
+
+// Breadcrumb items for RuneBreadcrumbs
+const breadcrumbItems = [
+  { label: 'Home', href: '/dashboard' },
+  { label: 'Administration', href: '/dashboard' },
+  { label: 'Teacher Management', href: '' }
+]
 
 // State
 const search = ref('')

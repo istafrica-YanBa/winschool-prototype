@@ -403,7 +403,7 @@ import {
   UserPlus, Search, Eye, Edit, Lock, Unlock, X, Settings, ChevronDown,
   Languages, Calendar, Download, Upload, Users
 } from 'lucide-vue-next'
-import Breadcrumb from '../components/Breadcrumb.vue'
+
 import LanguageAssignmentForm from '../components/student/LanguageAssignmentForm.vue'
 import SchoolCareerEntry from '../components/student/SchoolCareerEntry.vue'
 import CorrespondenceNote from '../components/student/CorrespondenceNote.vue'
@@ -414,11 +414,7 @@ const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 const router = useRouter()
 
-// Breadcrumb segments
-const breadcrumbSegments = [
-  { label: 'Administration', to: '/dashboard' },
-  { label: 'Student Management' }
-]
+
 
 // Search and filters
 const searchQuery = ref('')
