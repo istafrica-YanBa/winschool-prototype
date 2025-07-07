@@ -175,7 +175,7 @@
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
               <div class="text-3xl font-bold text-green-600 mb-2">
-                {{ selectedStudent.subjects.filter(s => isSubjectQualified(s)).length }}
+                {{ selectedStudent.subjects.filter((s: any) => isSubjectQualified(s)).length }}
               </div>
               <div class="text-sm text-gray-600 dark:text-gray-400" style="font-family: Inter, sans-serif;">Passed Subjects</div>
             </div>
@@ -577,11 +577,6 @@ const getQualificationStatusClass = (status: string) => {
   return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'
 }
 
-const calculateOverallProgress = () => {
-  if (!selectedStudent.value) return 0
-  return calculateOverallProgressForStudent(selectedStudent.value)
-}
-
 const calculateOverallProgressForStudent = (student: any) => {
   const total = 5 // Total number of requirements
   let completed = 0
@@ -595,24 +590,6 @@ const calculateOverallProgressForStudent = (student: any) => {
   return Math.round((completed / total) * 100)
 }
 
-const getProgressColorClass = (progress: number) => {
-  if (progress >= 90) return 'text-green-500'
-  if (progress >= 70) return 'text-yellow-500'
-  return 'text-red-500'
-}
-
-const calculateGradePoints = () => {
-  if (!selectedStudent.value) return 0
-  return selectedStudent.value.subjects.reduce((total: number, subject: any) => {
-    const grade = parseFloat(calculateFinalGrade(subject))
-    return total + Math.max(0, 17 - Math.round(grade * 3))
-  }, 0)
-}
-
-const isGradePointsQualified = () => {
-  return calculateGradePoints() >= 180
-}
-
 const isGradePointsQualifiedForStudent = (student: any) => {
   const points = student.subjects.reduce((total: number, subject: any) => {
     const grade = parseFloat(calculateFinalGrade(subject))
@@ -621,29 +598,8 @@ const isGradePointsQualifiedForStudent = (student: any) => {
   return points >= 180
 }
 
-const countAdvancedCourses = () => {
-  if (!selectedStudent.value) return 0
-  return selectedStudent.value.subjects.filter((s: any) => s.type === 'mandatory').length
-}
-
-const isAdvancedCoursesQualified = () => {
-  return countAdvancedCourses() >= 2
-}
-
 const isAdvancedCoursesQualifiedForStudent = (student: any) => {
   return student.subjects.filter((s: any) => s.type === 'mandatory').length >= 2
-}
-
-const countFailedCourses = () => {
-  if (!selectedStudent.value) return 0
-  return selectedStudent.value.subjects.filter((s: any) => {
-    const grade = parseFloat(calculateFinalGrade(s))
-    return grade > 4.0
-  }).length
-}
-
-const isFailedCoursesQualified = () => {
-  return countFailedCourses() <= 2
 }
 
 const isFailedCoursesQualifiedForStudent = (student: any) => {

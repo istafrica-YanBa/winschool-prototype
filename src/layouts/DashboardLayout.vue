@@ -207,7 +207,7 @@
                 </div>
               </router-link>
               <!-- Regular Menu Groups (excluding support) -->
-              <template v-for="(groupKey, index) in regularMenuGroups" :key="groupKey">
+              <template v-for="groupKey in regularMenuGroups" :key="groupKey">
                 <div v-if="hasItemsForGroup(groupKey)" class="pt-2">
                   <div 
                     v-if="!sidebarCollapsed"
@@ -363,8 +363,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 import { useBreadcrumbs } from '../composables/useBreadcrumbs'
-import { GraduationCap, Menu, Bell, Globe, Sun, Moon, ChevronDown, User, LogOut, Settings, HelpCircle, Home, Users, BookOpen, DollarSign, Calendar, MessageSquare, FileText, BarChart3, Shield, Building, UserPlus, Target, Award, Layers, Brain, Zap, Smartphone, Link, Database, Upload, Clock, Search, Glasses as MagnifyingGlass, Printer, FileOutput, Plus, Layout, Edit, UserCheck, AlertTriangle, Briefcase, Key, TrendingUp, Package, LifeBuoy, Download, DoorOpen } from 'lucide-vue-next'
-import { RuneButton, RuneLink, RuneBreadcrumbs } from '@ist/commonui-components'
+import { GraduationCap, Menu, Bell, Globe, Sun, Moon, ChevronDown, User, LogOut, Settings, HelpCircle, Home, Users, BookOpen, DollarSign, Calendar, MessageSquare, FileText, BarChart3, Shield, Building, UserPlus, Target, Award, Layers, Brain, Zap, Link, Database, Upload, Clock, Search, Printer, Plus, UserCheck, Briefcase, Key, TrendingUp, Package, LifeBuoy, Download, DoorOpen } from 'lucide-vue-next'
+import { RuneBreadcrumbs } from '@ist/commonui-components'
 
 const router = useRouter()
 const route = useRoute()
@@ -400,7 +400,7 @@ const isDarkMode = computed(() => themeStore.isDarkMode)
 const language = computed(() => themeStore.language)
 
 // Menu group state - initialize all collapsed
-const menuGroups = ref({
+const menuGroups = ref<Record<string, boolean>>({
   academic: false,
   administration: false,
   planning: false,
@@ -420,7 +420,7 @@ const menuGroups = ref({
 
 // Toggle menu group
 const toggleMenuGroup = (group: string) => {
-  menuGroups.value[group as keyof typeof menuGroups.value] = !menuGroups.value[group as keyof typeof menuGroups.value]
+  menuGroups.value[group] = !menuGroups.value[group]
 }
 
 // Toggle sidebar collapse
@@ -750,7 +750,7 @@ const menuItems = computed(() => {
 })
 
 // Group items by category with proper icons
-const groupDefinitions = computed(() => ({
+const groupDefinitions = computed<Record<string, { title: string; icon: any }>>(() => ({
   academic: {
     title: language.value === 'de' ? 'Akademisch' : 'Academic',
     icon: BookOpen
@@ -863,21 +863,7 @@ const hasItemsForGroup = (groupKey: string) => {
   return getItemsForGroup(groupKey).length > 0
 }
 
-// Check if groups have items
-const hasAcademicItems = computed(() => academicItems.value.length > 0)
-const hasAdministrationItems = computed(() => administrationItems.value.length > 0)
-const hasPlanningItems = computed(() => planningItems.value.length > 0)
-const hasCommunicationItems = computed(() => communicationItems.value.length > 0)
-const hasSystemItems = computed(() => systemItems.value.length > 0)
-const hasReportsItems = computed(() => reportsItems.value.length > 0)
-const hasApplicationsItems = computed(() => applicationsItems.value.length > 0)
-const hasFinanceItems = computed(() => financeItems.value.length > 0)
-const hasBudgetItems = computed(() => budgetItems.value.length > 0)
-const hasLibrarySimpleItems = computed(() => librarySimpleItems.value.length > 0)
-const hasLibraryManagementItems = computed(() => libraryManagementItems.value.length > 0)
-const hasInventoryMediaItems = computed(() => inventoryMediaItems.value.length > 0)
-const hasBudgetOrdersItems = computed(() => budgetOrdersItems.value.length > 0)
-const hasAdvancedItems = computed(() => advancedItems.value.length > 0)
+// Check if support group has items
 const hasSupportItems = computed(() => supportItems.value.length > 0)
 
 const getRoleDisplayName = (role?: string) => {
@@ -925,7 +911,7 @@ const closeSidebarOnMobile = () => {
   }
 }
 
-const handleMenuItemClick = (item) => {
+const handleMenuItemClick = (item: any) => {
   console.log('Menu item clicked:', item.name, item.path)
   console.log('Current user role:', user.value?.role)
   console.log('Target path:', item.path)

@@ -641,22 +641,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useThemeStore } from '@/stores/theme'
 
-// Constants
-const planningTypes = [
-  'Academic Calendar',
-  'Resource Allocation',
-  'Staff Schedule',
-  'Event Planning',
-  'Curriculum Development',
-  'Training Program'
-]
-
-const planningPriorities = [
-  'High',
-  'Medium',
-  'Low'
-]
+const themeStore = useThemeStore()
+const language = computed(() => themeStore.language)
 
 // State Management
 const isCreating = ref(false)
@@ -673,7 +661,7 @@ const planningSettings = ref({
   priority: '',
   title: '',
   description: '',
-  dueDate: '',
+  dueDate: '' as string | null,
   tags: [] as string[],
   setReminder: false
 })
@@ -818,14 +806,6 @@ const activityLog = ref([
   }
 ])
 
-// Computed Properties
-const totalPlans = computed(() => planningStats.value.completed + planningStats.value.inProgress + planningStats.value.pending)
-
-const completionPercentage = computed(() => {
-  if (totalPlans.value === 0) return 0
-  return (planningStats.value.completed / totalPlans.value) * 100
-})
-
 // Utility Methods
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
@@ -845,19 +825,6 @@ const formatDateTime = (dateString: string) => {
     hour: 'numeric',
     minute: '2-digit'
   })
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Completed':
-      return 'success'
-    case 'In Progress':
-      return 'primary'
-    case 'Pending':
-      return 'warning'
-    default:
-      return 'grey'
-  }
 }
 
 const getStatusDotClass = (status: string) => {
@@ -883,19 +850,6 @@ const getStatusBadgeClass = (status: string) => {
       return 'bg-yellow-100 text-yellow-800'
     default:
       return 'bg-gray-100 text-gray-800'
-  }
-}
-
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'High':
-      return 'error'
-    case 'Medium':
-      return 'warning'
-    case 'Low':
-      return 'success'
-    default:
-      return 'grey'
   }
 }
 
@@ -1006,7 +960,7 @@ const createPlan = async () => {
       title: planningSettings.value.title.trim(),
       description: planningSettings.value.description.trim() || 'No description provided',
       date: new Date().toISOString().split('T')[0],
-      dueDate: planningSettings.value.dueDate || null,
+      dueDate: planningSettings.value.dueDate || '',
       status: 'Pending',
       priority: planningSettings.value.priority,
       type: planningSettings.value.type,

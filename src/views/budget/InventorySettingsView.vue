@@ -449,7 +449,6 @@ import { ref, computed } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import {
   Settings,
-  ChevronRight,
   Save,
   Plus,
   Edit,
@@ -469,7 +468,7 @@ const language = computed(() => languageStore.language)
 // Reactive data
 const activeTab = ref('general')
 const showAddCategory = ref(false)
-const editingCategory = ref(null)
+const editingCategory = ref<{ id: number; name: string; description: string; active: boolean; itemCount: number } | null>(null)
 
 const settingTabs = [
   { id: 'general', label: 'General', labelDe: 'Allgemein', icon: Wrench },
@@ -561,6 +560,65 @@ const saveAllSettings = () => {
   alert(language.value === 'de' ? 'Einstellungen gespeichert!' : 'Settings saved!')
 }
 
+const exportSettings = () => {
+  // In a real app, this would export settings to a file
+  const settingsData = {
+    general: generalSettings.value,
+    thresholds: thresholds.value,
+    notifications: notifications.value,
+    policies: policies.value,
+    categories: categories.value
+  }
+  
+  const dataStr = JSON.stringify(settingsData, null, 2)
+  const dataBlob = new Blob([dataStr], { type: 'application/json' })
+  const url = URL.createObjectURL(dataBlob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'inventory-settings.json'
+  link.click()
+  URL.revokeObjectURL(url)
+  
+  alert(language.value === 'de' ? 'Einstellungen exportiert!' : 'Settings exported!')
+}
+
+const resetToDefaults = () => {
+  if (confirm(language.value === 'de' ? 'Alle Einstellungen zurücksetzen?' : 'Reset all settings to defaults?')) {
+    generalSettings.value = {
+      defaultLoanPeriod: 14,
+      maxRenewals: 2,
+      lateFeePerDay: 0.50,
+      minStockLevel: 5,
+      emailReminders: 'weekly',
+      requireSignature: true
+    }
+    
+    thresholds.value = {
+      criticalStock: 2,
+      lowStock: 5,
+      overstock: 100,
+      maxLateFee: 50.00,
+      outstandingFeesLimit: 25.00
+    }
+    
+    notifications.value = {
+      stockAlerts: true,
+      overdueReminders: true,
+      damageReports: true
+    }
+    
+    policies.value = {
+      allowMultipleCheckouts: true,
+      allowReservations: true,
+      blockWithOutstandingFees: true,
+      maxItemsPerStudent: 3,
+      maxItemsPerTeacher: 10
+    }
+    
+    alert(language.value === 'de' ? 'Einstellungen zurückgesetzt!' : 'Settings reset to defaults!')
+  }
+}
+
 const editCategory = (category: any) => {
   editingCategory.value = category
   currentCategory.value = { ...category }
@@ -586,8 +644,8 @@ const closeCategoryModal = () => {
 const submitCategory = () => {
   if (editingCategory.value) {
     // Update existing category
-    const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
-    if (index !== -1) {
+    const index = categories.value.findIndex(c => c.id === editingCategory.value?.id)
+    if (index !== -1 && editingCategory.value) {
       categories.value[index] = {
         ...categories.value[index],
         ...currentCategory.value

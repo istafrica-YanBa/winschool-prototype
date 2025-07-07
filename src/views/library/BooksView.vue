@@ -1,11 +1,29 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
-import { BookOpen, Search, Scan, Plus, Edit, Trash2, BarChart3, Users, CheckCircle, AlertCircle, Filter } from 'lucide-vue-next'
+import { useBookStore } from '@/stores/library/book'
+import { BookOpen, Search, Plus, Edit, Trash2, Users, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
-const { showToast } = useToast()
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface BookWithDetails {
+  id: number;
+  title: string;
+  author: string;
+  isbn: string;
+  barcode: string;
+  signature: string;
+  inventoryNumber: string;
+  totalCopies: number;
+  availableCopies: number;
+  lentCopies: number;
+  category: string;
+  publishedYear: number;
+}
+
+const { addToast } = useToast()
 const router = useRouter()
+const bookStore = useBookStore()
 
 // Reactive data
 const books = ref([
@@ -55,22 +73,9 @@ const books = ref([
 
 // UI State
 const searchQuery = ref('')
-const isLoading = ref(false)
 const isMobile = ref(false)
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
-
-// Form data
-const newBook = ref({
-  title: '',
-  author: '',
-  isbn: '',
-  barcode: '',
-  signature: '',
-  inventoryNumber: '',
-  totalCopies: 1,
-  category: ''
-})
 
 // Computed properties for infographics
 const totalBooks = computed(() => 
@@ -111,97 +116,22 @@ const totalPages = computed(() =>
 )
 
 // Methods
-const generateSignature = (book) => {
-  const authorInitials = book.author
-    .split(' ')
-    .map(name => name[0])
-    .join('')
-    .toUpperCase()
-  const year = new Date().getFullYear().toString().slice(-2)
-  const seq = (books.value.length + 1).toString().padStart(3, '0')
-  return `${authorInitials}${year}${seq}`
-}
-
-const generateInventoryNumber = () => {
-  const year = new Date().getFullYear()
-  const seq = (books.value.length + 1).toString().padStart(3, '0')
-  return `INV-${year}-${seq}`
-}
-
-const resetForm = () => {
-  newBook.value = {
-    title: '',
-    author: '',
-    isbn: '',
-    barcode: '',
-    signature: '',
-    inventoryNumber: '',
-    totalCopies: 1,
-    category: ''
-  }
-}
-
-const handleAddBook = async () => {
+const handleDeleteBook = async (book: BookWithDetails) => {
   try {
-    isLoading.value = true
-    
-    // Generate signature and inventory number if not provided
-    if (!newBook.value.signature) {
-    newBook.value.signature = generateSignature(newBook.value)
-    }
-    if (!newBook.value.inventoryNumber) {
-      newBook.value.inventoryNumber = generateInventoryNumber()
-    }
-    
-    const bookToAdd = {
-      id: books.value.length + 1,
-      ...newBook.value,
-      availableCopies: newBook.value.totalCopies,
-      lentCopies: 0,
-      publishedYear: new Date().getFullYear()
-    }
-    
-    books.value.push(bookToAdd)
-    showToast('Book added successfully!', 'success')
-    resetForm()
+    await bookStore.deleteBook(book.id.toString())
+    addToast({
+      message: 'Book deleted successfully',
+      type: 'success'
+    })
   } catch (error) {
-    showToast('Failed to add book', 'error')
-  } finally {
-    isLoading.value = false
+    addToast({
+      message: 'Failed to delete book',
+      type: 'error'
+    })
   }
 }
 
-const handleEditBook = async () => {
-  try {
-    isLoading.value = true
-    
-    const index = books.value.findIndex(book => book.id === selectedBook.value.id)
-    if (index !== -1) {
-      books.value[index] = { ...selectedBook.value }
-      showToast('Book updated successfully!', 'success')
-    }
-  } catch (error) {
-    showToast('Failed to update book', 'error')
-  } finally {
-    isLoading.value = false
-  }
-}
-
-const handleDeleteBook = async (book) => {
-  if (confirm(`Are you sure you want to delete "${book.title}"?`)) {
-    try {
-      const index = books.value.findIndex(b => b.id === book.id)
-      if (index !== -1) {
-        books.value.splice(index, 1)
-        showToast('Book deleted successfully!', 'success')
-      }
-    } catch (error) {
-      showToast('Failed to delete book', 'error')
-    }
-  }
-}
-
-const goToBookDetail = (book) => {
+const goToBookDetail = (book: BookWithDetails) => {
   router.push(`/dashboard/library/library-books/${book.id}`)
 }
 

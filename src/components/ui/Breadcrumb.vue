@@ -39,20 +39,16 @@
 </template>
 
 <script setup lang="ts">
-interface BreadcrumbItem {
-  label: string
-  to?: string
-  href?: string
-}
-
 interface Props {
-  items: BreadcrumbItem[]
+  items: Array<{
+    label: string
+    to?: string
+    href?: string
+  }>
   separator?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  separator: '/'
-})
+defineProps<Props>()
 </script>
 
 <script lang="ts">

@@ -333,9 +333,9 @@
 import { ref, computed } from 'vue'
 import { useLanguageStore } from '../../stores/language'
 import {
-  Calendar, CalendarDays, ChevronRight, Filter, List, Plus, Eye, Edit, X,
-  ChevronLeft, ChevronRight as ChevronRightIcon, DoorOpen, MonitorSpeaker,
-  Microscope, Cpu, Clock, Users, CheckCircle, AlertCircle
+  Calendar, ChevronRight, Filter, List, Plus, Eye, Edit, X,
+  ChevronLeft, DoorOpen, MonitorSpeaker,
+  Microscope, Cpu, CheckCircle, AlertCircle
 } from 'lucide-vue-next'
 
 const languageStore = useLanguageStore()
@@ -343,6 +343,7 @@ const language = computed(() => languageStore.language)
 
 // Reactive data
 const showFilters = ref(false)
+const showNewBooking = ref(false)
 const showNewBookingModal = ref(false)
 const viewMode = ref<'calendar' | 'list'>('list')
 const currentDate = ref(new Date())
@@ -515,7 +516,6 @@ const calendarDays = computed(() => {
   const year = currentDate.value.getFullYear()
   const month = currentDate.value.getMonth()
   const firstDay = new Date(year, month, 1)
-  const lastDay = new Date(year, month + 1, 0)
   const startDate = new Date(firstDay)
   startDate.setDate(startDate.getDate() - firstDay.getDay())
   

@@ -73,7 +73,7 @@
         </div>
 
         <div class="flex space-x-2">
-          <button @click="previewTemplate(template)" class="flex-1 px-3 py-2 text-sm bg-primary-100 text-primary-800 rounded-lg hover:bg-primary-200 transition-colors">
+          <button @click="previewTemplate()" class="flex-1 px-3 py-2 text-sm bg-primary-100 text-primary-800 rounded-lg hover:bg-primary-200 transition-colors">
             {{ language === 'de' ? 'Vorschau' : 'Preview' }}
           </button>
           <button @click="editTemplate(template)" class="px-3 py-2 text-sm bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors">
@@ -502,7 +502,7 @@ const createTemplate = () => {
   }
 }
 
-const previewTemplate = (template: any) => {
+const previewTemplate = () => {
   showPreviewModal.value = true
 }
 

@@ -261,24 +261,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits } from 'vue'
+import { ref, computed, defineEmits } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { Upload } from 'lucide-vue-next'
 
-const props = defineProps({
-  categories: {
-    type: Array,
-    default: () => []
-  },
-  templates: {
-    type: Array,
-    default: () => []
-  },
-  searchMacros: {
-    type: Array,
-    default: () => []
-  }
-})
+// Type definitions
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Template {
+  id: string;
+  name: string;
+}
+
+interface SearchMacro {
+  id: string;
+  name: string;
+}
+
+defineProps<{
+  categories: Category[];
+  templates: Template[];
+  searchMacros: SearchMacro[];
+}>()
 
 const emit = defineEmits(['finish', 'cancel'])
 

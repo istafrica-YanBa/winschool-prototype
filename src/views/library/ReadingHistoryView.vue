@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
-import type { Book } from '@/types/library'
 import { BookOpen, Calendar, Clock, Search, AlertCircle, CheckCircle, History, Plus } from 'lucide-vue-next'
+import { LoanStatus } from '@/types/library'
+import type { Book } from '@/types/library'
 
-const authStore = useAuthStore()
-const { showToast } = useToast()
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+
+const { addToast } = useToast()
 
 // Tab management
 const activeTab = ref('history')
@@ -77,16 +78,16 @@ const categories = ref(['Mathematics', 'Literature', 'Physics', 'Chemistry', 'Hi
 
 // Reservation modal
 const showReservationModal = ref(false)
-const selectedBook = ref(null)
+const selectedBook = ref<Book | null>(null)
 const reservationForm = ref({
   preferredDate: '',
   notes: ''
 })
 
 // Computed properties for statistics
-const totalBooksRead = computed(() => readingHistory.value.filter(book => book.status === 'returned').length)
-const currentlyBorrowed = computed(() => readingHistory.value.filter(book => book.status === 'borrowed').length)
-const overdueBooks = computed(() => readingHistory.value.filter(book => book.status === 'overdue').length)
+const totalBooksRead = computed(() => readingHistory.value.filter(book => book.status === LoanStatus.RETURNED).length)
+const currentlyBorrowed = computed(() => readingHistory.value.filter(book => book.status === LoanStatus.ACTIVE).length)
+const overdueBooks = computed(() => readingHistory.value.filter(book => book.status === LoanStatus.OVERDUE).length)
 
 // Filtered books for search
 const filteredBooks = computed(() => {
@@ -109,11 +110,11 @@ const filteredBooks = computed(() => {
 })
 
 // Helper functions
-const formatDate = (dateString) => {
+const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('de-DE')
 }
 
-const getStatusColor = (status) => {
+const getStatusColor = (status: string) => {
   switch (status) {
     case 'returned': return 'text-green-600'
     case 'borrowed': return 'text-blue-600'
@@ -123,7 +124,7 @@ const getStatusColor = (status) => {
   }
 }
 
-const getStatusText = (status) => {
+const getStatusText = (status: string) => {
   switch (status) {
     case 'returned': return 'Returned'
     case 'borrowed': return 'Currently Borrowed'
@@ -133,17 +134,16 @@ const getStatusText = (status) => {
   }
 }
 
-const getDaysUntilDue = (dueDate) => {
-  if (!dueDate) return null
+const getDaysUntilDue = (dueDate: string | null): number => {
+  if (!dueDate) return 0
   const today = new Date()
   const due = new Date(dueDate)
-  const diffTime = due - today
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays
+  const diffTime = due.getTime() - today.getTime()
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 }
 
 // Reservation functions
-const openReservationModal = (book) => {
+const openReservationModal = (book: any) => {
   selectedBook.value = book
   reservationForm.value = {
     preferredDate: '',
@@ -166,15 +166,15 @@ const submitReservation = async () => {
     }
     
     myReservations.value.push(newReservation)
-    showToast('Reservation submitted successfully!', 'success')
+    addToast({ message: 'Reservation submitted successfully!', type: 'success' })
     showReservationModal.value = false
   } catch (error) {
     console.error('Error submitting reservation:', error)
-    showToast('Failed to submit reservation', 'error')
+    addToast({ message: 'Failed to submit reservation', type: 'error' })
   }
 }
 
-const getAvailabilityStatus = (book) => {
+const getAvailabilityStatus = (book: any) => {
   if (book.availableCopies > 0) {
     return {
       status: 'available',
@@ -333,7 +333,7 @@ onMounted(() => {
                       </div>
                       <div v-else-if="book.dueDate">
                         <div>Due: {{ formatDate(book.dueDate) }}</div>
-                        <div v-if="getDaysUntilDue(book.dueDate) !== null" :class="[
+                        <div v-if="book.dueDate" :class="[
                           'text-xs',
                           getDaysUntilDue(book.dueDate) < 0 ? 'text-red-600' : 
                           getDaysUntilDue(book.dueDate) <= 3 ? 'text-yellow-600' : 'text-green-600'

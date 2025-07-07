@@ -812,16 +812,91 @@
 import { ref, computed, onMounted } from 'vue'
 import { useToast } from '@/composables/useToast'
 import {
-  DollarSign, Settings, Download, Filter, Plus, Search, CheckCircle, XCircle, 
-  Edit, Eye, TrendingUp, TrendingDown, AlertCircle, Users, BookOpen, 
-  Clock, Save, ToggleLeft, ToggleRight, FileText, Calendar, Hash, X,
-  Mail, User, Timer, Cog, History, ChevronDown
+  DollarSign, Download, Plus, Search, CheckCircle, XCircle, 
+  Edit, AlertCircle, Users, 
+  Clock, ToggleLeft, ToggleRight, X,
+  Mail, User, Timer, Cog, History
 } from 'lucide-vue-next'
 
-const { showToast } = useToast()
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface User {
+  id: string;
+  name: string;
+  type: string;
+  email: string;
+}
+
+interface Book {
+  id: string;
+  title: string;
+  isbn: string;
+  value: number;
+}
+
+interface Fee {
+  id: number;
+  userId: string;
+  userName: string;
+  userType: string;
+  bookId: string;
+  bookTitle: string;
+  isbn: string;
+  amount: number;
+  reason: string;
+  status: string;
+  dueDate: string;
+  createdDate: string;
+  notes: string;
+  paymentDate: string | null;
+  paymentMethod: string | null;
+}
+
+interface FeeRules {
+  lateReturn: {
+    enabled: boolean;
+    ratePerDay: number;
+    gracePeriod: number;
+    maxFee: number;
+  };
+  lostBook: {
+    enabled: boolean;
+    defaultFee: number;
+    useBookValue: boolean;
+  };
+  damagedBook: {
+    enabled: boolean;
+    minorDamage: number;
+    majorDamage: number;
+    severeDamage: number;
+  };
+}
+
+interface NewFee {
+  userId: string;
+  bookId: string;
+  reason: string;
+  amount: number;
+  notes: string;
+  dueDate: string;
+}
+
+interface PaymentForm {
+  method: string;
+  notes: string;
+  amount: number;
+}
+
+interface Filters {
+  user: string;
+  reason: string;
+  status: string;
+  dateFrom: string;
+  dateTo: string;
+}
+
+const { addToast } = useToast()
 
 // UI State
-const activeTab = ref('management')
 const searchQuery = ref('')
 const showAddModal = ref(false)
 const showPayModal = ref(false)
@@ -829,11 +904,11 @@ const showWaiveModal = ref(false)
 const showEditModal = ref(false)
 const showConfigModal = ref(false)
 const showHistoryModal = ref(false)
-const selectedFee = ref(null)
-const selectedUser = ref(null)
+const selectedFee = ref<Fee | null>(null)
+const selectedUser = ref<User | null>(null)
 
 // Filters
-const filters = ref({
+const filters = ref<Filters>({
   user: '',
   reason: '',
   status: '',
@@ -842,7 +917,7 @@ const filters = ref({
 })
 
 // Fee Configuration Rules
-const feeRules = ref({
+const feeRules = ref<FeeRules>({
   lateReturn: {
     enabled: true,
     ratePerDay: 0.50,
@@ -863,7 +938,7 @@ const feeRules = ref({
 })
 
 // Form Data
-const newFee = ref({
+const newFee = ref<NewFee>({
   userId: '',
   bookId: '',
   reason: '',
@@ -872,14 +947,14 @@ const newFee = ref({
   dueDate: new Date().toISOString().split('T')[0]
 })
 
-const paymentForm = ref({
+const paymentForm = ref<PaymentForm>({
   method: 'cash',
   notes: '',
   amount: 0
 })
 
 // Mock Data - Enhanced
-const fees = ref([
+const fees = ref<Fee[]>([
   {
     id: 1,
     userId: 'U001',
@@ -950,7 +1025,7 @@ const fees = ref([
   }
 ])
 
-const users = ref([
+const users = ref<User[]>([
   { id: 'U001', name: 'Emma Thompson', type: 'Student', email: 'emma.t@school.edu' },
   { id: 'U002', name: 'James Wilson', type: 'Student', email: 'james.w@school.edu' },
   { id: 'U003', name: 'Sofia Garcia', type: 'Staff', email: 'sofia.g@school.edu' },
@@ -958,7 +1033,7 @@ const users = ref([
   { id: 'U005', name: 'Anna Rodriguez', type: 'Staff', email: 'anna.r@school.edu' }
 ])
 
-const books = ref([
+const books = ref<Book[]>([
   { id: 'B001', title: 'Advanced Mathematics', isbn: '978-0123456789', value: 85.00 },
   { id: 'B002', title: 'Physics Fundamentals', isbn: '978-0987654321', value: 92.50 },
   { id: 'B003', title: 'Chemistry Lab Manual', isbn: '978-0456789123', value: 78.00 },
@@ -985,7 +1060,7 @@ const averagePaymentDelay = computed(() => {
   
   const totalDays = paidFees.reduce((sum, fee) => {
     const due = new Date(fee.dueDate)
-    const paid = new Date(fee.paymentDate)
+    const paid = new Date(fee.paymentDate!)
     const diffTime = paid.getTime() - due.getTime()
     const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
     return sum + diffDays
@@ -1035,7 +1110,7 @@ const filteredFees = computed(() => {
 })
 
 // Methods
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string): string => {
   return new Date(dateStr).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -1043,8 +1118,8 @@ const formatDate = (dateStr) => {
   })
 }
 
-const getReasonDisplay = (reason) => {
-  const reasons = {
+const getReasonDisplay = (reason: string): string => {
+  const reasons: Record<string, string> = {
     'LATE_RETURN': 'Late Return',
     'LOST': 'Lost Book',
     'DAMAGED': 'Damaged Book'
@@ -1052,7 +1127,7 @@ const getReasonDisplay = (reason) => {
   return reasons[reason] || reason
 }
 
-const getStatusColor = (status) => {
+const getStatusColor = (status: string): string => {
   switch (status) {
     case 'PENDING':
       return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
@@ -1065,7 +1140,7 @@ const getStatusColor = (status) => {
   }
 }
 
-const getReasonColor = (reason) => {
+const getReasonColor = (reason: string): string => {
   switch (reason) {
     case 'LATE_RETURN':
       return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
@@ -1078,17 +1153,17 @@ const getReasonColor = (reason) => {
   }
 }
 
-const handleAddFee = async () => {
+const handleAddFee = async (): Promise<void> => {
   try {
     const user = users.value.find(u => u.id === newFee.value.userId)
     const book = books.value.find(b => b.id === newFee.value.bookId)
     
     if (!user || !book) {
-      showToast('Please select both user and book', 'error')
+      addToast({ message: 'Please select both user and book', type: 'error' })
       return
     }
     
-    const newFeeRecord = {
+    const newFeeRecord: Fee = {
       id: Date.now(),
       userId: user.id,
       userName: user.name,
@@ -1107,7 +1182,7 @@ const handleAddFee = async () => {
     }
     
     fees.value.unshift(newFeeRecord)
-    showToast('Fee added successfully', 'success')
+    addToast({ message: 'Fee added successfully', type: 'success' })
     showAddModal.value = false
     
     // Reset form
@@ -1120,11 +1195,11 @@ const handleAddFee = async () => {
       dueDate: new Date().toISOString().split('T')[0]
     }
   } catch (error) {
-    showToast('Failed to add fee', 'error')
+    addToast({ message: 'Failed to add fee', type: 'error' })
   }
 }
 
-const handlePayFee = async () => {
+const handlePayFee = async (): Promise<void> => {
   if (!selectedFee.value) return
   
   try {
@@ -1136,42 +1211,42 @@ const handlePayFee = async () => {
       selectedFee.value.notes += ` | Payment: ${paymentForm.value.notes}`
     }
     
-    showToast('Fee marked as paid successfully', 'success')
+    addToast({ message: 'Fee marked as paid successfully', type: 'success' })
     showPayModal.value = false
     
     // Reset form
     paymentForm.value = { method: 'cash', notes: '', amount: 0 }
     selectedFee.value = null
   } catch (error) {
-    showToast('Failed to process payment', 'error')
+    addToast({ message: 'Failed to process payment', type: 'error' })
   }
 }
 
-const handleWaiveFee = async () => {
+const handleWaiveFee = async (): Promise<void> => {
   if (!selectedFee.value) return
   
   try {
     selectedFee.value.status = 'WAIVED'
-    showToast('Fee waived successfully', 'success')
+    addToast({ message: 'Fee waived successfully', type: 'success' })
     showWaiveModal.value = false
     selectedFee.value = null
   } catch (error) {
-    showToast('Failed to waive fee', 'error')
+    addToast({ message: 'Failed to waive fee', type: 'error' })
   }
 }
 
-const openPayModal = (fee) => {
+const openPayModal = (fee: Fee): void => {
   selectedFee.value = fee
   paymentForm.value.amount = fee.amount
   showPayModal.value = true
 }
 
-const openWaiveModal = (fee) => {
+const openWaiveModal = (fee: Fee): void => {
   selectedFee.value = fee
   showWaiveModal.value = true
 }
 
-const openEditModal = (fee) => {
+const openEditModal = (fee: Fee): void => {
   selectedFee.value = fee
   newFee.value = {
     userId: fee.userId,
@@ -1184,38 +1259,38 @@ const openEditModal = (fee) => {
   showEditModal.value = true
 }
 
-const viewUserHistory = (userId) => {
-  selectedUser.value = users.value.find(u => u.id === userId)
+const viewUserHistory = (userId: string): void => {
+  selectedUser.value = users.value.find(u => u.id === userId) || null
   showHistoryModal.value = true
 }
 
-const getUserFees = (userId) => {
+const getUserFees = (userId: string): Fee[] => {
   return fees.value.filter(f => f.userId === userId)
 }
 
-const exportFees = async (format = 'csv') => {
+const exportFees = async (format = 'csv'): Promise<void> => {
   try {
-    showToast(`Exporting fees as ${format.toUpperCase()}...`, 'info')
+    addToast({ message: `Exporting fees as ${format.toUpperCase()}...`, type: 'info' })
     
     // Simulate export process
     setTimeout(() => {
-      showToast('Export completed successfully', 'success')
+      addToast({ message: 'Export completed successfully', type: 'success' })
     }, 2000)
   } catch (error) {
-    showToast('Failed to export fees', 'error')
+    addToast({ message: 'Failed to export fees', type: 'error' })
   }
 }
 
-const saveFeeRules = async () => {
+const saveFeeRules = async (): Promise<void> => {
   try {
-    showToast('Fee rules saved successfully', 'success')
+    addToast({ message: 'Fee rules saved successfully', type: 'success' })
     showConfigModal.value = false
   } catch (error) {
-    showToast('Failed to save fee rules', 'error')
+    addToast({ message: 'Failed to save fee rules', type: 'error' })
   }
 }
 
-const clearFilters = () => {
+const clearFilters = (): void => {
   filters.value = {
     user: '',
     reason: '',

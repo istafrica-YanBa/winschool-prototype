@@ -297,14 +297,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../../stores/theme'
-import { useAuthStore } from '../../stores/auth'
 import { 
-  Upload, Plus, Filter, Search, Edit, Trash2, ChevronRight,
-  CheckCircle, Play, Disc, Monitor
+  Upload, Plus, Filter, Search, Edit, Trash2,
+  CheckCircle, Disc, Monitor
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
-const authStore = useAuthStore()
 const language = computed(() => themeStore.language)
 
 // State

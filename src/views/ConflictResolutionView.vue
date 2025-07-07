@@ -337,6 +337,7 @@ interface Conflict {
   priority: number
   autoResolvable: boolean
   department?: string
+  resolutionType?: 'AUTO' | 'MANUAL'
 }
 
 // State
@@ -419,12 +420,10 @@ const filteredConflicts = computed(() => {
   return filtered.sort((a, b) => a.priority - b.priority)
 })
 
-const stats = computed(() => ({
-  totalConflicts: conflicts.value.length,
-  pendingResolution: conflicts.value.filter(c => c.status === 'open').length,
-  resolved: conflicts.value.filter(c => c.status === 'resolved').length,
-  autoResolvable: conflicts.value.filter(c => c.autoResolvable && c.status === 'open').length
-}))
+const totalConflicts = computed(() => conflicts.value.length)
+const criticalConflicts = computed(() => conflicts.value.filter(c => c.severity === 'high').length)
+const resolvedConflicts = computed(() => conflicts.value.filter(c => c.status === 'resolved').length)
+const autoResolved = computed(() => conflicts.value.filter(c => c.resolutionType === 'AUTO').length)
 
 // Methods
 const getSeverityColor = (severity: string) => {

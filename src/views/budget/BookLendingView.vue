@@ -331,14 +331,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../../stores/theme'
-import { useAuthStore } from '../../stores/auth'
 import { 
-  Calendar, Plus, Filter, Search, Edit, Eye, ChevronRight,
+  Calendar, Plus, Filter, Search, Edit, Eye,
   CheckCircle, RotateCcw, Clock, AlertTriangle, Users, BookOpen
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
-const authStore = useAuthStore()
 const language = computed(() => themeStore.language)
 
 // State
@@ -565,16 +563,24 @@ const saveLending = () => {
     // Update existing lending
     const index = lendings.value.findIndex(lending => lending.id === editingLending.value.id)
     if (index !== -1) {
-      lendings.value[index] = { ...lendingForm.value, id: editingLending.value.id }
+      lendings.value[index] = { ...lendingForm.value, id: editingLending.value.id, returnDate: editingLending.value.returnDate }
     }
   } else {
     // Add new lending
-    const newLending = {
-      ...lendingForm.value,
-      id: Math.max(...lendings.value.map(lending => lending.id)) + 1,
-      returnDate: null
+    const newLendingRecord = {
+      id: Date.now(),
+      borrowerName: lendingForm.value.borrowerName,
+      borrowerId: lendingForm.value.borrowerId,
+      borrowerType: lendingForm.value.borrowerType,
+      bookTitle: lendingForm.value.bookTitle,
+      bookAuthor: lendingForm.value.bookAuthor,
+      lentDate: lendingForm.value.lentDate,
+      dueDate: lendingForm.value.dueDate,
+      returnDate: null,
+      status: lendingForm.value.status,
+      remarks: lendingForm.value.remarks
     }
-    lendings.value.push(newLending)
+    lendings.value.push(newLendingRecord)
   }
   cancelEdit()
 }

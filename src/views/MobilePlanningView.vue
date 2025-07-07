@@ -27,14 +27,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useThemeStore } from '../stores/theme'
-import { 
-  RefreshCw, Download, Smartphone, Tablet, Monitor, Bell, Calendar, 
-  CheckSquare, MessageSquare, User, Home, Settings, Search, Plus,
-  AlertTriangle, Clock, Mail, BookOpen
-} from 'lucide-vue-next'
+import { computed } from 'vue'
+import { useThemeStore } from '@/stores/theme'
+import { RefreshCw, Download } from 'lucide-vue-next'
 
-// Rest of script content
+const themeStore = useThemeStore()
+const language = computed(() => themeStore.language)
 
+const syncOfflineData = () => {
+  console.log('Syncing offline data...')
+  alert(language.value === 'de' ? 'Offline-Daten werden synchronisiert...' : 'Syncing offline data...')
+}
+
+const downloadApp = () => {
+  console.log('Downloading mobile app...')
+  alert(language.value === 'de' ? 'Mobile App wird heruntergeladen...' : 'Downloading mobile app...')
+}
 </script>

@@ -364,56 +364,65 @@ import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { Plus, Save, Edit, Copy, Trash2, Eye, X, BookOpen } from 'lucide-vue-next'
 
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface BlockCondition {
+  field: 'averageGrade' | 'attendance' | 'behavior' | 'class' | 'subject' | 'name';
+  operator: '>' | '<' | '>=' | '<=' | '=' | '!=' | 'contains';
+  value: string;
+}
+interface TextBlock {
+  id: number;
+  title: string;
+  category: 'academic' | 'behavior' | 'attendance' | 'general';
+  content: string;
+  priority: number;
+  active: boolean;
+  conditions: BlockCondition[];
+}
+interface BlockTemplate {
+  id: number;
+  title: string;
+  description: string;
+  category: 'academic' | 'behavior' | 'attendance' | 'general';
+  content: string;
+  conditions: BlockCondition[];
+}
+interface Student {
+  id: string;
+  name: string;
+  averageGrade: number;
+  attendance: number;
+  behavior: string;
+  class: string;
+  subjects: string[];
+}
+
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
 // State
-const viewMode = ref('template') // 'template' or 'student'
-const selectedBlockCategory = ref('')
-const selectedPreviewStudent = ref(1)
+const viewMode = ref<'template' | 'student'>('template')
+const selectedBlockCategory = ref<string>('')
+const selectedPreviewStudent = ref<string>('1')
 const showEditModal = ref(false)
-const editingBlock = ref(null)
+const editingBlock = ref<TextBlock | null>(null)
 
 // Sample students for preview
-const sampleStudents = ref([
-  { 
-    id: 1, 
-    name: 'Max Mustermann', 
-    class: '10A', 
-    averageGrade: 2.1, 
-    attendance: 95, 
-    behavior: 'excellent',
-    subjects: ['Mathematics', 'Physics', 'German']
-  },
-  { 
-    id: 2, 
-    name: 'Emma Schmidt', 
-    class: '10B', 
-    averageGrade: 1.8, 
-    attendance: 88, 
-    behavior: 'good',
-    subjects: ['Biology', 'Chemistry', 'English']
-  },
-  { 
-    id: 3, 
-    name: 'Noah Fischer', 
-    class: '11A', 
-    averageGrade: 3.2, 
-    attendance: 72, 
-    behavior: 'needs_improvement',
-    subjects: ['History', 'Geography', 'Art']
-  }
+const sampleStudents = ref<Student[]>([
+  { id: '1', name: 'Max Mustermann', class: '10A', averageGrade: 2.1, attendance: 95, behavior: 'excellent', subjects: ['Mathematics', 'Physics', 'German'] },
+  { id: '2', name: 'Emma Schmidt', class: '10B', averageGrade: 1.8, attendance: 88, behavior: 'good', subjects: ['Biology', 'Chemistry', 'English'] },
+  { id: '3', name: 'Noah Fischer', class: '11A', averageGrade: 3.2, attendance: 72, behavior: 'needs_improvement', subjects: ['History', 'Geography', 'Art'] }
 ])
 
 // Quick block form
-const quickBlock = ref({
+const quickBlock = ref<{ title: string; category: TextBlock['category']; content: string }>({
   title: '',
   category: 'general',
   content: ''
 })
 
 // Text block form
-const blockForm = ref({
+const blockForm = ref<Omit<TextBlock, 'id'> & { conditions: BlockCondition[] }>({
   title: '',
   category: 'general',
   content: '',
@@ -423,7 +432,7 @@ const blockForm = ref({
 })
 
 // Text blocks data
-const textBlocks = ref([
+const textBlocks = ref<TextBlock[]>([
   {
     id: 1,
     title: language.value === 'de' ? 'Exzellente Leistung' : 'Excellent Performance',
@@ -456,7 +465,7 @@ const textBlocks = ref([
     category: 'attendance',
     content: language.value === 'de'
       ? 'Die Anwesenheit von {{StudentFirstName}} liegt bei nur {{Attendance}}%. Eine regelmäßigere Teilnahme am Unterricht ist für den Lernerfolg essentiell.'
-      : '{{StudentFirstName}}\'s attendance is only {{Attendance}}%. More regular participation in class is essential for learning success.',
+      : "{{StudentFirstName}}'s attendance is only {{Attendance}}%. More regular participation in class is essential for learning success.",
     priority: 8,
     active: true,
     conditions: [
@@ -490,7 +499,7 @@ const textBlocks = ref([
 ])
 
 // Block templates
-const blockTemplates = ref([
+const blockTemplates = ref<BlockTemplate[]>([
   {
     id: 1,
     title: language.value === 'de' ? 'Notenbezogener Kommentar' : 'Grade-based Comment',
@@ -514,80 +523,76 @@ const blockTemplates = ref([
 ])
 
 // Computed properties
-const filteredTextBlocks = computed(() => {
+const filteredTextBlocks = computed<TextBlock[]>(() => {
   if (!selectedBlockCategory.value) return textBlocks.value
   return textBlocks.value.filter(block => block.category === selectedBlockCategory.value)
 })
 
-const visibleBlocksForStudent = computed(() => {
+const visibleBlocksForStudent = computed<TextBlock[]>(() => {
   if (viewMode.value !== 'student') return []
   return textBlocks.value
     .filter(block => block.active && isBlockVisible(block))
     .sort((a, b) => b.priority - a.priority)
 })
 
-// Methods
-const toggleView = () => {
+// Methods (all params typed)
+const toggleView = (): void => {
   viewMode.value = viewMode.value === 'template' ? 'student' : 'template'
   if (viewMode.value === 'student') {
     updatePreview()
   }
 }
 
-const getCurrentStudent = () => {
-  return sampleStudents.value.find(s => s.id === selectedPreviewStudent.value)
+const getCurrentStudent = (): Student | undefined => {
+  return sampleStudents.value.find((s: Student) => s.id === selectedPreviewStudent.value)
 }
 
-const updatePreview = () => {
+const updatePreview = (): void => {
   // Trigger reactivity update
 }
 
-const isBlockVisible = (block) => {
+const isBlockVisible = (block: TextBlock): boolean => {
   if (!block.conditions || block.conditions.length === 0) return true
-  
   const student = getCurrentStudent()
   if (!student) return false
-
-  return block.conditions.every(condition => {
-    const studentValue = getStudentValue(student, condition.field)
-    const conditionValue = parseFloat(condition.value) || condition.value
-    
+  return block.conditions.every((condition: BlockCondition) => {
+    const studentValue = String(getStudentFieldValue(student, condition.field))
+    const conditionValue = String(condition.value)
     switch (condition.operator) {
       case '>': return parseFloat(studentValue) > parseFloat(conditionValue)
       case '<': return parseFloat(studentValue) < parseFloat(conditionValue)
       case '>=': return parseFloat(studentValue) >= parseFloat(conditionValue)
       case '<=': return parseFloat(studentValue) <= parseFloat(conditionValue)
-      case '=': return studentValue.toString() === conditionValue.toString()
-      case '!=': return studentValue.toString() !== conditionValue.toString()
+      case '=': return studentValue === conditionValue
+      case '!=': return studentValue !== conditionValue
+      case 'contains': return studentValue.toLowerCase().includes(conditionValue.toLowerCase())
       default: return true
     }
   })
 }
 
-const getStudentValue = (student, field) => {
-  const fieldMap = {
+const getStudentFieldValue = (student: Student, field: BlockCondition['field']): string | number => {
+  const fieldMap: Record<BlockCondition['field'], string | number> = {
     averageGrade: student.averageGrade,
     attendance: student.attendance,
     behavior: student.behavior,
     class: student.class,
+    subject: student.subjects.join(', ') || '',
     name: student.name
   }
-  return fieldMap[field] || ''
+  return fieldMap[field]
 }
 
-const renderBlockForStudent = (block) => {
+const renderBlockForStudent = (block: TextBlock): string => {
   const student = getCurrentStudent()
   if (!student) return block.content
-
   let content = block.content
-  
   // Replace placeholders
   content = content.replace(/\{\{StudentFirstName\}\}/g, student.name.split(' ')[0])
   content = content.replace(/\{\{StudentLastName\}\}/g, student.name.split(' ').slice(1).join(' '))
   content = content.replace(/\{\{AverageGrade\}\}/g, student.averageGrade.toString())
   content = content.replace(/\{\{Attendance\}\}/g, student.attendance.toString())
   content = content.replace(/\{\{BestSubject\}\}/g, student.subjects[0] || 'N/A')
-  
   // Add attendance description
   let attendanceDesc = 'good attendance'
   if (language.value === 'de') {
@@ -598,27 +603,27 @@ const renderBlockForStudent = (block) => {
                     student.attendance >= 80 ? 'good attendance' : 'poor attendance'
   }
   content = content.replace(/\{\{AttendanceDescription\}\}/g, attendanceDesc)
-  
   return content
 }
 
-const getBlockVisibilityClass = (block) => {
+const getBlockVisibilityClass = (block: TextBlock): string => {
   if (viewMode.value !== 'student') return ''
   return isBlockVisible(block) ? 'border-green-200 dark:border-green-700' : 'border-red-200 dark:border-red-700 opacity-60'
 }
 
-const formatConditionSummary = (condition) => {
-  const fieldNames = {
+const formatConditionSummary = (condition: BlockCondition): string => {
+  const fieldNames: Record<BlockCondition['field'], string> = {
     averageGrade: language.value === 'de' ? 'Note' : 'Grade',
     attendance: language.value === 'de' ? 'Anwesenheit' : 'Attendance',
     behavior: language.value === 'de' ? 'Verhalten' : 'Behavior',
-    class: language.value === 'de' ? 'Klasse' : 'Class'
+    class: language.value === 'de' ? 'Klasse' : 'Class',
+    name: language.value === 'de' ? 'Name' : 'Name',
+    subject: language.value === 'de' ? 'Fach' : 'Subject'
   }
-  
   return `${fieldNames[condition.field] || condition.field} ${condition.operator} ${condition.value}`
 }
 
-const addNewTextBlock = () => {
+const addNewTextBlock = (): void => {
   editingBlock.value = null
   blockForm.value = {
     title: '',
@@ -631,35 +636,36 @@ const addNewTextBlock = () => {
   showEditModal.value = true
 }
 
-const editTextBlock = (block) => {
+const editTextBlock = (block: TextBlock): void => {
   editingBlock.value = block
   blockForm.value = { ...block }
   showEditModal.value = true
 }
 
-const saveTextBlock = () => {
+const saveTextBlock = (): void => {
   if (!blockForm.value.title || !blockForm.value.content) return
-
   if (editingBlock.value) {
     // Update existing
-    const index = textBlocks.value.findIndex(b => b.id === editingBlock.value.id)
-    if (index !== -1) {
-      textBlocks.value[index] = { ...blockForm.value, id: editingBlock.value.id }
+    const blockId = editingBlock.value.id
+    if (blockId) {
+      const index = textBlocks.value.findIndex((b: TextBlock) => b.id === blockId)
+      if (index !== -1) {
+        textBlocks.value[index] = { ...blockForm.value, id: blockId }
+      }
     }
   } else {
     // Add new
-    const newBlock = {
+    const newBlock: TextBlock = {
       ...blockForm.value,
       id: Date.now()
     }
     textBlocks.value.push(newBlock)
   }
-
   showEditModal.value = false
 }
 
-const duplicateBlock = (block) => {
-  const newBlock = {
+const duplicateBlock = (block: TextBlock): void => {
+  const newBlock: TextBlock = {
     ...block,
     id: Date.now(),
     title: `${block.title} (Copy)`
@@ -667,19 +673,18 @@ const duplicateBlock = (block) => {
   textBlocks.value.push(newBlock)
 }
 
-const deleteBlock = (id) => {
+const deleteBlock = (id: number): void => {
   if (confirm(language.value === 'de' ? 'Block wirklich löschen?' : 'Really delete block?')) {
-    const index = textBlocks.value.findIndex(b => b.id === id)
+    const index = textBlocks.value.findIndex((b: TextBlock) => b.id === id)
     if (index !== -1) {
       textBlocks.value.splice(index, 1)
     }
   }
 }
 
-const createQuickBlock = () => {
+const createQuickBlock = (): void => {
   if (!quickBlock.value.title || !quickBlock.value.content) return
-
-  const newBlock = {
+  const newBlock: TextBlock = {
     id: Date.now(),
     title: quickBlock.value.title,
     category: quickBlock.value.category,
@@ -688,9 +693,7 @@ const createQuickBlock = () => {
     active: true,
     conditions: []
   }
-  
   textBlocks.value.push(newBlock)
-  
   // Reset form
   quickBlock.value = {
     title: '',
@@ -699,8 +702,8 @@ const createQuickBlock = () => {
   }
 }
 
-const useTemplate = (template) => {
-  const newBlock = {
+const useTemplate = (template: BlockTemplate): void => {
+  const newBlock: TextBlock = {
     id: Date.now(),
     title: template.title,
     category: template.category,
@@ -709,11 +712,10 @@ const useTemplate = (template) => {
     active: true,
     conditions: [...template.conditions]
   }
-  
   textBlocks.value.push(newBlock)
 }
 
-const addCondition = () => {
+const addCondition = (): void => {
   blockForm.value.conditions.push({
     field: 'averageGrade',
     operator: '>',
@@ -721,17 +723,17 @@ const addCondition = () => {
   })
 }
 
-const removeCondition = (index) => {
+const removeCondition = (index: number): void => {
   blockForm.value.conditions.splice(index, 1)
 }
 
-const saveAllBlocks = () => {
+const saveAllBlocks = (): void => {
   alert(language.value === 'de' ? 'Alle Textblöcke gespeichert!' : 'All text blocks saved!')
 }
 
 // Utility functions
-const getCategoryColor = (category) => {
-  const colors = {
+const getCategoryColor = (category: TextBlock['category']): string => {
+  const colors: Record<TextBlock['category'], string> = {
     academic: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200',
     behavior: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200',
     attendance: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200',
@@ -740,8 +742,8 @@ const getCategoryColor = (category) => {
   return colors[category] || colors.general
 }
 
-const getCategoryLabel = (category) => {
-  const labels = {
+const getCategoryLabel = (category: TextBlock['category']): string => {
+  const labels: Record<TextBlock['category'], string> = {
     academic: language.value === 'de' ? 'Akademisch' : 'Academic',
     behavior: language.value === 'de' ? 'Verhalten' : 'Behavior',
     attendance: language.value === 'de' ? 'Anwesenheit' : 'Attendance',
@@ -750,8 +752,8 @@ const getCategoryLabel = (category) => {
   return labels[category] || category
 }
 
-const getBlockBorderColor = (category) => {
-  const colors = {
+const getBlockBorderColor = (category: TextBlock['category']): string => {
+  const colors: Record<TextBlock['category'], string> = {
     academic: 'border-blue-500',
     behavior: 'border-green-500',
     attendance: 'border-yellow-500',

@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const isAuthenticated = computed(() => !!user.value)
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, _password: string) => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
     

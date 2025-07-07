@@ -103,16 +103,16 @@ import { ref, computed, defineProps, defineEmits } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { Upload, InfoIcon } from 'lucide-vue-next'
 
-const props = defineProps({
-  isImport: {
-    type: Boolean,
-    default: true
-  },
-  templates: {
-    type: Array,
-    default: () => []
-  }
-})
+// Type definitions
+interface Template {
+  id: string;
+  name: string;
+}
+
+const props = defineProps<{
+  isImport: boolean;
+  templates: Template[];
+}>()
 
 const emit = defineEmits(['process', 'cancel'])
 
@@ -120,7 +120,7 @@ const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
 // Form state
-const selectedTemplates = ref<number[]>([])
+const selectedTemplates = ref<string[]>([])
 const options = ref({
   renameExisting: true,
   preserveCategories: true

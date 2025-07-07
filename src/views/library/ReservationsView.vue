@@ -3,10 +3,53 @@ import { ref, computed, onMounted } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { 
   BookOpen, Download, Plus, Search, CheckCircle, XCircle, 
-  Users, History, Clock, Mail, TrendingUp, X
+  Clock, User, X
 } from 'lucide-vue-next'
 
-const { showToast } = useToast()
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface Reservation {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  bookAuthor: string;
+  isbn: string;
+  studentId: string;
+  studentName: string;
+  studentClass: string;
+  reservationDate: string;
+  expiryDate: string;
+  status: 'active' | 'expired' | 'fulfilled' | 'cancelled';
+  notes?: string;
+}
+
+interface User {
+  id: string
+  name: string
+  type: string
+  email: string
+}
+
+interface Book {
+  id: string
+  title: string
+  isbn: string
+  availability: number
+}
+
+interface NewReservation {
+  userId: string
+  bookId: string
+  notes: string
+}
+
+interface Filters {
+  status: string
+  method: string
+  dateFrom: string
+  dateTo: string
+}
+
+const { addToast } = useToast()
 
 // UI State
 const activeTab = ref('active')
@@ -16,12 +59,12 @@ const showApproveModal = ref(false)
 const showRejectModal = ref(false)
 const showFulfillModal = ref(false)
 const showHistoryModal = ref(false)
-const selectedReservation = ref(null)
-const selectedUser = ref(null)
+const selectedReservation = ref<Reservation | null>(null)
+const selectedUser = ref<User | null>(null)
 const rejectionReason = ref('')
 
 // Filters
-const filters = ref({
+const filters = ref<Filters>({
   status: '',
   method: '',
   dateFrom: '',
@@ -29,7 +72,7 @@ const filters = ref({
 })
 
 // Form Data
-const newReservation = ref({
+const newReservation = ref<NewReservation>({
   userId: '',
   bookId: '',
   notes: ''
@@ -42,95 +85,78 @@ const tabs = [
 ]
 
 // Mock Data - Enhanced Reservations
-const reservations = ref([
+const reservations = ref<Reservation[]>([
   {
-    id: 1,
-    userId: 'U001',
-    userName: 'Emma Thompson',
-    userType: 'Student',
+    id: 'R001',
     bookId: 'B001',
     bookTitle: 'Advanced Mathematics',
+    bookAuthor: 'Emma Thompson',
     isbn: '978-0123456789',
-    method: 'SELF_SERVICE',
-    status: 'PENDING',
-    priority: 1,
-    requestDate: '2024-01-15',
-    approvedDate: null,
-    fulfilledDate: null,
-    rejectedDate: null,
+    studentId: 'U001',
+    studentName: 'Emma Thompson',
+    studentClass: 'Student',
+    reservationDate: '2024-01-15',
+    expiryDate: '2024-01-15',
+    status: 'active',
     notes: 'Needed for calculus exam preparation'
   },
   {
-    id: 2,
-    userId: 'U002',
-    userName: 'James Wilson',
-    userType: 'Student',
+    id: 'R002',
     bookId: 'B002',
     bookTitle: 'Physics Fundamentals',
+    bookAuthor: 'James Wilson',
     isbn: '978-0987654321',
-    method: 'BARCODE',
-    status: 'APPROVED',
-    priority: 1,
-    requestDate: '2024-01-12',
-    approvedDate: '2024-01-13',
-    fulfilledDate: null,
-    rejectedDate: null,
-    notes: null
+    studentId: 'U002',
+    studentName: 'James Wilson',
+    studentClass: 'Student',
+    reservationDate: '2024-01-12',
+    expiryDate: '2024-01-13',
+    status: 'fulfilled'
   },
   {
-    id: 3,
-    userId: 'U003',
-    userName: 'Sofia Garcia',
-    userType: 'Staff',
+    id: 'R003',
     bookId: 'B003',
     bookTitle: 'Chemistry Lab Manual',
+    bookAuthor: 'Sofia Garcia',
     isbn: '978-0456789123',
-    method: 'MANUAL',
-    status: 'FULFILLED',
-    priority: 1,
-    requestDate: '2024-01-10',
-    approvedDate: '2024-01-11',
-    fulfilledDate: '2024-01-14',
-    rejectedDate: null,
+    studentId: 'U003',
+    studentName: 'Sofia Garcia',
+    studentClass: 'Staff',
+    reservationDate: '2024-01-10',
+    expiryDate: '2024-01-11',
+    status: 'fulfilled',
     notes: 'For semester lab sessions'
   },
   {
-    id: 4,
-    userId: 'U004',
-    userName: 'Michael Chen',
-    userType: 'Student',
+    id: 'R004',
     bookId: 'B001',
     bookTitle: 'Advanced Mathematics',
+    bookAuthor: 'Michael Chen',
     isbn: '978-0123456789',
-    method: 'SELF_SERVICE',
-    status: 'PENDING',
-    priority: 2,
-    requestDate: '2024-01-16',
-    approvedDate: null,
-    fulfilledDate: null,
-    rejectedDate: null,
-    notes: null
+    studentId: 'U004',
+    studentName: 'Michael Chen',
+    studentClass: 'Student',
+    reservationDate: '2024-01-16',
+    expiryDate: '2024-01-16',
+    status: 'active'
   },
   {
-    id: 5,
-    userId: 'U005',
-    userName: 'Anna Rodriguez',
-    userType: 'Teacher',
+    id: 'R005',
     bookId: 'B004',
     bookTitle: 'English Literature',
+    bookAuthor: 'Anna Rodriguez',
     isbn: '978-0789123456',
-    method: 'GROUP',
-    status: 'REJECTED',
-    priority: 1,
-    requestDate: '2024-01-08',
-    approvedDate: null,
-    fulfilledDate: null,
-    rejectedDate: '2024-01-09',
+    studentId: 'U005',
+    studentName: 'Anna Rodriguez',
+    studentClass: 'Teacher',
+    reservationDate: '2024-01-08',
+    expiryDate: '2024-01-09',
+    status: 'cancelled',
     notes: 'Requested for entire class - multiple copies needed'
   }
 ])
 
-const users = ref([
+const users = ref<User[]>([
   { id: 'U001', name: 'Emma Thompson', type: 'Student', email: 'emma.t@school.edu' },
   { id: 'U002', name: 'James Wilson', type: 'Student', email: 'james.w@school.edu' },
   { id: 'U003', name: 'Sofia Garcia', type: 'Staff', email: 'sofia.g@school.edu' },
@@ -138,7 +164,7 @@ const users = ref([
   { id: 'U005', name: 'Anna Rodriguez', type: 'Teacher', email: 'anna.r@school.edu' }
 ])
 
-const books = ref([
+const books = ref<Book[]>([
   { id: 'B001', title: 'Advanced Mathematics', isbn: '978-0123456789', availability: 2 },
   { id: 'B002', title: 'Physics Fundamentals', isbn: '978-0987654321', availability: 1 },
   { id: 'B003', title: 'Chemistry Lab Manual', isbn: '978-0456789123', availability: 3 },
@@ -147,20 +173,20 @@ const books = ref([
 
 // Computed Properties for Infographics
 const pendingCount = computed(() => {
-  return reservations.value.filter(r => r.status === 'PENDING').length
+  return reservations.value.filter(r => r.status === 'active').length
 })
 
 const approvedCount = computed(() => {
-  return reservations.value.filter(r => r.status === 'APPROVED').length
+  return reservations.value.filter(r => r.status === 'fulfilled').length
 })
 
 const rejectedCount = computed(() => {
   const oneWeekAgo = new Date()
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
   return reservations.value.filter(r => 
-    r.status === 'REJECTED' && 
-    r.rejectedDate && 
-    new Date(r.rejectedDate) >= oneWeekAgo
+    r.status === 'cancelled' && 
+    r.expiryDate && 
+    new Date(r.expiryDate) >= oneWeekAgo
   ).length
 })
 
@@ -168,16 +194,16 @@ const fulfilledThisWeek = computed(() => {
   const oneWeekAgo = new Date()
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
   return reservations.value.filter(r => 
-    r.status === 'FULFILLED' && 
-    r.fulfilledDate && 
-    new Date(r.fulfilledDate) >= oneWeekAgo
+    r.status === 'fulfilled' && 
+    r.expiryDate && 
+    new Date(r.expiryDate) >= oneWeekAgo
   ).length
 })
 
 const topReservedBook = computed(() => {
-  const bookCounts = {}
+  const bookCounts: Record<string, number> = {}
   reservations.value.forEach(r => {
-    if (r.status !== 'REJECTED') {
+    if (r.status !== 'cancelled') {
       bookCounts[r.bookTitle] = (bookCounts[r.bookTitle] || 0) + 1
     }
   })
@@ -187,10 +213,10 @@ const topReservedBook = computed(() => {
     return { title: 'No reservations', count: 0 }
   }
   
-  const topBook = entries.reduce((a, b) => a[1] > b[1] ? a : b)
+  const topBook = entries.reduce((a, b) => (a[1] as number) > (b[1] as number) ? a : b)
   return {
     title: topBook[0],
-    count: topBook[1]
+    count: topBook[1] as number
   }
 })
 
@@ -200,16 +226,16 @@ const filteredReservations = computed(() => {
 
   // Filter by tab
   if (activeTab.value === 'active') {
-    filtered = filtered.filter(r => ['PENDING', 'APPROVED'].includes(r.status))
+    filtered = filtered.filter(r => ['active', 'fulfilled'].includes(r.status))
   } else {
-    filtered = filtered.filter(r => ['FULFILLED', 'REJECTED'].includes(r.status))
+    filtered = filtered.filter(r => ['fulfilled', 'cancelled'].includes(r.status))
   }
   
   // Search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(r => 
-      r.userName.toLowerCase().includes(query) ||
+      r.studentName.toLowerCase().includes(query) ||
       r.bookTitle.toLowerCase().includes(query) ||
       r.isbn.includes(query)
     )
@@ -222,62 +248,49 @@ const filteredReservations = computed(() => {
   
   // Method filter
   if (filters.value.method) {
-    filtered = filtered.filter(r => r.method === filters.value.method)
+    filtered = filtered.filter(r => r.studentClass === filters.value.method)
   }
   
   // Date filters
   if (filters.value.dateFrom) {
-    filtered = filtered.filter(r => r.requestDate >= filters.value.dateFrom)
+    filtered = filtered.filter(r => r.reservationDate >= filters.value.dateFrom)
   }
   
   if (filters.value.dateTo) {
-    filtered = filtered.filter(r => r.requestDate <= filters.value.dateTo)
+    filtered = filtered.filter(r => r.reservationDate <= filters.value.dateTo)
   }
 
   return filtered
 })
 
 // Utility functions
-const getStatusColor = (status) => {
-  const colors = {
-    'PENDING': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-    'APPROVED': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    'FULFILLED': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-    'REJECTED': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+const getStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    'active': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+    'fulfilled': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
   }
   return colors[status] || 'bg-gray-100 text-gray-800'
 }
 
-const getMethodColor = (method) => {
-  const colors = {
-    'MANUAL': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-    'SELF_SERVICE': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    'BARCODE': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-    'GROUP': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+const getMethodColor = (method: string) => {
+  const colors: Record<string, string> = {
+    'Student': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    'Staff': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    'Teacher': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
   }
   return colors[method] || 'bg-gray-100 text-gray-800'
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    })
-  } catch (error) {
-    return dateString
-  }
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('de-DE')
 }
 
-const formatMethod = (method) => {
-  const methodNames = {
-    'MANUAL': 'Manual',
-    'SELF_SERVICE': 'Self-Service',
-    'BARCODE': 'Barcode',
-    'GROUP': 'Group Request'
+const formatMethod = (method: string) => {
+  const methodNames: Record<string, string> = {
+    'Student': 'Student',
+    'Staff': 'Staff',
+    'Teacher': 'Teacher'
   }
   return methodNames[method] || method
 }
@@ -293,62 +306,73 @@ const clearFilters = () => {
 }
 
 // Modal handlers
-const openApproveModal = (reservation) => {
+const openApproveModal = (reservation: Reservation) => {
   selectedReservation.value = reservation
   showApproveModal.value = true
 }
 
-const openRejectModal = (reservation) => {
+const openRejectModal = (reservation: Reservation) => {
   selectedReservation.value = reservation
   rejectionReason.value = ''
   showRejectModal.value = true
 }
 
-const openFulfillModal = (reservation) => {
+const openFulfillModal = (reservation: Reservation) => {
   selectedReservation.value = reservation
   showFulfillModal.value = true
 }
 
-const viewUserHistory = (userId) => {
-  selectedUser.value = users.value.find(u => u.id === userId)
+const viewUserHistory = (userId: string) => {
+  selectedUser.value = users.value.find(u => u.id === userId) || null
   showHistoryModal.value = true
 }
 
-const getUserReservations = (userId) => {
-  return reservations.value.filter(r => r.userId === userId)
+const getUserReservations = (userId: string) => {
+  return reservations.value.filter(r => r.studentId === userId)
 }
 
 // Action handlers
 const handleAddReservation = async () => {
+  if (!newReservation.value.userId || !newReservation.value.bookId) {
+    addToast({
+      message: 'Please select both user and book',
+      type: 'error'
+    })
+    return
+  }
+
   try {
     const user = users.value.find(u => u.id === newReservation.value.userId)
     const book = books.value.find(b => b.id === newReservation.value.bookId)
     
     if (!user || !book) {
-      showToast('Please select both user and book', 'error')
-    return
-  }
+      addToast({
+        message: 'Please select both user and book',
+        type: 'error'
+      })
+      return
+    }
 
-    const newReservationRecord = {
-      id: Date.now(),
-      userId: user.id,
-      userName: user.name,
-      userType: user.type,
+    const newReservationRecord: Reservation = {
+      id: 'R' + Date.now(),
       bookId: book.id,
       bookTitle: book.title,
+      bookAuthor: '',
       isbn: book.isbn,
-      method: 'MANUAL',
-      status: 'PENDING',
-      priority: 1,
-      requestDate: new Date().toISOString().split('T')[0],
-      approvedDate: null,
-      fulfilledDate: null,
-      rejectedDate: null,
+      studentId: user.id,
+      studentName: user.name,
+      studentClass: user.type,
+      reservationDate: new Date().toISOString().split('T')[0],
+      expiryDate: new Date().toISOString().split('T')[0],
+      status: 'active',
       notes: newReservation.value.notes
     }
     
     reservations.value.unshift(newReservationRecord)
-    showToast('Manual reservation created successfully', 'success')
+    addToast({
+      message: 'Manual reservation created successfully',
+      type: 'success'
+    })
     showAddModal.value = false
     
     // Reset form
@@ -358,7 +382,10 @@ const handleAddReservation = async () => {
       notes: ''
     }
   } catch (error) {
-    showToast('Failed to create reservation', 'error')
+    addToast({
+      message: 'Failed to create reservation',
+      type: 'error'
+    })
   }
 }
 
@@ -366,14 +393,20 @@ const handleApproveReservation = async () => {
   if (!selectedReservation.value) return
   
   try {
-    selectedReservation.value.status = 'APPROVED'
-    selectedReservation.value.approvedDate = new Date().toISOString().split('T')[0]
+    selectedReservation.value.status = 'fulfilled'
+    selectedReservation.value.expiryDate = new Date().toISOString().split('T')[0]
     
-    showToast('Reservation approved successfully', 'success')
+    addToast({
+      message: 'Reservation approved successfully',
+      type: 'success'
+    })
     showApproveModal.value = false
     selectedReservation.value = null
   } catch (error) {
-    showToast('Failed to approve reservation', 'error')
+    addToast({
+      message: 'Failed to approve reservation',
+      type: 'error'
+    })
   }
 }
 
@@ -381,21 +414,25 @@ const handleRejectReservation = async () => {
   if (!selectedReservation.value) return
   
   try {
-    selectedReservation.value.status = 'REJECTED'
-    selectedReservation.value.rejectedDate = new Date().toISOString().split('T')[0]
+    selectedReservation.value.status = 'cancelled'
+    selectedReservation.value.expiryDate = new Date().toISOString().split('T')[0]
     
     if (rejectionReason.value) {
-      selectedReservation.value.notes = selectedReservation.value.notes 
-        ? `${selectedReservation.value.notes} | Rejection reason: ${rejectionReason.value}`
-        : `Rejection reason: ${rejectionReason.value}`
+      selectedReservation.value.notes = rejectionReason.value
     }
     
-    showToast('Reservation rejected successfully', 'success')
+    addToast({
+      message: 'Reservation rejected successfully',
+      type: 'success'
+    })
     showRejectModal.value = false
     selectedReservation.value = null
     rejectionReason.value = ''
   } catch (error) {
-    showToast('Failed to reject reservation', 'error')
+    addToast({
+      message: 'Failed to reject reservation',
+      type: 'error'
+    })
   }
 }
 
@@ -403,27 +440,42 @@ const handleFulfillReservation = async () => {
   if (!selectedReservation.value) return
   
   try {
-    selectedReservation.value.status = 'FULFILLED'
-    selectedReservation.value.fulfilledDate = new Date().toISOString().split('T')[0]
+    selectedReservation.value.status = 'fulfilled'
+    selectedReservation.value.expiryDate = new Date().toISOString().split('T')[0]
     
-    showToast('Reservation fulfilled - proceeding to lending workflow', 'success')
+    addToast({
+      message: 'Reservation fulfilled - proceeding to lending workflow',
+      type: 'success'
+    })
     showFulfillModal.value = false
     selectedReservation.value = null
   } catch (error) {
-    showToast('Failed to fulfill reservation', 'error')
+    addToast({
+      message: 'Failed to fulfill reservation',
+      type: 'error'
+    })
   }
 }
 
 const exportReservations = async (format = 'csv') => {
   try {
-    showToast(`Exporting reservations as ${format.toUpperCase()}...`, 'info')
+    addToast({
+      message: `Exporting reservations as ${format.toUpperCase()}...`,
+      type: 'info'
+    })
     
     // Simulate export process
     setTimeout(() => {
-      showToast('Export completed successfully', 'success')
+      addToast({
+        message: 'Export completed successfully',
+        type: 'success'
+      })
     }, 2000)
   } catch (error) {
-    showToast('Failed to export reservations', 'error')
+    addToast({
+      message: 'Failed to export reservations',
+      type: 'error'
+    })
   }
 }
 
@@ -583,10 +635,9 @@ onMounted(() => {
                 class="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
               >
                 <option value="">All Status</option>
-                <option value="PENDING">Pending</option>
-                <option value="APPROVED">Approved</option>
-                <option value="REJECTED">Rejected</option>
-                <option value="FULFILLED">Fulfilled</option>
+                <option value="active">Active</option>
+                <option value="fulfilled">Fulfilled</option>
+                <option value="cancelled">Cancelled</option>
               </select>
               
               <select
@@ -594,10 +645,9 @@ onMounted(() => {
                 class="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-600 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
               >
                 <option value="">All Methods</option>
-                <option value="MANUAL">Manual</option>
-                <option value="SELF_SERVICE">Self Service</option>
-                <option value="BARCODE">Barcode</option>
-                <option value="GROUP">Group</option>
+                <option value="Student">Student</option>
+                <option value="Staff">Staff</option>
+                <option value="Teacher">Teacher</option>
               </select>
               
               <button
@@ -618,8 +668,8 @@ onMounted(() => {
                 <div class="flex-1">
                   <div class="flex items-start gap-4">
                     <div class="flex-1">
-                      <h3 class="font-semibold text-slate-600 dark:text-white">{{ reservation.userName }}</h3>
-                      <p class="text-sm text-slate-500 dark:text-gray-400">{{ reservation.userType }} • {{ reservation.bookTitle }}</p>
+                      <h3 class="font-semibold text-slate-600 dark:text-white">{{ reservation.studentName }}</h3>
+                      <p class="text-sm text-slate-500 dark:text-gray-400">{{ reservation.studentClass }} • {{ reservation.bookTitle }}</p>
                       <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">ISBN: {{ reservation.isbn }}</p>
                       <p v-if="reservation.notes" class="text-sm text-slate-600 dark:text-gray-300 mt-2">{{ reservation.notes }}</p>
                     </div>
@@ -628,41 +678,41 @@ onMounted(() => {
                 
                 <div class="flex flex-col lg:flex-row items-start lg:items-center gap-4">
                   <div class="text-right">
-                    <div class="text-sm text-slate-500 dark:text-gray-400">{{ formatDate(reservation.requestDate) }}</div>
+                    <div class="text-sm text-slate-500 dark:text-gray-400">{{ formatDate(reservation.reservationDate) }}</div>
                     <div class="flex gap-2 mt-2">
                       <span :class="getStatusColor(reservation.status)" class="px-2 py-1 text-xs font-medium rounded-full">
                 {{ reservation.status }}
               </span>
-                      <span :class="getMethodColor(reservation.method)" class="px-2 py-1 text-xs font-medium rounded-full">
-                        {{ formatMethod(reservation.method) }}
+                      <span :class="getMethodColor(reservation.studentClass)" class="px-2 py-1 text-xs font-medium rounded-full">
+                        {{ formatMethod(reservation.studentClass) }}
                       </span>
                     </div>
               </div>
                   
                   <div v-if="activeTab === 'active'" class="flex gap-2">
                     <button
-                      v-if="reservation.status === 'PENDING'"
+                      v-if="reservation.status === 'active'"
                       @click="openApproveModal(reservation)"
                       class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors"
                 >
                   Approve
                     </button>
                     <button
-                      v-if="reservation.status === 'PENDING'"
+                      v-if="reservation.status === 'active'"
                       @click="openRejectModal(reservation)"
                       class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition-colors"
                     >
                       Reject
                     </button>
                     <button
-                      v-if="reservation.status === 'APPROVED'"
+                      v-if="reservation.status === 'fulfilled'"
                       @click="openFulfillModal(reservation)"
                       class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors"
                 >
                   Fulfill
                     </button>
                     <button
-                      @click="viewUserHistory(reservation.userId)"
+                      @click="viewUserHistory(reservation.studentId)"
                       class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
                     >
                       History
@@ -759,7 +809,7 @@ onMounted(() => {
           </div>
 
           <p class="text-slate-600 dark:text-gray-300 mb-6">
-            Are you sure you want to approve this reservation for <strong>{{ selectedReservation?.userName }}</strong>?
+            Are you sure you want to approve this reservation for <strong>{{ selectedReservation?.studentName }}</strong>?
           </p>
 
           <div class="flex justify-end gap-3">
@@ -793,7 +843,7 @@ onMounted(() => {
 
           <div class="space-y-4">
             <p class="text-slate-600 dark:text-gray-300">
-              Rejecting reservation for <strong>{{ selectedReservation?.userName }}</strong>
+              Rejecting reservation for <strong>{{ selectedReservation?.studentName }}</strong>
             </p>
 
         <div>
@@ -837,7 +887,7 @@ onMounted(() => {
           </div>
 
           <p class="text-slate-600 dark:text-gray-300 mb-6">
-            Mark this reservation as fulfilled and proceed to book lending for <strong>{{ selectedReservation?.userName }}</strong>?
+            Mark this reservation as fulfilled and proceed to book lending for <strong>{{ selectedReservation?.studentName }}</strong>?
           </p>
 
           <div class="flex justify-end gap-3">
@@ -866,7 +916,7 @@ onMounted(() => {
             <div>
               <h3 class="text-lg font-semibold text-slate-600 dark:text-white">Reservation History</h3>
               <p v-if="selectedUser" class="text-sm text-slate-500 dark:text-gray-400">
-                {{ selectedUser.name }} ({{ selectedUser.type }}) - {{ selectedUser.email }}
+                {{ selectedUser?.name }} ({{ selectedUser?.type }}) - {{ selectedUser?.email }}
               </p>
             </div>
             <button @click="showHistoryModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -874,8 +924,8 @@ onMounted(() => {
             </button>
           </div>
 
-          <div v-if="selectedUser" class="space-y-4">
-            <div v-for="reservation in getUserReservations(selectedUser.id)" :key="reservation.id" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                      <div v-if="selectedUser" class="space-y-4">
+              <div v-for="reservation in getUserReservations(selectedUser?.id || '')" :key="reservation.id" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
               <div class="flex justify-between items-start">
                 <div class="flex-1">
                   <div class="font-medium text-slate-600 dark:text-white">{{ reservation.bookTitle }}</div>
@@ -883,7 +933,7 @@ onMounted(() => {
                   <div class="text-sm text-slate-500 dark:text-gray-400 mt-1">{{ reservation.notes || 'No notes' }}</div>
                 </div>
                 <div class="text-right">
-                  <div class="text-sm text-slate-500 dark:text-gray-400">{{ formatDate(reservation.requestDate) }}</div>
+                  <div class="text-sm text-slate-500 dark:text-gray-400">{{ formatDate(reservation.reservationDate) }}</div>
                   <span 
                     :class="getStatusColor(reservation.status)"
                     class="px-2 py-1 text-xs font-medium rounded-full mt-1 inline-block"
@@ -894,7 +944,7 @@ onMounted(() => {
               </div>
             </div>
             
-            <div v-if="getUserReservations(selectedUser.id).length === 0" class="text-center py-8">
+            <div v-if="getUserReservations(selectedUser?.id || '').length === 0" class="text-center py-8">
               <div class="text-slate-500 dark:text-gray-400">No reservation history found for this user.</div>
             </div>
           </div>

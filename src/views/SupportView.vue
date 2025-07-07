@@ -501,13 +501,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { useAuthStore } from '../stores/auth'
-import { Plus, MessageCircle, Clock, User, CheckCircle, AlertCircle, XCircle, Search, Filter, Phone, Mail, Globe, Wrench, AlertTriangle, Info, Calendar, Eye, Download } from 'lucide-vue-next'
+import { Plus, MessageCircle, Search, Wrench, Info, Eye, Download, BookOpen, Settings, FileText, HelpCircle } from 'lucide-vue-next'
 
-const router = useRouter()
 const themeStore = useThemeStore()
 const authStore = useAuthStore()
 const language = computed(() => themeStore.language)

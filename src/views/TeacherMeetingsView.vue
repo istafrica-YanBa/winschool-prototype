@@ -393,7 +393,7 @@
     </transition>
 
     <!-- Day Meetings Modal -->
-    <div v-if="selectedDay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" @click="selectedDay = null">
+    <div v-if="selectedDay && selectedDay.meetings" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" @click="selectedDay = null">
       <div class="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full p-6" @click.stop>
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200">
@@ -575,6 +575,50 @@ import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { Calendar, List, Plus, Clock, TrendingUp, CheckCircle, AlertCircle, X, ChevronLeft, ChevronRight, User, MapPin } from 'lucide-vue-next'
 
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+type Teacher = { id: number; name: string; avatar: string }
+type Child = { id: number; name: string }
+type Meeting = {
+  id: number
+  date: string
+  time: string
+  parentName: string
+  parentAvatar: string
+  studentName: string
+  purpose: string
+  status: string
+  location: string
+  notes?: string
+}
+type BookingForm = {
+  teacherId: string
+  childId: string
+  purpose: string
+  studentId: string
+  preferredDate: string
+  preferredTime: string
+}
+type MeetingRequest = {
+  id: number
+  parentName: string
+  parentAvatar: string
+  studentName: string
+  purpose: string
+  requestedDate: string
+  requestedTime: string
+  requestedAt: string
+  status: string
+  location: string
+  notes: string
+}
+type Day = {
+  day: number;
+  date: string;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  meetings: Meeting[];
+};
+
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
@@ -585,28 +629,47 @@ const selectedStatus = ref('')
 const showRequestModal = ref(false)
 
 // Form data
-const requestForm = ref({
+const requestForm = ref<BookingForm>({
+  teacherId: '',
+  childId: '',
+  purpose: '',
   studentId: '',
   preferredDate: '',
-  preferredTime: '',
-  purpose: ''
+  preferredTime: ''
 })
 
 // Calendar data
 const currentDate = ref(new Date())
-const selectedDay = ref(null)
-const selectedMeeting = ref(null)
+const selectedDay = ref<Day | null>(null)
+const selectedMeeting = ref<Meeting | null>(null)
 
 // Sample data for teacher perspective
-const students = ref([
-  { id: 1, name: 'Emma Müller', className: 'Class 10A' },
-  { id: 2, name: 'Liam Weber', className: 'Class 10A' },
-  { id: 3, name: 'Sophie Schmidt', className: 'Class 10B' },
-  { id: 4, name: 'Max Fischer', className: 'Class 10B' }
+const students = ref<Child[]>([
+  { id: 1, name: 'Emma Müller' },
+  { id: 2, name: 'Liam Weber' },
+  { id: 3, name: 'Sophie Schmidt' },
+  { id: 4, name: 'Max Fischer' }
 ])
 
-// All meetings
-const meetings = ref([
+const teachers = ref<Teacher[]>([
+  { id: 1, name: 'Anna Svensson', avatar: 'https://i.pravatar.cc/150?img=21' },
+  { id: 2, name: 'Erik Johansson', avatar: 'https://i.pravatar.cc/150?img=22' }
+])
+const children = ref<Child[]>([
+  { id: 1, name: 'Lisa Svensson' },
+  { id: 2, name: 'Karl Johansson' }
+])
+const bookingForm = ref<BookingForm>({
+  teacherId: '',
+  childId: '',
+  purpose: '',
+  studentId: '',
+  preferredDate: '',
+  preferredTime: ''
+})
+const showBookingModal = ref(false)
+
+const meetings = ref<Meeting[]>([
   {
     id: 1,
     date: '2024-01-25',
@@ -666,28 +729,32 @@ const meetings = ref([
 ])
 
 // Pending requests from parents
-const pendingRequests = ref([
+const pendingRequests = ref<MeetingRequest[]>([
   {
     id: 1,
     parentName: 'Maria Müller',
     parentAvatar: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     studentName: 'Emma Müller',
+    purpose: 'Discuss Emma\'s progress in mathematics and upcoming exams',
     requestedDate: '2024-01-30',
     requestedTime: '10:00 AM',
-    purpose: 'Discuss Emma\'s progress in mathematics and upcoming exams',
     requestedAt: '2024-01-20',
-    status: 'pending'
+    status: 'pending',
+    location: 'TBD',
+    notes: ''
   },
   {
     id: 2,
     parentName: 'Klaus Weber',
     parentAvatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     studentName: 'Liam Weber',
+    purpose: 'Review Liam\'s chemistry lab performance and study habits',
     requestedDate: '2024-02-01',
     requestedTime: '2:00 PM',
-    purpose: 'Review Liam\'s chemistry lab performance and study habits',
     requestedAt: '2024-01-21',
-    status: 'pending'
+    status: 'pending',
+    location: 'TBD',
+    notes: ''
   }
 ])
 
@@ -721,7 +788,7 @@ const upcomingMeetings = computed(() => {
   const now = new Date()
   return meetings.value.filter(meeting => {
     const meetingDate = new Date(meeting.date)
-    return meetingDate >= now && (selectedStudent.value === '' || meeting.studentName.includes(students.value.find(s => s.id == selectedStudent.value)?.name || ''))
+    return meetingDate >= now && (selectedStudent.value === '' || meeting.studentName.includes(students.value.find(s => String(s.id) === selectedStudent.value)?.name || ''))
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 })
 
@@ -729,7 +796,7 @@ const pastMeetings = computed(() => {
   const now = new Date()
   return meetings.value.filter(meeting => {
     const meetingDate = new Date(meeting.date)
-    return meetingDate < now && (selectedStudent.value === '' || meeting.studentName.includes(students.value.find(s => s.id == selectedStudent.value)?.name || ''))
+    return meetingDate < now && (selectedStudent.value === '' || meeting.studentName.includes(students.value.find(s => String(s.id) === selectedStudent.value)?.name || ''))
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 })
 
@@ -812,11 +879,11 @@ const nextMonth = () => {
   currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
 }
 
-const showDayMeetings = (day: any) => {
+const showDayMeetings = (day: Day) => {
   selectedDay.value = day
 }
 
-const showMeetingDetails = (meeting: any) => {
+const showMeetingDetails = (meeting: Meeting) => {
   selectedMeeting.value = meeting
   selectedDay.value = null
 }
@@ -848,40 +915,37 @@ const getMeetingStatusBadgeColor = (status: string) => {
 }
 
 const getMeetingStatusText = (status: string) => {
-  const statusTexts = {
-    en: {
-      scheduled: 'Scheduled',
-      completed: 'Completed',
-      cancelled: 'Cancelled'
-    },
+  const statusTexts: Record<string, Record<string, string>> = {
     de: {
       scheduled: 'Geplant',
       completed: 'Abgeschlossen',
       cancelled: 'Abgesagt'
+    },
+    en: {
+      scheduled: 'Scheduled',
+      completed: 'Completed',
+      cancelled: 'Cancelled'
     }
   }
-  
   return statusTexts[language.value][status] || status
 }
 
-const cancelMeeting = (meeting: any) => {
+const cancelMeeting = (meeting: Meeting) => {
   // Implementation for canceling meeting
   console.log('Canceling meeting:', meeting)
   meeting.status = 'cancelled'
   selectedMeeting.value = null
 }
 
-const rescheduleSelectedMeeting = (meeting: any) => {
+const rescheduleSelectedMeeting = (meeting: Meeting) => {
   // Implementation for rescheduling meeting
   console.log('Rescheduling meeting:', meeting)
   selectedMeeting.value = null
 }
 
-const approveRequest = (request: any) => {
-  // Implementation for approving meeting request
-  console.log('Approving request:', request)
+const approveRequest = (request: MeetingRequest) => {
   // Remove from pending and add to scheduled meetings
-  const index = pendingRequests.value.findIndex(r => r.id === request.id)
+  const index = pendingRequests.value.findIndex((r: MeetingRequest) => r.id === request.id)
   if (index > -1) {
     pendingRequests.value.splice(index, 1)
     meetings.value.push({
@@ -889,33 +953,51 @@ const approveRequest = (request: any) => {
       date: request.requestedDate,
       time: request.requestedTime,
       parentName: request.parentName,
+      parentAvatar: request.parentAvatar,
       studentName: request.studentName,
       purpose: request.purpose,
       status: 'scheduled',
-      location: 'TBD'
+      location: request.location,
+      notes: request.notes
     })
   }
 }
 
-const showRescheduleModal = (request: any) => {
+const showRescheduleModal = (request: MeetingRequest) => {
   // Implementation for showing reschedule modal
   console.log('Reschedule request:', request)
 }
 
-const declineRequest = (request: any) => {
+const declineRequest = (request: MeetingRequest) => {
   // Implementation for declining meeting request
   console.log('Declining request:', request)
-  const index = pendingRequests.value.findIndex(r => r.id === request.id)
+  const index = pendingRequests.value.findIndex((r: MeetingRequest) => r.id === request.id)
   if (index > -1) {
     pendingRequests.value.splice(index, 1)
   }
 }
 
 const requestMeeting = () => {
-  // Implementation for teacher requesting meeting with parent
-  console.log('Requesting meeting:', requestForm.value)
-  showRequestModal.value = false
-  requestForm.value = { studentId: '', preferredDate: '', preferredTime: '', purpose: '' }
+  const selectedTeacher = teachers.value.find((t: Teacher) => String(t.id) === bookingForm.value.teacherId)
+  const selectedChildName = children.value.find((c: Child) => String(c.id) === bookingForm.value.childId)?.name
+  
+  if (selectedTeacher && selectedChildName) {
+    meetings.value.push({
+      id: Date.now(),
+      date: new Date().toISOString().split('T')[0],
+      time: 'TBD',
+      parentName: 'You',
+      parentAvatar: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+      studentName: selectedChildName,
+      purpose: bookingForm.value.purpose,
+      status: 'scheduled',
+      location: 'TBD',
+      notes: ''
+    })
+    
+    showBookingModal.value = false
+    bookingForm.value = { teacherId: '', childId: '', purpose: '', studentId: '', preferredDate: '', preferredTime: '' }
+  }
 }
 </script>
 

@@ -556,6 +556,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
+import { useThemeStore } from '@/stores/theme'
+
+const themeStore = useThemeStore()
+const language = computed(() => themeStore.language)
 
 // State Management
 const isOptimizing = ref(false)
@@ -805,17 +809,6 @@ const runOptimization = async () => {
 
 const exportReport = () => {
   console.log('Exporting optimization report...')
-  
-  // Generate comprehensive report data
-  const reportData = {
-    generatedAt: new Date().toISOString(),
-    optimizationStats: optimizationStats.value,
-    optimizationResults: optimizationResults.value,
-    historicalRuns: historicalRuns.value,
-    conflictAlerts: conflictAlerts.value,
-    smartSuggestions: smartSuggestions.value,
-    settings: optimizationSettings
-  }
   
   // Create and download CSV
   const csvContent = [

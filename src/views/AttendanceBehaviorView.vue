@@ -535,7 +535,7 @@ import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { 
   Download, Settings, AlertTriangle, X, Trash2, Calendar, 
-  ClipboardCheck, AlertCircle, CheckCircle
+  ClipboardCheck, AlertCircle
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()

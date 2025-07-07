@@ -1,13 +1,79 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
-import { 
-  BookOpen, Users, GraduationCap, Building, 
-  AlertCircle, Calendar, Search, Plus, RotateCcw, 
-  Eye, Filter, Clock, User, Book, X, Check
-} from 'lucide-vue-next'
+import { BookOpen, Users, GraduationCap, Building, Search, Plus, Eye, X } from 'lucide-vue-next'
+import { LoanStatus } from '@/types/library'
 
-const { showToast } = useToast()
+// Type definitions
+interface Student {
+  id: string
+  name: string
+  class: string
+  avatar: string
+  email: string
+}
+
+interface Staff {
+  id: string
+  name: string
+  department: string
+  avatar: string
+  email: string
+}
+
+interface Class {
+  id: string
+  name: string
+  year: string
+  avatar: string
+}
+
+interface Course {
+  id: string
+  name: string
+  code: string
+  avatar: string
+}
+
+interface BookItem {
+  id: string
+  title: string
+  author: string
+  isbn: string
+  available: number
+}
+
+interface Lending {
+  id: number
+  type: string
+  borrowerName: string
+  borrowerId: string
+  bookTitle: string
+  bookId: string
+  isbn: string
+  dateBorrowed: string
+  dueDate: string
+  status: LoanStatus
+  notes: string
+  copies?: number
+}
+
+interface NewLending {
+  type: string
+  borrowerId: string
+  borrowerName: string
+  bookId: string
+  bookTitle: string
+  isbn: string
+  dateBorrowed: string
+  dueDate: string
+  copies: number
+  notes: string
+  class?: string
+  department?: string
+}
+
+const { addToast } = useToast()
 
 // Active tab management
 const activeTab = ref('student')
@@ -17,10 +83,10 @@ const isLoading = ref(false)
 const isMobile = ref(false)
 const showLendingModal = ref(false)
 const showTakeBackModal = ref(false)
-const selectedLending = ref(null)
+const selectedLending = ref<Lending | null>(null)
 
 // Mock lending data
-const lendings = ref([
+const lendings = ref<Lending[]>([
   // Student Lendings
   {
     id: 1,
@@ -32,7 +98,7 @@ const lendings = ref([
     isbn: '978-3-16-148410-0',
     dateBorrowed: '2024-03-01',
     dueDate: '2024-03-31',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     notes: 'For semester project'
   },
   {
@@ -45,7 +111,7 @@ const lendings = ref([
     isbn: '978-3-16-148411-7',
     dateBorrowed: '2024-02-15',
     dueDate: '2024-03-15',
-    status: 'overdue',
+    status: LoanStatus.OVERDUE,
     notes: 'Research material'
   },
   {
@@ -58,7 +124,7 @@ const lendings = ref([
     isbn: '978-3-16-148415-5',
     dateBorrowed: '2024-03-05',
     dueDate: '2024-04-05',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     notes: 'Class assignment'
   },
   // Staff Lendings
@@ -72,7 +138,7 @@ const lendings = ref([
     isbn: '978-3-16-148412-4',
     dateBorrowed: '2024-03-10',
     dueDate: '2024-04-10',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     notes: 'Teaching reference'
   },
   {
@@ -85,7 +151,7 @@ const lendings = ref([
     isbn: '978-3-16-148416-2',
     dateBorrowed: '2024-02-28',
     dueDate: '2024-03-20',
-    status: 'overdue',
+    status: LoanStatus.OVERDUE,
     notes: 'Research project'
   },
   // Class Lendings
@@ -99,7 +165,7 @@ const lendings = ref([
     isbn: '978-3-16-148413-1',
     dateBorrowed: '2024-03-05',
     dueDate: '2024-04-05',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     copies: 25,
     notes: 'Class set for experiments'
   },
@@ -113,7 +179,7 @@ const lendings = ref([
     isbn: '978-3-16-148417-9',
     dateBorrowed: '2024-03-12',
     dueDate: '2024-04-12',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     copies: 30,
     notes: 'Geography project'
   },
@@ -128,7 +194,7 @@ const lendings = ref([
     isbn: '978-3-16-148414-8',
     dateBorrowed: '2024-02-20',
     dueDate: '2024-05-20',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     copies: 45,
     notes: 'Semester textbook'
   },
@@ -142,14 +208,14 @@ const lendings = ref([
     isbn: '978-3-16-148418-6',
     dateBorrowed: '2024-03-01',
     dueDate: '2024-06-01',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     copies: 20,
     notes: 'Advanced physics course'
   }
 ])
 
 // New lending form
-const newLending = ref({
+const newLending = ref<NewLending>({
   type: 'student',
   borrowerId: '',
   borrowerName: '',
@@ -169,7 +235,7 @@ const itemsPerPage = ref(10)
 
 // Computed metrics for infographics
 const totalActiveLendings = computed(() => 
-  lendings.value.filter(l => l.status === 'active').length
+  lendings.value.filter(l => l.status === LoanStatus.ACTIVE).length
 )
 
 const studentLendings = computed(() => 
@@ -189,7 +255,7 @@ const courseLendings = computed(() =>
 )
 
 const overdueReturns = computed(() => 
-  lendings.value.filter(l => l.status === 'overdue').length
+  lendings.value.filter(l => l.status === LoanStatus.OVERDUE).length
 )
 
 // Filtered lendings by active tab
@@ -219,84 +285,92 @@ const totalPages = computed(() =>
 )
 
 // Methods
-const formatDate = (dateString) => {
+const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('de-DE')
 }
 
-const getDaysUntilDue = (dueDate) => {
+const getDaysUntilDue = (dueDate: string) => {
   const today = new Date()
   const due = new Date(dueDate)
-  const diffTime = due - today
+  const diffTime = due.getTime() - today.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   return diffDays
 }
 
-const getStatusColor = (status) => {
+const getStatusColor = (status: LoanStatus) => {
   switch (status) {
-    case 'active': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-    case 'overdue': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-    case 'returned': return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300'
+    case LoanStatus.ACTIVE: return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+    case LoanStatus.OVERDUE: return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+    case LoanStatus.RETURNED: return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300'
     default: return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300'
   }
 }
 
-const getStatusText = (status) => {
+const getStatusText = (status: LoanStatus) => {
   switch (status) {
-    case 'active': return 'Active'
-    case 'overdue': return 'Overdue'
-    case 'returned': return 'Returned'
+    case LoanStatus.ACTIVE: return 'Active'
+    case LoanStatus.OVERDUE: return 'Overdue'
+    case LoanStatus.RETURNED: return 'Returned'
     default: return status
   }
 }
 
-const openLendingModal = () => {
-  newLending.value.type = activeTab.value
-  // Reset copies to 1 for individual lending (student/staff) or set appropriate default for group lending
-  newLending.value.copies = (activeTab.value === 'class' || activeTab.value === 'course') ? 1 : 1
-  showLendingModal.value = true
-}
-
-const openTakeBackModal = (lending) => {
+const openTakeBackModal = (lending: Lending) => {
   selectedLending.value = lending
   showTakeBackModal.value = true
 }
 
 const handleNewLending = async () => {
+  if (!selectedLending.value) return
+  
+  isLoading.value = true
+  
   try {
-    isLoading.value = true
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
     
-    const lending = {
-      id: lendings.value.length + 1,
-      ...newLending.value,
-      status: 'active'
-    }
-    
-    lendings.value.push(lending)
-    const copiesText = (lending.type === 'class' || lending.type === 'course') && lending.copies > 1 
-      ? ` (${lending.copies} copies)` 
+    const copiesText = newLending.value.copies > 1 
+      ? ` (${newLending.value.copies} copies)` 
       : ''
-    showToast(`Book lent successfully${copiesText}!`, 'success')
+    addToast({
+      message: `Book lent successfully${copiesText}!`,
+      type: 'success'
+    })
     showLendingModal.value = false
     resetLendingForm()
   } catch (error) {
-    showToast('Failed to lend book', 'error')
+    addToast({
+      message: 'Failed to lend book',
+      type: 'error'
+    })
   } finally {
     isLoading.value = false
   }
 }
 
 const handleTakeBack = async () => {
+  if (!selectedLending.value) return
+  
+  isLoading.value = true
+  
   try {
-    isLoading.value = true
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
     
-    const index = lendings.value.findIndex(l => l.id === selectedLending.value.id)
+    const index = lendings.value.findIndex(l => l.id === selectedLending.value!.id)
     if (index !== -1) {
-      lendings.value[index].status = 'returned'
-      showToast('Book returned successfully!', 'success')
+      lendings.value[index].status = LoanStatus.RETURNED
+      addToast({
+        message: 'Book returned successfully!',
+        type: 'success'
+      })
       showTakeBackModal.value = false
     }
   } catch (error) {
-    showToast('Failed to process return', 'error')
+    addToast({
+      message: 'Failed to process return',
+      type: 'error'
+    })
   } finally {
     isLoading.value = false
   }
@@ -321,13 +395,13 @@ const checkMobile = () => {
   isMobile.value = window.innerWidth < 768
 }
 
-const getTabIcon = (tabName) => {
+const getTabIcon = (tabName: string) => {
   switch (tabName) {
-    case 'student': return User
+    case 'student': return Users
     case 'staff': return GraduationCap
     case 'class': return Users
     case 'course': return Building
-    default: return Book
+    default: return BookOpen
   }
 }
 
@@ -339,21 +413,13 @@ onMounted(() => {
 // Add student list and search modal state
 const showStudentSelectModal = ref(false)
 const studentSearch = ref('')
-const students = ref([
+const students = ref<Student[]>([
   { id: 'STU001', name: 'Max Mueller', class: '10A', avatar: '', email: 'max.mueller@example.com' },
   { id: 'STU002', name: 'Anna Schmidt', class: '9B', avatar: '', email: 'anna.schmidt@example.com' },
   { id: 'STU003', name: 'Lisa Wagner', class: '10A', avatar: '', email: 'lisa.wagner@example.com' },
   { id: 'STU004', name: 'Tom Becker', class: '8C', avatar: '', email: 'tom.becker@example.com' }
 ])
-const filteredStudents = computed(() => {
-  const q = studentSearch.value.toLowerCase()
-  return students.value.filter(s =>
-    s.name.toLowerCase().includes(q) ||
-    s.class.toLowerCase().includes(q) ||
-    s.id.toLowerCase().includes(q)
-  )
-})
-const selectedStudent = ref(null)
+const selectedStudent = ref<Student | Staff | Class | Course | null>(null)
 const lendingMode = ref(false)
 
 function openStudentSelect() {
@@ -368,52 +434,28 @@ function cancelLendingMode() {
   selectedStudent.value = null
 }
 
-function selectStudent(student) {
-  selectedStudent.value = student
-  showStudentSelectModal.value = false
-  openLendingModalWithStudent(student)
-}
-
-function openLendingModalWithStudent(student) {
-  newLending.value.type = 'student'
-  newLending.value.borrowerId = student.id
-  newLending.value.borrowerName = student.name
-  newLending.value.class = student.class
-  showLendingModal.value = true
-}
-
 // For scan/manual book entry
 const scanInput = ref('')
-const scanInputRef = ref(null)
+const scanInputRef = ref<HTMLInputElement | null>(null)
 function focusScanInput() {
   nextTick(() => scanInputRef.value && scanInputRef.value.focus())
 }
 
-// For take back modal receipt type
-const receiptType = ref('standard')
-
 // Add mock data for staff, classes, and courses
-const staff = ref([
+const staff = ref<Staff[]>([
   { id: 'STF001', name: 'Dr. Weber', department: 'Physics', avatar: '', email: 'weber@example.com' },
   { id: 'STF002', name: 'Prof. Meyer', department: 'Psychology', avatar: '', email: 'meyer@example.com' }
 ])
-const classes = ref([
+const classes = ref<Class[]>([
   { id: 'CLS001', name: 'Class 10A', year: '2024', avatar: '' },
   { id: 'CLS002', name: 'Class 9B', year: '2024', avatar: '' }
 ])
-const courses = ref([
+const courses = ref<Course[]>([
   { id: 'CRS001', name: 'Mathematics Course', code: 'MATH2024', avatar: '' },
   { id: 'CRS002', name: 'Physics Course', code: 'PHYS2024', avatar: '' }
 ])
 
 // Dynamic search and selection
-const searchList = computed(() => {
-  if (activeTab.value === 'student') return students.value
-  if (activeTab.value === 'staff') return staff.value
-  if (activeTab.value === 'class') return classes.value
-  if (activeTab.value === 'course') return courses.value
-  return []
-})
 const filteredSearchList = computed(() => {
   const q = studentSearch.value.toLowerCase()
   if (activeTab.value === 'student') {
@@ -442,31 +484,33 @@ const filteredSearchList = computed(() => {
   }
   return []
 })
-function selectEntity(entity) {
+function selectEntity(entity: Student | Staff | Class | Course) {
   selectedStudent.value = entity
   showStudentSelectModal.value = false
   openLendingModalWithEntity(entity)
 }
-function openLendingModalWithEntity(entity) {
+function openLendingModalWithEntity(entity: Student | Staff | Class | Course) {
   if (activeTab.value === 'class' || activeTab.value === 'course') {
     openClassCourseModal(entity)
   } else {
     newLending.value.type = activeTab.value
     if (activeTab.value === 'student') {
-      newLending.value.borrowerId = entity.id
-      newLending.value.borrowerName = entity.name
-      newLending.value.class = entity.class
+      const student = entity as Student
+      newLending.value.borrowerId = student.id
+      newLending.value.borrowerName = student.name
+      newLending.value.class = student.class
     } else if (activeTab.value === 'staff') {
-      newLending.value.borrowerId = entity.id
-      newLending.value.borrowerName = entity.name
-      newLending.value.department = entity.department
+      const staffMember = entity as Staff
+      newLending.value.borrowerId = staffMember.id
+      newLending.value.borrowerName = staffMember.name
+      newLending.value.department = staffMember.department
     }
     showLendingModal.value = true
   }
 }
 
 // Add mock data for available books and students in classes/courses
-const availableBooks = ref([
+const availableBooks = ref<BookItem[]>([
   { id: 'BK001', title: 'Mathematics Textbook', author: 'Dr. Smith', isbn: '978-1234567890', available: 15 },
   { id: 'BK002', title: 'Physics Fundamentals', author: 'Prof. Johnson', isbn: '978-0987654321', available: 8 },
   { id: 'BK003', title: 'Chemistry Lab Manual', author: 'Dr. Brown', isbn: '978-1122334455', available: 12 },
@@ -486,21 +530,29 @@ const availableBooks = ref([
   { id: 'BK017', title: 'Astronomy: Exploring Space', author: 'Prof. King', isbn: '978-5566778899', available: 8 },
   { id: 'BK018', title: 'Oceanography: Marine Life', author: 'Dr. Wright', isbn: '978-6677889900', available: 4 }
 ])
-const classStudents = ref([
+
+interface ClassStudent {
+  id: string
+  name: string
+  class: string
+  selected: boolean
+}
+
+const classStudents = ref<ClassStudent[]>([
   { id: 'STU001', name: 'Anna Andersson', class: '10A', selected: false },
   { id: 'STU002', name: 'Erik Eriksson', class: '10A', selected: false },
   { id: 'STU003', name: 'Maria Nilsson', class: '10A', selected: false },
   { id: 'STU004', name: 'Johan Johansson', class: '10A', selected: false },
   { id: 'STU005', name: 'Sofia Svensson', class: '10A', selected: false }
 ])
-const courseStudents = ref([
+const courseStudents = ref<ClassStudent[]>([
   { id: 'STU006', name: 'Lars Larsson', class: '9B', selected: false },
   { id: 'STU007', name: 'Eva Ekström', class: '9B', selected: false },
   { id: 'STU008', name: 'Peter Pettersson', class: '9B', selected: false },
   { id: 'STU009', name: 'Karin Karlsson', class: '9B', selected: false }
 ])
-const selectedBook = ref(null)
-const selectedStudents = ref([])
+const selectedBook = ref<BookItem | null>(null)
+const selectedStudents = ref<ClassStudent[]>([])
 const showClassCourseModal = ref(false)
 
 // Add search and pagination for available books
@@ -539,7 +591,7 @@ function prevBookPage() {
   }
 }
 
-function goToBookPage(page) {
+function goToBookPage(page: number) {
   currentBookPage.value = page
 }
 
@@ -548,23 +600,13 @@ watch(bookSearch, () => {
   currentBookPage.value = 1
 })
 
-function openClassCourseModal(entity) {
-  selectedBook.value = null
-  selectedStudents.value = []
-  bookSearch.value = ''
-  currentBookPage.value = 1
-  // Reset student selections
-  if (activeTab.value === 'class') {
-    classStudents.value.forEach(s => s.selected = false)
-  } else if (activeTab.value === 'course') {
-    courseStudents.value.forEach(s => s.selected = false)
-  }
-  showClassCourseModal.value = true
+function openClassCourseModal(entity: Student | Staff | Class | Course) {
+  console.log('Opening modal for:', entity)
 }
-function selectBook(book) {
+function selectBook(book: BookItem) {
   selectedBook.value = book
 }
-function toggleStudentSelection(student) {
+function toggleStudentSelection(student: ClassStudent) {
   student.selected = !student.selected
   if (student.selected) {
     selectedStudents.value.push(student)
@@ -597,7 +639,7 @@ function handleClassCourseLending() {
     return
   }
   // Handle the lending logic here
-  console.log('Lending book:', selectedBook.value, 'to students:', selectedStudents.value)
+  console.log('Lending book:', selectedBook.value.title, 'to students:', selectedStudents.value.map(s => s.name))
   showClassCourseModal.value = false
 }
 </script>
@@ -766,10 +808,10 @@ function handleClassCourseLending() {
                 </div>
                 <div class="flex-1">
                   <div class="font-semibold text-slate-800 dark:text-white">{{ entity.name }}</div>
-                  <div v-if="activeTab === 'student'" class="text-xs text-slate-500 dark:text-gray-400">Class: {{ entity.class }} | ID: {{ entity.id }}</div>
-                  <div v-else-if="activeTab === 'staff'" class="text-xs text-slate-500 dark:text-gray-400">Department: {{ entity.department }} | ID: {{ entity.id }}</div>
-                  <div v-else-if="activeTab === 'class'" class="text-xs text-slate-500 dark:text-gray-400">Year: {{ entity.year }} | ID: {{ entity.id }}</div>
-                  <div v-else-if="activeTab === 'course'" class="text-xs text-slate-500 dark:text-gray-400">Code: {{ entity.code }} | ID: {{ entity.id }}</div>
+                  <div v-if="activeTab === 'student'" class="text-xs text-slate-500 dark:text-gray-400">Class: {{ (entity as Student).class }} | ID: {{ entity.id }}</div>
+                  <div v-else-if="activeTab === 'staff'" class="text-xs text-slate-500 dark:text-gray-400">Department: {{ (entity as Staff).department }} | ID: {{ entity.id }}</div>
+                  <div v-else-if="activeTab === 'class'" class="text-xs text-slate-500 dark:text-gray-400">Year: {{ (entity as Class).year }} | ID: {{ entity.id }}</div>
+                  <div v-else-if="activeTab === 'course'" class="text-xs text-slate-500 dark:text-gray-400">Code: {{ (entity as Course).code }} | ID: {{ entity.id }}</div>
                 </div>
               </div>
               <div v-if="filteredSearchList.length === 0" class="text-center text-slate-400 dark:text-gray-500 py-4">No results found.</div>
@@ -810,7 +852,7 @@ function handleClassCourseLending() {
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-gray-300">
                       <div>{{ formatDate(lending.dueDate) }}</div>
-                      <div v-if="lending.status === 'active'" :class="[
+                      <div v-if="lending.status === LoanStatus.ACTIVE" :class="[
                         'text-xs',
                         getDaysUntilDue(lending.dueDate) < 0 ? 'text-red-600' : 
                         getDaysUntilDue(lending.dueDate) <= 3 ? 'text-yellow-600' : 'text-green-600'
@@ -831,7 +873,7 @@ function handleClassCourseLending() {
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                       <button
-                        v-if="lending.status !== 'returned'"
+                        v-if="lending.status !== LoanStatus.RETURNED"
                         @click="openTakeBackModal(lending)"
                         class="inline-flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
                       >
@@ -882,7 +924,7 @@ function handleClassCourseLending() {
                 
                 <div class="flex gap-2">
                   <button
-                    v-if="lending.status !== 'returned'"
+                    v-if="lending.status !== LoanStatus.RETURNED"
                     @click="openTakeBackModal(lending)"
                     class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors text-sm"
                   >
@@ -957,11 +999,11 @@ function handleClassCourseLending() {
           <div class="flex gap-4 items-center mb-2">
             <User class="w-6 h-6 text-blue-500" />
             <div>
-              <div class="font-semibold text-slate-800 dark:text-white">{{ selectedStudent.name }}</div>
-              <div v-if="activeTab === 'student'" class="text-xs text-slate-500 dark:text-gray-400">Class: {{ selectedStudent.class }} | ID: {{ selectedStudent.id }}</div>
-              <div v-else-if="activeTab === 'staff'" class="text-xs text-slate-500 dark:text-gray-400">Department: {{ selectedStudent.department }} | ID: {{ selectedStudent.id }}</div>
-              <div v-else-if="activeTab === 'class'" class="text-xs text-slate-500 dark:text-gray-400">Year: {{ selectedStudent.year }} | ID: {{ selectedStudent.id }}</div>
-              <div v-else-if="activeTab === 'course'" class="text-xs text-slate-500 dark:text-gray-400">Code: {{ selectedStudent.code }} | ID: {{ selectedStudent.id }}</div>
+              <div class="font-semibold text-slate-800 dark:text-white">{{ selectedStudent?.name }}</div>
+              <div v-if="activeTab === 'student'" class="text-xs text-slate-500 dark:text-gray-400">Class: {{ (selectedStudent as Student)?.class }} | ID: {{ selectedStudent?.id }}</div>
+              <div v-else-if="activeTab === 'staff'" class="text-xs text-slate-500 dark:text-gray-400">Department: {{ (selectedStudent as Staff)?.department }} | ID: {{ selectedStudent?.id }}</div>
+              <div v-else-if="activeTab === 'class'" class="text-xs text-slate-500 dark:text-gray-400">Year: {{ (selectedStudent as Class)?.year }} | ID: {{ selectedStudent?.id }}</div>
+              <div v-else-if="activeTab === 'course'" class="text-xs text-slate-500 dark:text-gray-400">Code: {{ (selectedStudent as Course)?.code }} | ID: {{ selectedStudent?.id }}</div>
             </div>
           </div>
         </div>
@@ -1000,9 +1042,9 @@ function handleClassCourseLending() {
         <div class="p-6">
           <div class="space-y-4">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <h4 class="font-semibold text-slate-600 dark:text-white">{{ selectedLending.bookTitle }}</h4>
-              <p class="text-slate-500 dark:text-gray-400">Borrowed by: {{ selectedLending.borrowerName }}</p>
-              <p class="text-sm text-slate-400 dark:text-gray-400">Due: {{ formatDate(selectedLending.dueDate) }}</p>
+              <h4 class="font-semibold text-slate-600 dark:text-white">{{ selectedLending?.bookTitle }}</h4>
+              <p class="text-slate-500 dark:text-gray-400">Borrowed by: {{ selectedLending?.borrowerName }}</p>
+              <p class="text-sm text-slate-400 dark:text-gray-400">Due: {{ formatDate(selectedLending?.dueDate || '') }}</p>
             </div>
             
             <div class="text-center">
@@ -1193,7 +1235,7 @@ function handleClassCourseLending() {
         <!-- Footer -->
         <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <div class="text-sm text-slate-500 dark:text-gray-400">
-            <span v-if="selectedBook">Selected: {{ selectedBook.title }}</span>
+            <span v-if="selectedBook">Selected: {{ selectedBook?.title }}</span>
             <span v-if="selectedStudents.length > 0"> | {{ selectedStudents.length }} students selected</span>
           </div>
           <div class="flex gap-3">

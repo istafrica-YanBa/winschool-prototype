@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { Plus, Shield } from 'lucide-vue-next'
+import { Shield } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)

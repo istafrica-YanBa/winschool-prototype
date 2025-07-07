@@ -368,7 +368,7 @@
                   {{ language === 'de' ? 'Firmenname' : 'Company Name' }}
                 </label>
                 <input
-                  v-model="newCompany.name"
+                  v-model="companyForm.name"
                   type="text"
                   required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
@@ -380,7 +380,7 @@
                   {{ language === 'de' ? 'Branche' : 'Industry' }}
                 </label>
                 <select
-                  v-model="newCompany.industry"
+                  v-model="companyForm.industry"
                   required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                 >
@@ -393,7 +393,7 @@
                   {{ language === 'de' ? 'Kontaktperson' : 'Contact Person' }}
                 </label>
                 <input
-                  v-model="newCompany.contactPerson"
+                  v-model="companyForm.contactPerson"
                   type="text"
                   required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
@@ -405,7 +405,7 @@
                   {{ language === 'de' ? 'E-Mail' : 'Email' }}
                 </label>
                 <input
-                  v-model="newCompany.email"
+                  v-model="companyForm.email"
                   type="email"
                   required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
@@ -417,7 +417,7 @@
                   {{ language === 'de' ? 'Standort' : 'Location' }}
                 </label>
                 <input
-                  v-model="newCompany.location"
+                  v-model="companyForm.location"
                   type="text"
                   required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
@@ -429,7 +429,7 @@
                   {{ language === 'de' ? 'Website' : 'Website' }}
                 </label>
                 <input
-                  v-model="newCompany.website"
+                  v-model="companyForm.website"
                   type="url"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                   :placeholder="language === 'de' ? 'Website eingeben' : 'Enter website'"
@@ -516,6 +516,7 @@ const companyForm = ref({
   address: '',
   city: '',
   country: '',
+  location: '',
   contactPerson: '',
   contactPosition: '',
   email: '',
@@ -731,6 +732,7 @@ const addCompany = () => {
     address: '',
     city: '',
     country: '',
+    location: '',
     contactPerson: '',
     contactPosition: '',
     email: '',
@@ -756,11 +758,60 @@ const viewInternship = (internship: any) => {
   alert(`${language.value === 'de' ? 'Praktikum anzeigen' : 'View internship'}: ${internship.student} at ${internship.company}`)
 }
 
-const showCompanyDetailsModal = ref(false)
-const selectedCompany = ref(null)
-
-const viewCompanyDetails = (company: any) => {
-  selectedCompany.value = company
-  showCompanyDetailsModal.value = true
+const editInternship = (internship: any) => {
+  alert(`${language.value === 'de' ? 'Praktikum bearbeiten' : 'Edit internship'}: ${internship.student} at ${internship.company}`)
 }
+
+const showCompanyDetailsModal = ref(false)
+const selectedCompany = ref<any>(null)
+
+// Pagination properties
+const currentPage = ref(1)
+const currentInternshipPage = ref(1)
+const itemsPerPage = ref(5)
+const internshipsPerPage = ref(5)
+
+// Computed properties for pagination
+const totalCompanyPages = computed(() => Math.ceil(filteredCompanies.value.length / itemsPerPage.value))
+
+const paginatedCompanies = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredCompanies.value.slice(start, end)
+})
+
+const totalInternshipPages = computed(() => Math.ceil(internships.value.length / internshipsPerPage.value))
+
+const paginatedInternships = computed(() => {
+  const start = (currentInternshipPage.value - 1) * internshipsPerPage.value
+  const end = start + internshipsPerPage.value
+  return internships.value.slice(start, end)
+})
+
+// Pagination methods
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalCompanyPages.value) {
+    currentPage.value++
+  }
+}
+
+const prevInternshipPage = () => {
+  if (currentInternshipPage.value > 1) {
+    currentInternshipPage.value--
+  }
+}
+
+const nextInternshipPage = () => {
+  if (currentInternshipPage.value < totalInternshipPages.value) {
+    currentInternshipPage.value++
+  }
+}
+
+// Removed unused viewCompanyDetails function
 </script>

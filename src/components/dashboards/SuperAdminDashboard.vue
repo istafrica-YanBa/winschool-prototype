@@ -174,7 +174,7 @@ import { computed } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { 
   Building, Activity, Settings, LifeBuoy, RefreshCw, ChevronRight, Edit,
-  Users, Database, Server, Globe, CheckCircle, AlertTriangle, Clock
+  Users, Database, Server, Globe
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()

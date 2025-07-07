@@ -455,7 +455,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 // Mock Data
 const mockStudents = ref([
@@ -510,9 +510,10 @@ const mockStudents = ref([
   }
 ])
 
-// State
+// State Management
 const showEditDialog = ref(false)
-const editingAchievement = ref(null)
+const editingAchievement = ref<any>(null)
+const editingMode = ref<'add' | 'edit'>('add')
 const isSubmitting = ref(false)
 const currentPage = ref(1)
 const itemsPerPage = ref(8)
@@ -525,14 +526,14 @@ const filters = ref({
   status: ''
 })
 
-// Form Data
+// Form data
 const achievementForm = ref({
   student: '',
   category: '',
   year: '',
   title: '',
   description: '',
-  date: ''
+  date: new Date().toISOString().split('T')[0]
 })
 
 // Achievements Data
@@ -734,9 +735,23 @@ const resetFilters = () => {
   }
 }
 
+const resetForm = () => {
+  achievementForm.value = {
+    student: '',
+    category: '',
+    year: '',
+    title: '',
+    description: '',
+    date: new Date().toISOString().split('T')[0]
+  }
+  editingAchievement.value = null
+  editingMode.value = 'add'
+}
+
 // CRUD Operations
 const addNewAchievement = () => {
   editingAchievement.value = null
+  editingMode.value = 'add'
   achievementForm.value = {
     student: '',
     category: '',
@@ -750,8 +765,9 @@ const addNewAchievement = () => {
 
 const editAchievement = (achievement: any) => {
   editingAchievement.value = achievement
+  editingMode.value = 'edit'
   achievementForm.value = {
-    student: achievement.student,
+    student: achievement.student.name || achievement.student,
     category: achievement.category,
     year: achievement.year,
     title: achievement.title,
@@ -761,53 +777,51 @@ const editAchievement = (achievement: any) => {
   showEditDialog.value = true
 }
 
-const saveAchievement = async () => {
-  isSubmitting.value = true
-
-  try {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500))
+const saveAchievement = () => {
+  if (!achievementForm.value) return
     
-    if (editingAchievement.value) {
-      // Update existing achievement
+  if (editingMode.value === 'edit' && editingAchievement.value) {
       const index = achievements.value.findIndex(a => a.id === editingAchievement.value.id)
       if (index !== -1) {
         achievements.value[index] = {
           ...editingAchievement.value,
-          student: achievementForm.value.student,
+        student: {
+          ...editingAchievement.value.student,
+          name: achievementForm.value.student
+        },
           category: achievementForm.value.category,
           year: achievementForm.value.year,
           title: achievementForm.value.title,
           description: achievementForm.value.description,
           date: achievementForm.value.date,
-          dateAwarded: achievementForm.value.date
+        updatedAt: new Date().toISOString()
         }
       }
     } else {
-      // Create new achievement
       const newAchievement = {
-        id: Math.max(...achievements.value.map(a => a.id)) + 1,
-        student: achievementForm.value.student,
+      id: Date.now(),
+      student: {
+        id: 1,
+        name: achievementForm.value.student,
+        grade: 'Grade 10',
+        class: '10A',
+        avatar: 'https://i.pravatar.cc/150?img=1'
+      },
         category: achievementForm.value.category,
         year: achievementForm.value.year,
         title: achievementForm.value.title,
         description: achievementForm.value.description,
         date: achievementForm.value.date,
         dateAwarded: achievementForm.value.date,
-        createdAt: new Date().toISOString().split('T')[0],
-        status: 'Active'
+      createdAt: new Date().toISOString(),
+      status: 'Active',
+      document: 'achievement_certificate.pdf'
       }
       achievements.value.unshift(newAchievement)
     }
     
     showEditDialog.value = false
-    console.log('Achievement saved successfully')
-    
-  } catch (error) {
-    console.error('Error saving achievement:', error)
-  } finally {
-    isSubmitting.value = false
-  }
+  resetForm()
 }
 
 const deleteAchievement = (achievement: any) => {

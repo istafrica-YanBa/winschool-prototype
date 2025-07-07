@@ -245,7 +245,7 @@ import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { 
   RefreshCw, Download, TrendingUp, TrendingDown, Building, Users, 
-  Clock, DollarSign, BarChart3, AlertTriangle, Target
+  Clock, DollarSign, AlertTriangle
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()

@@ -422,6 +422,7 @@ const showAssignModal = ref(false)
 const showBulkAssignModal = ref(false)
 const selectedTeacher = ref<any>(null)
 const bulkSelection = ref<string[]>([])
+const showBulkCreateModal = ref(false)
 
 // Form data
 const loginForm = ref({
@@ -635,5 +636,10 @@ const processBulkAssignment = () => {
   showBulkAssignModal.value = false
   bulkSelection.value = []
   alert(language.value === 'de' ? `${selectedTeachers.length} Benutzer erfolgreich erstellt!` : `${selectedTeachers.length} users created successfully!`)
+}
+
+const syncWithDatabase = async () => {
+  // TODO: Implement database sync
+  console.log('Syncing with database...')
 }
 </script> 

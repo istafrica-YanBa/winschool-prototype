@@ -316,7 +316,7 @@
 
                   <!-- Day Columns -->
                   <div
-                    v-for="(day, dayIndex) in weekDays"
+                    v-for="day in weekDays"
                     :key="day"
                     class="relative min-h-20"
                   >
@@ -403,22 +403,6 @@ const classes = [
   'Class 12A',
   'Class 12B'
 ]
-
-// Subject Types for Color Coding
-const subjectTypes = {
-  'Mathematics': 'math',
-  'Physics': 'math',
-  'Chemistry': 'math',
-  'Biology': 'math',
-  'English': 'language',
-  'French': 'language',
-  'History': 'social',
-  'Geography': 'social',
-  'Art': 'social',
-  'Physical Education': 'practical',
-  'Computer Science': 'practical',
-  'Music': 'social'
-}
 
 // State Management
 const isGenerating = ref(false)
@@ -569,7 +553,7 @@ const startDrag = (event: DragEvent, subject: any) => {
   draggedFromSlot.value = null
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/html', event.target?.outerHTML || '')
+    event.dataTransfer.setData('text/html', (event.target as HTMLElement)?.outerHTML || '')
   }
 }
 
@@ -585,7 +569,7 @@ const startDragFromSlot = (event: DragEvent, day: string, timeSlot: string) => {
     draggedFromSlot.value = { day, time: timeSlot }
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move'
-      event.dataTransfer.setData('text/html', event.target?.outerHTML || '')
+      event.dataTransfer.setData('text/html', (event.target as HTMLElement)?.outerHTML || '')
     }
   }
 }

@@ -303,7 +303,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { subjects } from '../mock/subjects'
 import { teachers } from '../mock/teachers'
 
@@ -441,11 +441,19 @@ const addCourseManually = async () => {
     // Implementation for adding course manually
     console.log('Adding course manually:', manualForm.value)
     await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-    courses.value.push({
+    
+    // Ensure subject and teacher are numbers
+    const courseData = {
       id: courses.value.length + 1,
-      ...manualForm.value,
+      subject: manualForm.value.subject || 1, // Default to first subject
+      teacher: manualForm.value.teacher || 1, // Default to first teacher
+      class: manualForm.value.class,
+      schedule: manualForm.value.schedule,
+      description: manualForm.value.description,
       status: 'pending'
-    })
+    }
+    
+    courses.value.push(courseData)
     resetManualForm()
   } finally {
     isSubmitting.value = false
@@ -500,7 +508,11 @@ const saveCourse = () => {
   if (index !== -1) {
     courses.value[index] = {
       ...courses.value[index],
-      ...editForm.value
+      subject: editForm.value.subject || 1,
+      teacher: editForm.value.teacher || 1,
+      class: editForm.value.class,
+      schedule: editForm.value.schedule,
+      description: editForm.value.description
     }
   }
   showEditDialog.value = false

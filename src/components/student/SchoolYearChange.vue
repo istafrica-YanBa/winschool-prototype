@@ -276,21 +276,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits } from 'vue'
+import { ref, computed, defineEmits } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { AlertTriangle, X } from 'lucide-vue-next'
-
-const props = defineProps({
-  affectedStudents: {
-    type: Number,
-    default: 0
-  }
-})
 
 const emit = defineEmits(['submit', 'cancel'])
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
+
+const affectedStudents = ref(0)
 
 const schoolYears = [
   '2023/24',
@@ -308,6 +303,11 @@ const classGroups = [
 ]
 
 const formData = ref({
+  affectedStudents: 0,
+  fromYear: '',
+  toYear: '',
+  reason: '',
+  notes: '',
   currentYear: '2023/24',
   currentSemester: 'II',
   targetYear: '2024/25',
@@ -322,8 +322,8 @@ const formData = ref({
 })
 
 const showConfirmation = ref(false)
+const confirmationRequired = ref('SCHOOLYEAR2024')
 const confirmationCode = ref('')
-const confirmationRequired = computed(() => language.value === 'de' ? 'BESTÄTIGEN' : 'CONFIRM')
 
 const confirmSchoolYearChange = () => {
   if (confirmationCode.value === confirmationRequired.value) {

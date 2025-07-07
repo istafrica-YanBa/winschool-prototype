@@ -110,7 +110,7 @@
               </div>
 
               <!-- Additional AND conditions -->
-              <div v-for="(andCondition, andIndex) in rule.condition.andConditions" :key="andIndex" class="mt-3 pl-4 border-l-2 border-blue-300">
+              <div v-for="(andCondition, andIndex) in rule.condition.andConditions" :key="`${rule.id}-and-${andIndex}`" class="mt-3 pl-4 border-l-2 border-blue-300">
                 <div class="flex items-center mb-2">
                   <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs font-medium mr-3" style="font-family: Inter, sans-serif;">AND</span>
                   <button @click="removeAndCondition(rule, andIndex)" class="text-red-500 hover:text-red-700 ml-auto">
@@ -200,11 +200,11 @@
       </h2>
       
       <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm">
-        <div v-for="(rule, index) in currentRules" :key="rule.id" class="mb-4 last:mb-0">
+        <div v-for="rule in currentRules" :key="rule.id" class="mb-4 last:mb-0">
           <div class="text-slate-800 dark:text-white">
             <span class="text-blue-600 font-bold">IF</span>
             {{ formatCondition(rule.condition) }}
-            <span v-for="andCondition in rule.condition.andConditions" :key="andCondition">
+            <span v-for="(andCondition, andIndex) in rule.condition.andConditions" :key="`${rule.id}-and-${andIndex}`">
               <span class="text-blue-500 font-bold"> AND</span>
               {{ formatCondition(andCondition) }}
             </span>
@@ -262,19 +262,49 @@ import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { Plus, Save, Trash2, X, Settings } from 'lucide-vue-next'
 
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface AndCondition {
+  field: string;
+  operator: string;
+  value: string;
+}
+interface RuleCondition {
+  field: string;
+  operator: string;
+  value: string;
+  andConditions: AndCondition[];
+}
+interface RuleAction {
+  type: string;
+  value: string;
+}
+interface LogicRule {
+  id: number;
+  condition: RuleCondition;
+  action: RuleAction;
+  hasElse: boolean;
+  elseAction: RuleAction;
+}
+interface RuleSet {
+  id: string;
+  name: string;
+  description: string;
+  rules: LogicRule[];
+}
+
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
 // State
-const selectedRuleSet = ref('')
-const showSaveModal = ref(false)
-const newRuleSetName = ref('')
-const newRuleSetDescription = ref('')
+const selectedRuleSet = ref<string>('')
+const showSaveModal = ref<boolean>(false)
+const newRuleSetName = ref<string>('')
+const newRuleSetDescription = ref<string>('')
 
 // Rule structure
-const currentRules = ref([])
+const currentRules = ref<LogicRule[]>([])
 
-const ruleSets = ref([
+const ruleSets = ref<RuleSet[]>([
   {
     id: 'default',
     name: language.value === 'de' ? 'Standard Regeln' : 'Default Rules',
@@ -289,9 +319,9 @@ const ruleSets = ref([
   }
 ])
 
-// Methods
-const addNewRule = () => {
-  const newRule = {
+// Methods (all params typed)
+const addNewRule = (): void => {
+  const newRule: LogicRule = {
     id: Date.now(),
     condition: {
       field: '',
@@ -312,11 +342,11 @@ const addNewRule = () => {
   currentRules.value.push(newRule)
 }
 
-const removeRule = (index) => {
+const removeRule = (index: number): void => {
   currentRules.value.splice(index, 1)
 }
 
-const addAndCondition = (rule) => {
+const addAndCondition = (rule: LogicRule): void => {
   rule.condition.andConditions.push({
     field: '',
     operator: '',
@@ -324,32 +354,32 @@ const addAndCondition = (rule) => {
   })
 }
 
-const removeAndCondition = (rule, index) => {
+const removeAndCondition = (rule: LogicRule, index: number): void => {
   rule.condition.andConditions.splice(index, 1)
 }
 
-const loadRuleSet = (ruleSet) => {
+const loadRuleSet = (ruleSet: RuleSet): void => {
   currentRules.value = [...ruleSet.rules]
   selectedRuleSet.value = ruleSet.id
 }
 
-const deleteRuleSet = (id) => {
+const deleteRuleSet = (id: string): void => {
   if (confirm(language.value === 'de' ? 'Regelsatz wirklich löschen?' : 'Really delete rule set?')) {
-    const index = ruleSets.value.findIndex(rs => rs.id === id)
+    const index = ruleSets.value.findIndex((rs: RuleSet) => rs.id === id)
     if (index !== -1) {
       ruleSets.value.splice(index, 1)
     }
   }
 }
 
-const saveAllRules = () => {
+const saveAllRules = (): void => {
   showSaveModal.value = true
 }
 
-const saveRuleSet = () => {
+const saveRuleSet = (): void => {
   if (!newRuleSetName.value.trim()) return
   
-  const newRuleSet = {
+  const newRuleSet: RuleSet = {
     id: Date.now().toString(),
     name: newRuleSetName.value,
     description: newRuleSetDescription.value,
@@ -365,10 +395,10 @@ const saveRuleSet = () => {
   alert(language.value === 'de' ? 'Regelsatz gespeichert!' : 'Rule set saved!')
 }
 
-const formatCondition = (condition) => {
+const formatCondition = (condition: RuleCondition | AndCondition): string => {
   if (!condition.field || !condition.operator || !condition.value) return ''
   
-  const operatorMap = {
+  const operatorMap: Record<string, string> = {
     equals: '=',
     notEquals: '≠',
     greater: '>',
@@ -381,10 +411,10 @@ const formatCondition = (condition) => {
   return `${condition.field} ${operatorMap[condition.operator] || condition.operator} "${condition.value}"`
 }
 
-const formatAction = (action) => {
+const formatAction = (action: RuleAction): string => {
   if (!action.type || !action.value) return ''
   
-  const actionMap = {
+  const actionMap: Record<string, string> = {
     includeBlock: language.value === 'de' ? 'Block einschließen' : 'Include Block',
     excludeBlock: language.value === 'de' ? 'Block ausschließen' : 'Exclude Block',
     showWarning: language.value === 'de' ? 'Warnung anzeigen' : 'Show Warning',

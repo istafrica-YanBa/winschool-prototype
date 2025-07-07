@@ -330,7 +330,7 @@
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {{ language === 'de' ? 'Unterstützte Formate: .txt, .sql (ANSI-kodiert)' : 'Supported formats: .txt, .sql (ANSI encoded)' }}
               </p>
-              <button @click="$refs.fileInput.click()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+              <button @click="fileInput?.click()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
                 {{ language === 'de' ? 'Datei wählen' : 'Choose File' }}
               </button>
             </div>
@@ -394,12 +394,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { 
-  BarChart3, Plus, Upload, List, Edit3, Play, Trash2, X, CheckCircle,
-  Download, Search
+  BarChart3, Download, Upload, Plus, Trash2
 } from 'lucide-vue-next'
+
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface QueryParameter {
+  name: string;
+  type: string;
+}
+
+interface QueryForm {
+  name: string;
+  category: string;
+  description: string;
+  sql: string;
+  parameters: QueryParameter[];
+}
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
@@ -417,13 +430,16 @@ const resultsPerPage = ref(50)
 const importPreview = ref<any[]>([])
 
 // Query form
-const queryForm = ref({
+const queryForm = ref<QueryForm>({
   name: '',
   category: '',
   description: '',
   sql: '',
   parameters: []
 })
+
+// Add proper typing for file input ref
+const fileInput = ref<HTMLInputElement>()
 
 // Mock data
 const categories = ref([
@@ -471,11 +487,12 @@ const queries = ref([
   }
 ])
 
-const tabs = computed(() => [
-  { id: 'list', label: language.value === 'de' ? 'Abfragen' : 'Queries', icon: List },
-  { id: 'editor', label: language.value === 'de' ? 'Editor' : 'Editor', icon: Edit3 },
-  { id: 'results', label: language.value === 'de' ? 'Ergebnisse' : 'Results', icon: BarChart3 }
-])
+const tabs = [
+  { id: 'list', label: language.value === 'de' ? 'Abfragen' : 'Queries', icon: BarChart3 },
+  { id: 'editor', label: language.value === 'de' ? 'Editor' : 'Editor', icon: BarChart3 },
+  { id: 'import', label: language.value === 'de' ? 'Import' : 'Import', icon: Upload },
+  { id: 'export', label: language.value === 'de' ? 'Export' : 'Export', icon: Download }
+]
 
 // Computed
 const filteredQueries = computed(() => {
@@ -616,10 +633,11 @@ const validateQuery = () => {
 
 const testQuery = () => {
   // Mock test execution
-  runQuery({
-    name: queryForm.value.name || 'Test Query',
-    ...queryForm.value
-  })
+  const testQueryData = {
+    ...queryForm.value,
+    name: queryForm.value.name || 'Test Query'
+  }
+  runQuery(testQueryData)
 }
 
 const saveQuery = () => {
@@ -630,10 +648,10 @@ const saveQuery = () => {
     // Create new query
     const newQuery = {
       id: String(queries.value.length + 1),
-      ...queryForm.value,
       createdAt: new Date(),
       lastRun: null,
-      executionCount: 0
+      executionCount: 0,
+      ...queryForm.value
     }
     queries.value.push(newQuery)
   }

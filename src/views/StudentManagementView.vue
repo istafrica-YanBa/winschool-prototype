@@ -362,7 +362,7 @@
             </div>
 
             <BulkLanguageAssignment 
-              :selected-students="selectedStudents.length"
+              :selected-students="selectedStudents"
               @submit="handleBulkLanguageSubmit"
               @cancel="showBulkLanguageModal = false"
             />
@@ -400,8 +400,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { useRouter } from 'vue-router'
 import { 
-  UserPlus, Search, Eye, Edit, Lock, Unlock, X, Settings, ChevronDown,
-  Languages, Calendar, Download, Upload, Users
+  UserPlus, Search, Eye, Edit, Lock, Unlock, X, Upload, Users
 } from 'lucide-vue-next'
 
 import LanguageAssignmentForm from '../components/student/LanguageAssignmentForm.vue'
@@ -435,7 +434,6 @@ const showCareerEntryModal = ref(false)
 const showCorrespondenceNoteModal = ref(false)
 const showBulkLanguageModal = ref(false)
 const showSchoolYearChangeModal = ref(false)
-const showAddStudentModal = ref(false)
 const showBulkUpload = ref(false)
 const showAddStudent = ref(false)
 
@@ -528,6 +526,11 @@ const students = ref([
     status: 'active',
     avatar: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     email: 'liam.weber@student.winschool.de',
+    phone: '+49 123 456 7891',
+    address: 'Beispielstraße 456, 10115 Berlin',
+    enrollmentDate: '2020-09-01',
+    gradeLevel: 'Grade 10',
+    homeroomTeacher: 'Dr. Thomas Weber',
     languages: [
       { id: 1, name: 'German', level: 'Native', type: 'Native', since: '2008-01-01', knowledgeLevel: 5 },
       { id: 2, name: 'English', level: 'B1', type: 'Required', since: '2015-09-01', knowledgeLevel: 3 }
@@ -546,6 +549,11 @@ const students = ref([
     status: 'active',
     avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     email: 'sophie.schmidt@student.winschool.de',
+    phone: '+49 123 456 7892',
+    address: 'Teststraße 789, 10115 Berlin',
+    enrollmentDate: '2021-09-01',
+    gradeLevel: 'Grade 9',
+    homeroomTeacher: 'Dr. Anna Schmidt',
     languages: [
       { id: 1, name: 'German', level: 'Native', type: 'Native', since: '2009-01-01', knowledgeLevel: 5 },
       { id: 2, name: 'English', level: 'B2', type: 'Required', since: '2016-09-01', knowledgeLevel: 4 },
@@ -565,6 +573,11 @@ const students = ref([
     status: 'active',
     avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     email: 'noah.fischer@student.winschool.de',
+    phone: '+49 123 456 7893',
+    address: 'Beispielweg 321, 10115 Berlin',
+    enrollmentDate: '2019-09-01',
+    gradeLevel: 'Grade 11',
+    homeroomTeacher: 'Dr. Michael Fischer',
     languages: [],
     careerEntries: [],
     correspondenceNotes: []
@@ -580,6 +593,11 @@ const students = ref([
     status: 'active',
     avatar: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     email: 'mia.wagner@student.winschool.de',
+    phone: '+49 123 456 7894',
+    address: 'Testweg 654, 10115 Berlin',
+    enrollmentDate: '2018-09-01',
+    gradeLevel: 'Grade 12',
+    homeroomTeacher: 'Dr. Sarah Wagner',
     languages: [],
     careerEntries: [],
     correspondenceNotes: []
@@ -595,6 +613,11 @@ const students = ref([
     status: 'inactive',
     avatar: 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     email: 'leon.bauer@student.winschool.de',
+    phone: '+49 123 456 7895',
+    address: 'Beispielallee 987, 10115 Berlin',
+    enrollmentDate: '2022-09-01',
+    gradeLevel: 'Grade 8',
+    homeroomTeacher: 'Dr. Peter Bauer',
     languages: [],
     careerEntries: [],
     correspondenceNotes: []
@@ -815,10 +838,6 @@ onUnmounted(() => {
 })
 
 // Toggle functions
-const toggleActionsDropdown = () => {
-  showActionsDropdown.value = !showActionsDropdown.value
-}
-
 const toggleSelectAll = () => {
   if (selectAll.value) {
     selectedStudents.value = paginatedStudents.value.map(student => student.id)
@@ -928,10 +947,12 @@ const handleBulkLanguageSubmit = (languageEntries: any[]) => {
         ? Math.max(...student.languages.map((l: any) => l.id)) 
         : 0
       
-      student.languages.push({
+      const newLanguage = {
         ...language,
         id: lastId + 1
-      })
+      }
+      
+      ;(student.languages as any[]).push(newLanguage)
     })
   })
   

@@ -125,8 +125,8 @@
 import { computed } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { 
-  Users, DollarSign, BookOpen, Calendar, UserPlus, AlertTriangle, Settings,
-  FileText, MessageSquare, BarChart3, Shield, TrendingUp, Clock, Award, Zap
+  Users, DollarSign, BookOpen, Calendar, UserPlus, AlertTriangle,
+  FileText, MessageSquare, BarChart3, TrendingUp, Clock, Award, Zap
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()

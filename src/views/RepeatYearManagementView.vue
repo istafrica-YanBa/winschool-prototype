@@ -654,7 +654,7 @@ const filteredRepeaters = computed(() => {
 
   // Academic year filter
   if (filters.value.class !== 'All Classes') {
-    filtered = filtered.filter(student => student.class === filters.value.class)
+    filtered = filtered.filter(student => student.currentGrade === filters.value.class)
   }
 
   // Apply sorting
@@ -697,7 +697,6 @@ const paginatedStudents = computed(() => {
 
 const totalPages = computed(() => Math.ceil(filteredRepeaters.value.length / itemsPerPage.value))
 
-const totalRepeaters = computed(() => filteredRepeaters.value.length)
 const pendingCount = computed(() => filteredRepeaters.value.filter(s => s.status === 'pending').length)
 const inProgressCount = computed(() => filteredRepeaters.value.filter(s => s.status === 'in_progress').length)
 const completedCount = computed(() => filteredRepeaters.value.filter(s => s.status === 'completed').length)

@@ -228,10 +228,10 @@
                   <template v-for="page in overtimeVisiblePageNumbers" :key="page">
                     <button
                       v-if="page !== '...'"
-                      @click="overtimeCurrentPage = page"
+                      @click="overtimeCurrentPage = Number(page)"
                       :class="[
                         'px-3 py-2 text-sm font-medium rounded-md transition-colors',
-                        overtimeCurrentPage === page
+                        overtimeCurrentPage === Number(page)
                           ? 'bg-primary-600 text-white'
                           : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                       ]"
@@ -330,10 +330,10 @@
                   <template v-for="page in absenceVisiblePageNumbers" :key="page">
                     <button
                       v-if="page !== '...'"
-                      @click="absenceCurrentPage = page"
+                      @click="absenceCurrentPage = Number(page)"
                       :class="[
                         'px-3 py-2 text-sm font-medium rounded-md transition-colors',
-                        absenceCurrentPage === page
+                        absenceCurrentPage === Number(page)
                           ? 'bg-primary-600 text-white'
                           : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                       ]"
@@ -790,18 +790,17 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { useThemeStore } from '../stores/theme'
 import { 
-  Edit, Clock, Calendar, Award, X, Upload, Trash2
+  Calendar, Clock, 
+  Edit, X, Upload, 
+  Award, Trash2
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
-const route = useRoute()
-const router = useRouter()
 
-const teacherId = computed(() => route.params.id)
+const teacherId = computed(() => '1') // Default teacher ID
 const teacher = ref<any>(null)
 
 const showOvertimeModal = ref(false)

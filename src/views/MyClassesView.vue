@@ -372,28 +372,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { useRouter } from 'vue-router'
 import { 
-  Plus, Eye, Edit, X, ChevronDown, Calendar, Download, Users
+  Plus, Eye, Edit, X, Users
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 const router = useRouter()
-
-// Search and filters
-const searchQuery = ref('')
-const selectedClassFilter = ref('')
-const selectedSubject = ref('')
-
-// Dropdowns
-const showActionsDropdown = ref(false)
-const actionsDropdownRef = ref<HTMLElement | null>(null)
-
-// Modals
-const showGradeModal = ref(false)
 
 // Selected items
 const selectedStudent = ref<any>(null)
@@ -413,6 +401,8 @@ const assessmentForm = ref({
   dueDate: '',
   description: ''
 })
+
+const showGradeModal = ref(false)
 
 const myClasses = ref([
   {
@@ -505,10 +495,6 @@ const selectClass = (classData: any) => {
 const takeAttendance = (classData: any) => {
   attendanceClass.value = classData
   showAttendanceModal.value = true
-}
-
-const gradeClass = (classData: any) => {
-  alert(`${language.value === 'de' ? 'Bewertung für Klasse' : 'Grading class'} ${classData.name}`)
 }
 
 const viewStudentProfile = (student: any) => {

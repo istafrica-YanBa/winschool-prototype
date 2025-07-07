@@ -2,16 +2,16 @@
   <div class="space-y-6">
     <!-- Student Header -->
     <div class="flex items-center space-x-6">
-      <img :src="student.avatar" :alt="student.name" class="h-24 w-24 rounded-full object-cover" />
+      <img :src="props.student.avatar" :alt="props.student.name" class="h-24 w-24 rounded-full object-cover" />
       <div class="flex-1">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ student.name }}</h2>
-        <p class="text-gray-600 dark:text-gray-400">{{ student.studentId }} • {{ student.class }}</p>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ props.student.name }}</h2>
+        <p class="text-gray-600 dark:text-gray-400">{{ props.student.studentId }} • {{ props.student.class }}</p>
         <div class="flex space-x-4 mt-2">
-          <span :class="getStatusColor(student.status)" class="px-3 py-1 text-sm font-medium rounded-full">
-            {{ student.status }}
+          <span :class="getStatusColor(props.student.status)" class="px-3 py-1 text-sm font-medium rounded-full">
+            {{ props.student.status }}
           </span>
           <span class="px-3 py-1 text-sm bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-full">
-            {{ student.age }} {{ language === 'de' ? 'Jahre' : 'years old' }}
+            {{ props.student.age }} {{ language === 'de' ? 'Jahre' : 'years old' }}
           </span>
         </div>
       </div>
@@ -46,15 +46,15 @@
             <div class="space-y-2">
               <div class="flex justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'E-Mail' : 'Email' }}</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ student.email }}</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ props.student.email }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Telefon' : 'Phone' }}</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ student.phone || '-' }}</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ props.student.phone || '-' }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Adresse' : 'Address' }}</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ student.address || '-' }}</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ props.student.address || '-' }}</span>
               </div>
             </div>
           </div>
@@ -63,15 +63,15 @@
             <div class="space-y-2">
               <div class="flex justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Eintrittsdatum' : 'Enrollment Date' }}</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ student.enrollmentDate || '-' }}</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ props.student.enrollmentDate || '-' }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Klassenstufe' : 'Grade Level' }}</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ student.gradeLevel || '-' }}</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ props.student.gradeLevel || '-' }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Klassenlehrer' : 'Homeroom Teacher' }}</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ student.homeroomTeacher || '-' }}</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ props.student.homeroomTeacher || '-' }}</span>
               </div>
             </div>
           </div>
@@ -81,7 +81,7 @@
       <!-- Languages Tab -->
       <div v-if="activeTab === (language === 'de' ? 'Sprachen' : 'Languages')">
         <LanguageList 
-          :languages="student.languages || []" 
+          :languages="props.student.languages || []" 
           @add="$emit('add-language')"
           @edit="$emit('edit-language', $event)"
           @remove="$emit('remove-language', $event)"
@@ -91,7 +91,7 @@
       <!-- School Career Tab -->
       <div v-if="activeTab === (language === 'de' ? 'Schullaufbahn' : 'School Career')">
         <SchoolCareerTimeline 
-          :career-entries="student.careerEntries || []" 
+          :career-entries="props.student.careerEntries || []" 
           @add="$emit('add-career-entry')"
           @edit="$emit('edit-career-entry', $event)"
           @remove="$emit('remove-career-entry', $event)"
@@ -101,7 +101,7 @@
       <!-- Correspondence Notes Tab -->
       <div v-if="activeTab === (language === 'de' ? 'Korrespondenz' : 'Correspondence')">
         <CorrespondenceNoteList 
-          :notes="student.correspondenceNotes || []" 
+          :notes="props.student.correspondenceNotes || []" 
           @add="$emit('add-correspondence-note')"
           @edit="$emit('edit-correspondence-note', $event)"
           @remove="$emit('remove-correspondence-note', $event)"
@@ -972,13 +972,6 @@ import SchoolCareerTimeline from './SchoolCareerTimeline.vue'
 import CorrespondenceNoteList from './CorrespondenceNoteList.vue'
 import { Edit, Trash2, X, FileText } from 'lucide-vue-next'
 
-const props = defineProps({
-  student: {
-    type: Object,
-    required: true
-  }
-})
-
 const emit = defineEmits([
   'add-language', 'edit-language', 'remove-language',
   'add-career-entry', 'edit-career-entry', 'remove-career-entry',
@@ -1002,6 +995,30 @@ const tabs = computed(() => [
 
 const activeTab = ref(language.value === 'de' ? 'Lernziele' : 'Learning Goals')
 
+const props = defineProps({
+  student: {
+    type: Object,
+    required: false,
+    default: () => ({
+      id: 1,
+      name: 'Max Mustermann',
+      email: 'max.mustermann@example.com',
+      class: '12A',
+      status: 'Active',
+      enrollmentDate: '2020-09-01',
+      nationality: 'German',
+      contactPerson: 'present',
+      archived: false,
+      languages: [],
+      address: '',
+      gradeLevel: '',
+      homeroomTeacher: '',
+      careerEntries: [],
+      correspondenceNotes: []
+    })
+  }
+})
+
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'active':
@@ -1023,10 +1040,10 @@ const certificateItemsPerPage = ref(5)
 const showAddCertificateModal = ref(false)
 const showEditCertificateModal = ref(false)
 const selectAllCertificates = ref(false)
-const selectedCertificates = ref([])
+const selectedCertificates = ref<number[]>([])
 const certificateFilter = ref({ subject: '', status: '' })
 const certificateForm = ref({
-  id: null,
+  id: 0,
   subject: '',
   type: 'written',
   date: '',
@@ -1127,13 +1144,13 @@ watch([certificateFilter], () => {
 
 function toggleSelectAllCertificates() {
   if (selectAllCertificates.value) {
-    selectedCertificates.value = paginatedCertificates.value.map(cert => cert.id)
+    selectedCertificates.value = paginatedCertificates.value.map((cert: { id: number }) => cert.id)
   } else {
     selectedCertificates.value = []
   }
 }
 
-function getCertificateStatusColor(status) {
+function getCertificateStatusColor(status: string) {
   switch (status) {
     case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
     case 'excused': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
@@ -1142,7 +1159,7 @@ function getCertificateStatusColor(status) {
   }
 }
 
-function getCertificateStatusText(status) {
+function getCertificateStatusText(status: string) {
   if (language.value === 'de') {
     return status === 'completed' ? 'Abgeschlossen' : status === 'excused' ? 'Entschuldigt' : status === 'not_taken' ? 'Nicht angetreten' : status
   } else {
@@ -1153,30 +1170,30 @@ function getCertificateStatusText(status) {
 function closeCertificateModal() {
   showAddCertificateModal.value = false
   showEditCertificateModal.value = false
-  certificateForm.value = { id: null, subject: '', type: 'written', date: '', duration: '', evaluation: '', teacher: '', status: 'completed', semester: '' }
+  certificateForm.value = { id: 0, subject: '', type: 'written', date: '', duration: '', evaluation: '', teacher: '', status: 'completed', semester: '' }
 }
 
 function saveCertificate() {
   if (showEditCertificateModal.value) {
     // Update existing
-    const idx = certificates.value.findIndex(c => c.id === certificateForm.value.id)
+    const idx = certificates.value.findIndex((c: { id: number }) => c.id === certificateForm.value.id)
     if (idx !== -1) certificates.value[idx] = { ...certificateForm.value }
   } else {
     // Add new
-    const newId = Math.max(0, ...certificates.value.map(c => c.id)) + 1
+    const newId = Math.max(0, ...certificates.value.map((c: { id: number }) => c.id)) + 1
     certificates.value.push({ ...certificateForm.value, id: newId })
   }
   closeCertificateModal()
 }
 
-function editCertificate(cert) {
+function editCertificate(cert: { id: number; subject: string; type: string; date: string; duration: string; evaluation: string; teacher: string; status: string; semester: string }) {
   certificateForm.value = { ...cert }
   showEditCertificateModal.value = true
 }
 
-function deleteCertificate(id) {
-  certificates.value = certificates.value.filter(c => c.id !== id)
-  selectedCertificates.value = selectedCertificates.value.filter(certId => certId !== id)
+function deleteCertificate(id: number) {
+  certificates.value = certificates.value.filter((c: { id: number }) => c.id !== id)
+  selectedCertificates.value = selectedCertificates.value.filter((certId: number) => certId !== id)
 }
 
 function printCertificates() {
@@ -1191,10 +1208,10 @@ const reExamItemsPerPage = ref(5)
 const showAddReExamModal = ref(false)
 const showEditReExamModal = ref(false)
 const selectAllReExams = ref(false)
-const selectedReExams = ref([])
+const selectedReExams = ref<number[]>([])
 const reExamFilter = ref({ subject: '', status: '' })
 const reExamForm = ref({
-  id: null,
+  id: 0,
   subject: '',
   type: 'written',
   date: '',
@@ -1289,13 +1306,13 @@ watch([reExamFilter], () => {
 
 function toggleSelectAllReExams() {
   if (selectAllReExams.value) {
-    selectedReExams.value = paginatedReExams.value.map(exam => exam.id)
+    selectedReExams.value = paginatedReExams.value.map((exam: { id: number }) => exam.id)
   } else {
     selectedReExams.value = []
   }
 }
 
-function getReExamStatusColor(status) {
+function getReExamStatusColor(status: string) {
   switch (status) {
     case 'registered': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
     case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -1304,7 +1321,7 @@ function getReExamStatusColor(status) {
   }
 }
 
-function getReExamStatusText(status) {
+function getReExamStatusText(status: string) {
   if (language.value === 'de') {
     return status === 'registered' ? 'Angemeldet' : status === 'completed' ? 'Abgeschlossen' : status === 'not_passed' ? 'Nicht bestanden' : status
   } else {
@@ -1315,30 +1332,30 @@ function getReExamStatusText(status) {
 function closeReExamModal() {
   showAddReExamModal.value = false
   showEditReExamModal.value = false
-  reExamForm.value = { id: null, subject: '', type: 'written', date: '', teacher: '', status: 'registered' }
+  reExamForm.value = { id: 0, subject: '', type: 'written', date: '', teacher: '', status: 'registered' }
 }
 
 function saveReExam() {
   if (showEditReExamModal.value) {
     // Update existing
-    const idx = reExams.value.findIndex(e => e.id === reExamForm.value.id)
+    const idx = reExams.value.findIndex((e: { id: number }) => e.id === reExamForm.value.id)
     if (idx !== -1) reExams.value[idx] = { ...reExamForm.value }
   } else {
     // Add new
-    const newId = Math.max(0, ...reExams.value.map(e => e.id)) + 1
+    const newId = Math.max(0, ...reExams.value.map((e: { id: number }) => e.id)) + 1
     reExams.value.push({ ...reExamForm.value, id: newId })
   }
   closeReExamModal()
 }
 
-function editReExam(exam) {
+function editReExam(exam: { id: number; subject: string; type: string; date: string; teacher: string; status: string }) {
   reExamForm.value = { ...exam }
   showEditReExamModal.value = true
 }
 
-function deleteReExam(id) {
-  reExams.value = reExams.value.filter(e => e.id !== id)
-  selectedReExams.value = selectedReExams.value.filter(examId => examId !== id)
+function deleteReExam(id: number) {
+  reExams.value = reExams.value.filter((e: { id: number }) => e.id !== id)
+  selectedReExams.value = selectedReExams.value.filter((examId: number) => examId !== id)
 }
 
 function printReExams() {
@@ -1353,14 +1370,14 @@ const goalItemsPerPage = ref(5)
 const showAddGoalModal = ref(false)
 const showEditGoalModal = ref(false)
 const selectAllGoals = ref(false)
-const selectedGoals = ref([])
+const selectedGoals = ref<number[]>([])
 const goalFilter = ref({ subject: '', status: '' })
 const goalForm = ref({
-  id: null,
+  id: 0,
   title: '',
   subject: '',
   standard: '',
-  status: 'in_progress',
+  status: '',
   progress: 0
 })
 
@@ -1457,27 +1474,27 @@ function toggleSelectAllGoals() {
   }
 }
 
-function getGoalStatusColor(status) {
+function getGoalStatusColor(status: string) {
   switch (status) {
-    case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-    case 'achieved': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    case 'not_achieved': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    case 'not_started': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+    case 'in_progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
   }
 }
 
-function getGoalStatusText(status) {
+function getGoalStatusText(status: string) {
   if (language.value === 'de') {
-    return status === 'in_progress' ? 'In Bearbeitung' : status === 'achieved' ? 'Erreicht' : status === 'not_achieved' ? 'Nicht erreicht' : status
+    return status === 'not_started' ? 'Nicht begonnen' : status === 'in_progress' ? 'In Bearbeitung' : status === 'completed' ? 'Abgeschlossen' : status
   } else {
-    return status === 'in_progress' ? 'In Progress' : status === 'achieved' ? 'Achieved' : status === 'not_achieved' ? 'Not Achieved' : status
+    return status === 'not_started' ? 'Not Started' : status === 'in_progress' ? 'In Progress' : status === 'completed' ? 'Completed' : status
   }
 }
 
 function closeGoalModal() {
   showAddGoalModal.value = false
   showEditGoalModal.value = false
-  goalForm.value = { id: null, title: '', subject: '', standard: '', status: 'in_progress', progress: 0 }
+  goalForm.value = { id: 0, title: '', subject: '', standard: '', status: '', progress: 0 }
 }
 
 function saveGoal() {
@@ -1493,14 +1510,14 @@ function saveGoal() {
   closeGoalModal()
 }
 
-function editGoal(goal) {
+function editGoal(goal: { id: number; title: string; subject: string; standard: string; status: string; progress: number }) {
   goalForm.value = { ...goal }
   showEditGoalModal.value = true
 }
 
-function deleteGoal(id) {
-  learningGoals.value = learningGoals.value.filter(g => g.id !== id)
-  selectedGoals.value = selectedGoals.value.filter(goalId => goalId !== id)
+function deleteGoal(id: number) {
+  learningGoals.value = learningGoals.value.filter((g: { id: number }) => g.id !== id)
+  selectedGoals.value = selectedGoals.value.filter((goalId: number) => goalId !== id)
 }
 
 function printLearningGoals() {

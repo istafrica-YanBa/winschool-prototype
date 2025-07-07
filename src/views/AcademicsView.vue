@@ -376,12 +376,26 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const showAddGradeModal = ref(false)
 const showEditGradeModal = ref(false)
-const editingGrade = ref(null)
+
+type Grade = {
+  id: number
+  studentName: string
+  studentId: string
+  studentAvatar: string
+  class: string
+  subject: string
+  assessment: string
+  grade: string
+  date: string
+}
+
+const editingGrade = ref<Grade | null>(null)
 
 // Form state
-const gradeForm = ref({
+const gradeForm = ref<Partial<Grade>>({
   studentName: '',
   studentId: '',
+  studentAvatar: '',
   class: '',
   subject: '',
   assessment: '',
@@ -490,8 +504,8 @@ const filteredGrades = computed(() => {
   }
 
   return filtered.sort((a, b) => {
-    const aValue = a[sortBy.value]
-    const bValue = b[sortBy.value]
+    const aValue = a[sortBy.value as keyof typeof a]
+    const bValue = b[sortBy.value as keyof typeof b]
     if (sortOrder.value === 'asc') {
       return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
     } else {
@@ -538,15 +552,15 @@ const handleSort = () => {
   }
 }
 
-const editGrade = (grade) => {
+const editGrade = (grade: Grade) => {
   editingGrade.value = grade
   gradeForm.value = { ...grade }
   showEditGradeModal.value = true
 }
 
-const deleteGrade = (grade) => {
+const deleteGrade = (grade: { id: number }) => {
   if (confirm('Are you sure you want to delete this grade?')) {
-    const index = grades.value.findIndex(g => g.id === grade.id)
+    const index = grades.value.findIndex((g: { id: number }) => g.id === grade.id)
     if (index !== -1) {
       grades.value.splice(index, 1)
     }
@@ -554,18 +568,18 @@ const deleteGrade = (grade) => {
 }
 
 const saveGrade = () => {
-  if (showEditGradeModal.value) {
+  if (showEditGradeModal.value && editingGrade.value) {
     // Update existing grade
-    const index = grades.value.findIndex(g => g.id === editingGrade.value.id)
+    const index = grades.value.findIndex(g => g.id === editingGrade.value!.id)
     if (index !== -1) {
-      grades.value[index] = { ...gradeForm.value, id: editingGrade.value.id }
+      grades.value[index] = { ...gradeForm.value, id: editingGrade.value.id, studentAvatar: gradeForm.value.studentAvatar || editingGrade.value.studentAvatar } as Grade
     }
   } else {
     // Add new grade
-    const newGrade = {
-      ...gradeForm.value,
+    const newGrade: Grade = {
+      ...(gradeForm.value as Grade),
       id: Date.now(),
-      studentAvatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 50) + 1}`
+      studentAvatar: gradeForm.value.studentAvatar || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 50) + 1}`
     }
     grades.value.unshift(newGrade)
   }
@@ -579,6 +593,7 @@ const closeModal = () => {
   gradeForm.value = {
     studentName: '',
     studentId: '',
+    studentAvatar: '',
     class: '',
     subject: '',
     assessment: '',

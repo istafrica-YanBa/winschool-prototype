@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 
-// Type declaration for Quagga since it doesn't have official TypeScript types
+// Simple type declaration for quagga
 declare const Quagga: any
 
 const emit = defineEmits<{
@@ -15,8 +15,8 @@ const startScanner = async () => {
   if (!scannerElement.value) return
   
   try {
-    // Dynamically import Quagga to avoid SSR issues
-    const QuaggaModule = await import('quagga')
+    // @ts-ignore
+    const QuaggaModule = await import('quagga') as any
     const QuaggaLib = QuaggaModule.default || QuaggaModule
     
     QuaggaLib.init({
@@ -54,12 +54,13 @@ const startScanner = async () => {
 
 const stopScanner = async () => {
   try {
-    const QuaggaModule = await import('quagga')
+    // @ts-ignore
+    const QuaggaModule = await import('quagga') as any
     const QuaggaLib = QuaggaModule.default || QuaggaModule
     QuaggaLib.stop()
     isScanning.value = false
   } catch (error) {
-    console.error('Failed to stop scanner:', error)
+    console.error('Failed to stop Quagga:', error)
   }
 }
 

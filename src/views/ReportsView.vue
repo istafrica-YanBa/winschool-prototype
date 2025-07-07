@@ -172,9 +172,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { 
-  Plus, FileText, BarChart3, DollarSign, Users, Calendar, 
-  Eye, Download, Share, TrendingUp, TrendingDown, Minus 
+import {
+  Plus, FileText, BarChart3, DollarSign, Calendar,
+  Eye, Download, Share, TrendingUp
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()

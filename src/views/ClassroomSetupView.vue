@@ -396,7 +396,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { Plus, Edit, Eye, X, Users, BookOpen, Calendar, DoorOpen, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { Edit, Eye, X, Users, BookOpen, Calendar, DoorOpen, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)

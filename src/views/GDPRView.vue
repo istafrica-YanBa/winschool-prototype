@@ -30,7 +30,7 @@
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             {{ language === 'de' ? 'Vorname' : 'First Name' }}
           </label>
-          <RuneInput
+          <Input
             v-model="searchFilters.firstName"
             :placeholder="language === 'de' ? 'Vorname eingeben...' : 'Enter first name...'"
             wcagLabel="First Name Input"
@@ -41,7 +41,7 @@
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             {{ language === 'de' ? 'Nachname' : 'Last Name' }}
           </label>
-          <RuneInput
+          <Input
             v-model="searchFilters.lastName"
             :placeholder="language === 'de' ? 'Nachname eingeben...' : 'Enter last name...'"
             wcagLabel="Last Name Input"
@@ -52,7 +52,7 @@
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             {{ language === 'de' ? 'Datum (Bis)' : 'Date (Until)' }}
           </label>
-          <RuneDatePicker
+          <Datepicker
             v-model="searchFilters.date"
             wcagLabel="Date Input"
             :placeholder="language === 'de' ? 'Datum wählen...' : 'Pick a date...'"
@@ -86,7 +86,7 @@
       <!-- Archive Search Toggle -->
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center">
-          <RuneCheckbox
+          <input type="checkbox"
             v-model="searchFilters.includeArchive"
             id="includeArchive"
             wcagLabel="Include Archive Checkbox"
@@ -128,9 +128,9 @@
 
       <!-- Desktop Table View -->
       <div class="hidden md:block overflow-x-auto">
-        <RuneDataTable
+        <Table
           :columns="dataTableColumns"
-          :rows="dataTableRows.value"
+          :rows="dataTableRows"
           :rowKey="'id'"
         />
       </div>
@@ -140,13 +140,13 @@
         <div v-for="user in searchResults" :key="user.id" class="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 space-y-3">
           <div class="flex items-start justify-between">
             <div class="flex items-center flex-1">
-              <RuneCheckbox
+              <input type="checkbox"
                 :checked="selectedUsers.includes(user.id)"
                 @change="toggleUser(user.id)"
                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded mr-3"
                 wcagLabel="Select user checkbox"
               />
-              <RuneAvatar
+              <img
                 :src="user.avatar"
                 :alt="user.name"
                 class="h-10 w-10 rounded-full object-cover mr-3"
@@ -188,7 +188,7 @@
     </div>
 
     <!-- Export Modal -->
-    <RuneModal v-if="showExportModal" @close="showExportModal = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" wcagLabel="Export GDPR Report Modal">
+    <Modal v-if="showExportModal" @close="showExportModal = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" wcagLabel="Export GDPR Report Modal" :show="showExportModal">
       <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-md w-full p-6">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-50">
@@ -238,7 +238,7 @@
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               {{ language === 'de' ? 'Passwort für Export' : 'Export Password' }}
             </label>
-            <RuneInput
+            <Input
               v-model="exportOptions.password"
               type="password"
               :placeholder="language === 'de' ? 'Sicheres Passwort eingeben...' : 'Enter secure password...'"
@@ -267,17 +267,37 @@
           </button>
         </div>
       </div>
-    </RuneModal>
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { 
+import {
   Shield, Search, Download, FileText, Printer, X,
-  User, Users, BookOpen, GraduationCap, UserCheck, Building
+  User, Users, UserCheck, Building
 } from 'lucide-vue-next'
+import Input from '@/components/ui/input.vue'
+import Datepicker from '@/components/ui/datepicker.vue'
+import Modal from '@/components/ui/modal.vue'
+import Table from '@/components/ui/table.vue'
+
+// --- Domain Types ---
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar: string;
+  address: {
+    street: string;
+    city: string;
+    country: string;
+  };
+  joiningDate: string;
+  archived: boolean;
+}
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
@@ -321,7 +341,7 @@ const userRoles = ref([
 ])
 
 // Search results and state
-const searchResults = ref([])
+const searchResults = ref<User[]>([])
 const selectedUsers = ref<string[]>([])
 const hasSearched = ref(false)
 const showExportModal = ref(false)
@@ -333,7 +353,7 @@ const exportOptions = ref({
 })
 
 // Mock search results data
-const mockUsers = [
+const mockUsers: User[] = [
   {
     id: '1',
     name: 'Maria Müller',
@@ -399,10 +419,6 @@ const canSearch = computed(() => {
          searchFilters.value.selectedRoles.length > 0
 })
 
-const allSelected = computed(() => {
-  return searchResults.value.length > 0 && selectedUsers.value.length === searchResults.value.length
-})
-
 const canExport = computed(() => {
   return exportOptions.value.password.length >= 6 && 
          selectedUsers.value.length > 0
@@ -413,7 +429,8 @@ const dataTableColumns = [
     key: 'select',
     label: '',
     width: 48,
-    render: (row) => h(RuneCheckbox, {
+    render: (row: User) => h('input', {
+      type: 'checkbox',
       checked: selectedUsers.value.includes(row.id),
       onChange: () => toggleUser(row.id),
       'aria-label': 'Select user',
@@ -422,8 +439,8 @@ const dataTableColumns = [
   {
     key: 'name',
     label: language.value === 'de' ? 'Name' : 'Name',
-    render: (row) => h('div', { class: 'flex items-center' }, [
-      h(RuneAvatar, {
+    render: (row: User) => h('div', { class: 'flex items-center' }, [
+      h('img', {
         src: row.avatar,
         alt: row.name,
         class: 'h-8 w-8 rounded-full object-cover mr-3',
@@ -438,7 +455,7 @@ const dataTableColumns = [
   {
     key: 'role',
     label: language.value === 'de' ? 'Rolle' : 'Role',
-    render: (row) => h('span', { class: getRoleColor(row.role) + ' px-2 py-1 text-xs font-medium rounded-full' }, getRoleDisplayName(row.role))
+    render: (row: User) => h('span', { class: getRoleColor(row.role) + ' px-2 py-1 text-xs font-medium rounded-full' }, getRoleDisplayName(row.role))
   },
   {
     key: 'email',
@@ -447,7 +464,7 @@ const dataTableColumns = [
   {
     key: 'address',
     label: language.value === 'de' ? 'Adresse' : 'Address',
-    render: (row) => h('div', { class: 'text-sm' }, [
+    render: (row: User) => h('div', { class: 'text-sm' }, [
       h('p', {}, row.address.street),
       h('p', {}, `${row.address.city}, ${row.address.country}`)
     ])
@@ -455,14 +472,14 @@ const dataTableColumns = [
   {
     key: 'joiningDate',
     label: language.value === 'de' ? 'Beitrittsdatum' : 'Joining Date',
-    render: (row) => formatDate(row.joiningDate)
+    render: (row: User) => formatDate(row.joiningDate)
   }
 ]
 
-const dataTableRows = computed(() => searchResults.value)
+const dataTableRows = computed<User[]>(() => searchResults.value)
 
 // Methods
-const toggleRole = (roleValue: string) => {
+const toggleRole = (roleValue: string): void => {
   const index = searchFilters.value.selectedRoles.indexOf(roleValue)
   if (index > -1) {
     searchFilters.value.selectedRoles.splice(index, 1)
@@ -471,11 +488,11 @@ const toggleRole = (roleValue: string) => {
   }
 }
 
-const performSearch = () => {
+const performSearch = (): void => {
   hasSearched.value = true
   
   // Filter mock users based on search criteria
-  let results = [...mockUsers]
+  let results: User[] = [...mockUsers]
   
   // Filter by name
   if (searchFilters.value.firstName.trim()) {
@@ -506,7 +523,7 @@ const performSearch = () => {
   selectedUsers.value = []
 }
 
-const toggleUser = (userId: string) => {
+const toggleUser = (userId: string): void => {
   const index = selectedUsers.value.indexOf(userId)
   if (index > -1) {
     selectedUsers.value.splice(index, 1)
@@ -515,21 +532,13 @@ const toggleUser = (userId: string) => {
   }
 }
 
-const toggleAllUsers = () => {
-  if (allSelected.value) {
-    selectedUsers.value = []
-  } else {
-    selectedUsers.value = searchResults.value.map(user => user.id)
-  }
-}
-
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   return date.toLocaleDateString(language.value === 'de' ? 'de-DE' : 'en-US')
 }
 
-const getRoleDisplayName = (role: string) => {
-  const roleNames = {
+const getRoleDisplayName = (role: string): string => {
+  const roleNames: Record<string, Record<string, string>> = {
     en: {
       student: 'Student',
       teacher: 'Teacher',
@@ -546,11 +555,11 @@ const getRoleDisplayName = (role: string) => {
     }
   }
   
-  return roleNames[language.value][role] || role
+  return roleNames[language.value as 'en' | 'de'][role] || role
 }
 
-const getRoleColor = (role: string) => {
-  const colors = {
+const getRoleColor = (role: string): string => {
+  const colors: Record<string, string> = {
     student: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
     teacher: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
     parent: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
@@ -561,10 +570,10 @@ const getRoleColor = (role: string) => {
   return colors[role] || 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400'
 }
 
-const generateReport = () => {
+const generateReport = (): void => {
   if (!canExport.value) return
   
-  const selectedUserData = searchResults.value.filter(user => 
+  const selectedUserData = searchResults.value.filter((user: User) => 
     selectedUsers.value.includes(user.id)
   )
   

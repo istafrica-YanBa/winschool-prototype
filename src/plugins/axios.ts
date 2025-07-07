@@ -1,7 +1,16 @@
 import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 
+// Add type declaration for import.meta.env
+declare global {
+  interface ImportMeta {
+    env: {
+      VITE_API_BASE_URL?: string
+    }
+  }
+}
+
 // Create axios instance with default config
-export const api = axios.create({
+const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 10000,
   headers: {
@@ -48,4 +57,4 @@ api.interceptors.response.use(
   }
 )
 
-export default api 
+export { api } 

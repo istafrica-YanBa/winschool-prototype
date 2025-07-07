@@ -827,7 +827,7 @@
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { 
-  Download, Plus, Settings, Zap, AlertTriangle, Building, Users, RefreshCw, Edit, X, Calendar, LifeBuoy
+  Download, Plus, AlertTriangle, Building, Users, RefreshCw, Edit, X, Calendar, LifeBuoy
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
@@ -1209,10 +1209,6 @@ const submitAddClass = () => {
   checkForConflicts()
 }
 
-const autoSchedule = () => {
-  showAutoScheduleModal.value = true
-}
-
 const runAutoScheduler = () => {
   // Simulate auto-scheduling process
   showAutoScheduleModal.value = false
@@ -1385,5 +1381,15 @@ const calculateDuration = (startDate: string, endDate: string) => {
         : `${weeks} weeks, ${remainingDays} days`
     }
   }
+}
+
+const exportTimetable = () => {
+  // Implementation for exporting timetable
+  alert(language.value === 'de' ? 'Stundenplan wird exportiert...' : 'Exporting timetable...')
+}
+
+const generateTimetable = () => {
+  // Implementation for generating timetable
+  alert(language.value === 'de' ? 'Stundenplan wird generiert...' : 'Generating timetable...')
 }
 </script>

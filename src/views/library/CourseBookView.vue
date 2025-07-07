@@ -256,7 +256,7 @@
       <div v-if="showCourseDetailModal && selectedCourse" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-semibold text-slate-600 dark:text-white">{{ selectedCourse.name }} Details</h3>
+            <h3 class="text-xl font-semibold text-slate-600 dark:text-white">{{ selectedCourse?.name }} Details</h3>
             <button @click="showCourseDetailModal = false" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">✕</button>
           </div>
           
@@ -351,17 +351,53 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
+// Type definitions
+interface BookAssignment {
+  bookId: string
+  bookTitle: string
+  isbn: string
+  copiesPerStudent: number
+  isRequired: boolean
+  status: string
+}
+
+interface Course {
+  id: string
+  name: string
+  code: string
+  semester: string
+  studentsEnrolled: number
+  booksAssigned: number
+  autoLendingEnabled: boolean
+  instructor: string
+  bookAssignments: BookAssignment[]
+}
+
+interface Book {
+  id: string
+  title: string
+  isbn: string
+  availability: number
+}
+
+interface NewAssignment {
+  courseId: string
+  bookId: string
+  copiesPerStudent: number
+  isRequired: boolean
+}
+
 // UI State
 const showAssignModal = ref(false)
 const showBatchLendModal = ref(false)
 const showBatchReturnModal = ref(false)
 const showCourseDetailModal = ref(false)
-const selectedCourse = ref(null)
+const selectedCourse = ref<Course | null>(null)
 const searchQuery = ref('')
 const filterStatus = ref('all')
 
 // Form Data
-const newAssignment = ref({
+const newAssignment = ref<NewAssignment>({
   courseId: '',
   bookId: '',
   copiesPerStudent: 1,
@@ -369,7 +405,7 @@ const newAssignment = ref({
 })
 
 // Mock Data
-const courses = ref([
+const courses = ref<Course[]>([
   {
     id: 'C001',
     name: 'Advanced Mathematics',
@@ -428,13 +464,13 @@ const bookLendings = ref([
   { id: 'L003', studentId: 'S002', courseId: 'C001', bookId: 'B001', lentDate: '2024-01-16', status: 'returned', dueDate: '2024-05-15', returnDate: '2024-01-20' }
 ])
 
-const books = ref([
-  { id: 'B001', title: 'Calculus Fundamentals', isbn: '978-0123456789', totalCopies: 50, availableCopies: 22 },
-  { id: 'B002', title: 'Linear Algebra', isbn: '978-0987654321', totalCopies: 30, availableCopies: 12 },
-  { id: 'B003', title: 'Statistics Guide', isbn: '978-0456789123', totalCopies: 25, availableCopies: 18 },
-  { id: 'B004', title: 'Physics Lab Manual', isbn: '978-0321654987', totalCopies: 40, availableCopies: 16 },
-  { id: 'B005', title: 'Experiment Procedures', isbn: '978-0654321987', totalCopies: 35, availableCopies: 11 },
-  { id: 'B006', title: 'General Chemistry', isbn: '978-0789456123', totalCopies: 45, availableCopies: 10 }
+const books = ref<Book[]>([
+  { id: 'B001', title: 'Calculus Fundamentals', isbn: '978-0123456789', availability: 50 },
+  { id: 'B002', title: 'Linear Algebra', isbn: '978-0987654321', availability: 30 },
+  { id: 'B003', title: 'Statistics Guide', isbn: '978-0456789123', availability: 25 },
+  { id: 'B004', title: 'Physics Lab Manual', isbn: '978-0321654987', availability: 40 },
+  { id: 'B005', title: 'Experiment Procedures', isbn: '978-0654321987', availability: 35 },
+  { id: 'B006', title: 'General Chemistry', isbn: '978-0789456123', availability: 45 }
 ])
 
 // Computed Properties for Infographics
@@ -488,27 +524,8 @@ const filteredCourses = computed(() => {
 })
 
 // Utility functions
-const getCourseStudents = (courseId) => {
+const getCourseStudents = (courseId: string) => {
   return students.value.filter(s => s.courseId === courseId)
-}
-
-const getStudentLendings = (studentId, courseId) => {
-  return bookLendings.value.filter(l => l.studentId === studentId && l.courseId === courseId)
-}
-
-const getBookTitle = (bookId) => {
-  const book = books.value.find(b => b.id === bookId)
-  return book ? book.title : 'Unknown Book'
-}
-
-const getStatusColor = (status) => {
-  const colors = {
-    'lent': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    'returned': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-    'overdue': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-    'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-  }
-  return colors[status] || 'bg-gray-100 text-gray-800'
 }
 
 // Modal handlers
@@ -517,23 +534,23 @@ const openAssignModal = () => {
   showAssignModal.value = true
 }
 
-const openCourseDetail = (course) => {
+const openCourseDetail = (course: Course) => {
   selectedCourse.value = course
   showCourseDetailModal.value = true
 }
 
-const openBatchLend = (course) => {
+const openBatchLend = (course: Course) => {
   selectedCourse.value = course
   showBatchLendModal.value = true
 }
 
-const openBatchReturn = (course) => {
+const openBatchReturn = (course: Course) => {
   selectedCourse.value = course
   showBatchReturnModal.value = true
 }
 
 // Action handlers
-const toggleAutoLending = (course) => {
+const toggleAutoLending = (course: Course) => {
   course.autoLendingEnabled = !course.autoLendingEnabled
   console.log(`Auto-lending ${course.autoLendingEnabled ? 'enabled' : 'disabled'} for ${course.name}`)
 }
@@ -576,81 +593,88 @@ const handleAssignBook = () => {
 const handleBatchLend = () => {
   if (!selectedCourse.value) return
   
-  try {
-    const courseStudents = getCourseStudents(selectedCourse.value.id)
-    let lentCount = 0
-    
+  const courseStudents = getCourseStudents(selectedCourse.value.id)
+  
+  // Create loans for all students and all assigned books
+  selectedCourse.value.bookAssignments.forEach(assignment => {
     courseStudents.forEach(student => {
-      selectedCourse.value.bookAssignments.forEach(assignment => {
-        const existingLending = bookLendings.value.find(l => 
-          l.studentId === student.id && 
-          l.courseId === selectedCourse.value.id && 
-          l.bookId === assignment.bookId &&
-          l.status === 'lent'
-        )
-        
-        if (!existingLending) {
-          const newLending = {
-            id: `L${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            studentId: student.id,
-            courseId: selectedCourse.value.id,
-            bookId: assignment.bookId,
-            lentDate: new Date().toISOString().split('T')[0],
-            status: 'lent',
-            dueDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          }
-          
-          bookLendings.value.push(newLending)
-          lentCount++
+      // Check if loan already exists
+      const existingLoan = bookLendings.value.find(l => 
+        l.courseId === selectedCourse.value!.id &&
+        l.studentId === student.id &&
+        l.bookId === assignment.bookId
+      )
+      
+      if (!existingLoan) {
+        const newLending = {
+          id: `L${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          studentId: student.id,
+          courseId: selectedCourse.value!.id,
+          bookId: assignment.bookId,
+          lentDate: new Date().toISOString().split('T')[0],
+          status: 'lent',
+          dueDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 120 days from now
         }
-      })
+        
+        bookLendings.value.push(newLending)
+      }
     })
-    
-    console.log(`Successfully lent ${lentCount} books to course students`)
-    showBatchLendModal.value = false
-  } catch (error) {
-    console.error('Failed to perform batch lending')
-  }
+  })
+  
+  showBatchLendModal.value = false
 }
 
 const handleBatchReturn = () => {
   if (!selectedCourse.value) return
   
-  try {
-    const courseLendings = bookLendings.value.filter(l => 
-      l.courseId === selectedCourse.value.id && l.status === 'lent'
-    )
-    
-    courseLendings.forEach(lending => {
+  // Mark all loans for this course as returned
+  bookLendings.value.forEach(lending => {
+    if (lending.courseId === selectedCourse.value!.id && lending.status === 'lent') {
       lending.status = 'returned'
-      lending.returnDate = new Date().toISOString().split('T')[0]
-    })
-    
-    console.log(`Successfully returned ${courseLendings.length} books from course`)
-    showBatchReturnModal.value = false
-  } catch (error) {
-    console.error('Failed to perform batch return')
-  }
+    }
+  })
+  
+  showBatchReturnModal.value = false
 }
 
-const exportCourseData = (course) => {
-  try {
-    console.log(`Exporting course data for ${course.name || 'all courses'}...`)
-    setTimeout(() => {
-      console.log('Course data exported successfully')
-    }, 2000)
-  } catch (error) {
-    console.error('Failed to export course data')
+const exportCourseData = (course: Course | {}) => {
+  if (!course || !('id' in course)) {
+    // Export all courses
+    console.log('Exporting all courses data...')
+    return
   }
+  
+  const courseLoans = getCourseLoans(course.id)
+  const data = {
+    course: course,
+    loans: courseLoans,
+    summary: {
+      totalStudents: course.studentsEnrolled,
+      totalBooks: course.booksAssigned,
+      activeLoans: courseLoans.filter(l => l.status === 'lent').length,
+      overdueLoans: courseLoans.filter(l => {
+        const dueDate = new Date(l.dueDate)
+        const today = new Date()
+        return l.status === 'lent' && dueDate < today
+      }).length
+    }
+  }
+  
+  console.log('Exporting course data:', data)
+  // In a real app, this would trigger a download
 }
 
-const removeBookAssignment = (course, bookId) => {
-  const index = course.bookAssignments.findIndex(ba => ba.bookId === bookId)
+const removeBookAssignment = (course: Course, bookId: string) => {
+  const index = course.bookAssignments.findIndex((ba: any) => ba.bookId === bookId)
   if (index > -1) {
     course.bookAssignments.splice(index, 1)
     course.booksAssigned -= 1
     console.log('Book assignment removed')
   }
+}
+
+const getCourseLoans = (courseId: string) => {
+  return bookLendings.value.filter(l => l.courseId === courseId)
 }
 
 console.log('✅ Course-Based Books Management System loaded successfully!')

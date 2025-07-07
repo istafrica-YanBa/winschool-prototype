@@ -705,7 +705,7 @@ const formatDate = (dateString: string) => {
 }
 
 const getStatusColor = (status: string) => {
-  const colors = {
+  const colors: Record<string, string> = {
     'under_review': 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200',
     'documents_required': 'bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200',
     'interview_scheduled': 'bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200',
@@ -716,7 +716,7 @@ const getStatusColor = (status: string) => {
 }
 
 const getStatusText = (status: string) => {
-  const texts = {
+  const texts: Record<string, Record<string, string>> = {
     en: {
       'under_review': 'Under Review',
       'documents_required': 'Documents Required',
@@ -743,7 +743,7 @@ const getProgressColor = (progress: number) => {
 }
 
 const getDocumentStatusColor = (status: string) => {
-  const colors = {
+  const colors: Record<string, string> = {
     'submitted': 'text-green-600 dark:text-green-400',
     'pending': 'text-yellow-600 dark:text-yellow-400',
     'missing': 'text-red-600 dark:text-red-400'
@@ -752,7 +752,7 @@ const getDocumentStatusColor = (status: string) => {
 }
 
 const getDocumentStatusTextColor = (status: string) => {
-  const colors = {
+  const colors: Record<string, string> = {
     'submitted': 'text-green-700 dark:text-green-300',
     'pending': 'text-yellow-700 dark:text-yellow-300',
     'missing': 'text-red-700 dark:text-red-300'
@@ -761,7 +761,7 @@ const getDocumentStatusTextColor = (status: string) => {
 }
 
 const getDocumentStatusText = (status: string) => {
-  const texts = {
+  const texts: Record<string, Record<string, string>> = {
     en: {
       'submitted': 'Submitted',
       'pending': 'Pending',

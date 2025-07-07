@@ -718,8 +718,8 @@ const saveConfiguration = () => {
 }
 
 // Watch for language changes to update field labels
-watch(language, (newLang) => {
-  // Update field labels when language changes
+watch(language, () => {
+  // Language changed, update form labels and placeholders
   // This would typically be handled by a more sophisticated i18n system
 })
 </script> 

@@ -561,8 +561,6 @@ const metrics = ref({
   averageStudyTime: 4.2
 })
 
-const selectedTimeRange = ref('last30days')
-const selectedMetric = ref('overall')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
@@ -637,7 +635,7 @@ const chartOptions = {
       display: true
     },
     tooltip: {
-      mode: 'index',
+      mode: 'index' as const,
       intersect: false
     }
   },
@@ -645,13 +643,13 @@ const chartOptions = {
     x: {
       display: true,
       title: {
-        display: true
+        display: false
       }
     },
     y: {
       display: true,
       title: {
-        display: true
+        display: false
       }
     }
   }

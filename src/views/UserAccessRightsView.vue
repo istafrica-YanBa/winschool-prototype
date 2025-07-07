@@ -199,7 +199,7 @@
               {{ language === 'de' ? 'Benutzerrechte bearbeiten:' : 'Edit User Rights:' }} {{ selectedUser?.name }}
             </h3>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {{ language === 'de' ? 'Standardgruppe:' : 'Default group:' }} {{ getRoleDisplayName(selectedUser?.role) }}
+              {{ language === 'de' ? 'Standardgruppe:' : 'Default group:' }} {{ getRoleDisplayName(selectedUser?.role || '') }}
             </p>
           </div>
           
@@ -224,7 +224,7 @@
                       class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                     />
                     <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ permission.name }}</span>
-                    <span v-if="hasGroupPermission(getGroupByRole(selectedUser?.role)?.id, module.key, permission.key)" class="ml-2 text-xs text-green-600 dark:text-green-400">({{ language === 'de' ? 'Gruppe' : 'Group' }})</span>
+                    <span v-if="hasGroupPermission(getGroupByRole(selectedUser?.role || '')?.id || '', module.key, permission.key)" class="ml-2 text-xs text-green-600 dark:text-green-400">({{ language === 'de' ? 'Gruppe' : 'Group' }})</span>
                   </label>
                 </div>
               </div>
@@ -253,7 +253,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Shield, Edit, Search, Key, Check, X } from 'lucide-vue-next'
+import { Shield, Edit, Search, Key } from 'lucide-vue-next'
 
 // Language setting
 const language = ref('en')
@@ -267,48 +267,70 @@ const userSearchQuery = ref('')
 // Modals
 const showGroupEditModal = ref(false)
 const showUserEditModal = ref(false)
-const selectedGroup = ref(null)
-const selectedUser = ref(null)
-const editingGroupPermissions = ref({})
-const editingUserPermissions = ref({})
+const showBulkUpdateModal = ref(false)
+const selectedGroup = ref<UserGroup | null>(null)
+const selectedUser = ref<User | null>(null)
+const editingGroupPermissions = ref<Record<string, boolean>>({})
+const editingUserPermissions = ref<Record<string, boolean>>({})
 
-// Predefined user groups as mentioned in requirements
+// Add proper type definitions
+interface UserGroup {
+  id: string
+  name: string
+  role: string
+  permissions: Record<string, string[]>
+}
+
+interface User {
+  id: string
+  name: string
+  role: string
+  customPermissions: Record<string, string[]>
+}
+
+// Add 'role' property to userGroups objects
 const userGroups = ref([
   {
     id: 'system-support',
     name: language.value === 'de' ? 'System Support' : 'System Support',
     description: language.value === 'de' ? 'Vollzugriff auf alle Systemfunktionen' : 'Full access to all system functions',
-    memberCount: 3
+    memberCount: 3,
+    role: 'systemadmin'
   },
   {
     id: 'school-management',
     name: language.value === 'de' ? 'Schulleitung' : 'School Management',
     description: language.value === 'de' ? 'Verwaltung der gesamten Schule' : 'Management of the entire school',
-    memberCount: 5
+    memberCount: 5,
+    role: 'schooladmin'
   },
   {
     id: 'department-head',
     name: language.value === 'de' ? 'Abteilungsleitung' : 'Department Head',
     description: language.value === 'de' ? 'Leitung einzelner Abteilungen' : 'Management of individual departments',
-    memberCount: 12
+    memberCount: 12,
+    role: 'departmenthead'
   },
   {
     id: 'teaching-staff',
     name: language.value === 'de' ? 'Lehrpersonal' : 'Teaching Staff',
     description: language.value === 'de' ? 'Unterricht und Bewertung' : 'Teaching and assessment',
-    memberCount: 45
+    memberCount: 45,
+    role: 'teacher'
   },
   {
     id: 'admin-staff-1',
     name: language.value === 'de' ? 'Verwaltungspersonal 1' : 'Administrative Staff 1',
     description: language.value === 'de' ? 'Erweiterte Verwaltungsfunktionen' : 'Extended administrative functions',
-    memberCount: 8
+    memberCount: 8,
+    role: 'admin'
   },
   {
     id: 'admin-staff-2',
     name: language.value === 'de' ? 'Verwaltungspersonal 2' : 'Administrative Staff 2',
     description: language.value === 'de' ? 'Grundlegende Verwaltungsfunktionen' : 'Basic administrative functions',
-    memberCount: 15
+    memberCount: 15,
+    role: 'admin'
   }
 ])
 
@@ -425,7 +447,7 @@ const users = ref([
 ])
 
 // Mock group permissions (in real app, this would come from API)
-const groupPermissions = ref({
+const groupPermissions = ref<Record<string, Record<string, string[]>>>({
   'system-support': {
     'user-management': ['create', 'read', 'update', 'delete'],
     'student-management': ['create', 'read', 'update', 'delete'],
@@ -466,7 +488,7 @@ const filteredUsers = computed(() => {
 
 // Methods
 const getRoleDisplayName = (role: string) => {
-  const roleNames = {
+  const roleNames: Record<string, string> = {
     'superadmin': language.value === 'de' ? 'Super Admin' : 'Super Admin',
     'schooladmin': language.value === 'de' ? 'Schuladmin' : 'School Admin',
     'admin': language.value === 'de' ? 'Administrator' : 'Administrator',
@@ -478,16 +500,7 @@ const getRoleDisplayName = (role: string) => {
 }
 
 const getGroupByRole = (role: string) => {
-  const roleToGroup = {
-    'superadmin': 'system-support',
-    'schooladmin': 'school-management',
-    'principal': 'school-management',
-    'admin': 'department-head',
-    'teacher': 'teaching-staff',
-    'schoolstaff': 'admin-staff-1'
-  }
-  const groupId = roleToGroup[role]
-  return userGroups.value.find(g => g.id === groupId)
+  return userGroups.value.find(group => group.role === role) || null
 }
 
 const hasGroupPermission = (groupId: string, moduleKey: string, permissionKey: string) => {
@@ -556,29 +569,26 @@ const cancelUserEdit = () => {
 
 const saveGroupRights = () => {
   if (!selectedGroup.value) return
-  
+  const groupId = selectedGroup.value.id
+  if (!groupId) return
   // Update group permissions
   Object.keys(editingGroupPermissions.value).forEach(key => {
     const [moduleKey, permissionKey] = key.split('.')
     const hasPermission = editingGroupPermissions.value[key]
-    
-    if (!groupPermissions.value[selectedGroup.value.id]) {
-      groupPermissions.value[selectedGroup.value.id] = {}
+    if (!groupPermissions.value[groupId]) {
+      groupPermissions.value[groupId] = {}
     }
-    if (!groupPermissions.value[selectedGroup.value.id][moduleKey]) {
-      groupPermissions.value[selectedGroup.value.id][moduleKey] = []
+    if (!groupPermissions.value[groupId][moduleKey]) {
+      groupPermissions.value[groupId][moduleKey] = []
     }
-    
-    const permissions = groupPermissions.value[selectedGroup.value.id][moduleKey]
+    const permissions = groupPermissions.value[groupId][moduleKey]
     const index = permissions.indexOf(permissionKey)
-    
     if (hasPermission && index === -1) {
       permissions.push(permissionKey)
     } else if (!hasPermission && index > -1) {
       permissions.splice(index, 1)
     }
   })
-  
   showGroupEditModal.value = false
   selectedGroup.value = null
 }
@@ -587,14 +597,16 @@ const saveUserRights = () => {
   if (!selectedUser.value) return
   
   // Update user custom permissions
-  const customPermissions = []
+  const customPermissions: string[] = []
   Object.keys(editingUserPermissions.value).forEach(key => {
     if (editingUserPermissions.value[key]) {
       customPermissions.push(key)
     }
   })
   
-  selectedUser.value.customPermissions = customPermissions
+  if (selectedUser.value) {
+    selectedUser.value.customPermissions = customPermissions as unknown as Record<string, string[]>
+  }
   showUserEditModal.value = false
   selectedUser.value = null
 }
