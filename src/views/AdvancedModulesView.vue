@@ -201,18 +201,8 @@ import { useThemeStore } from '../stores/theme'
 import { RuneBreadcrumbs } from '@ist/commonui-components'
 import { 
   Settings, Plus, LifeBuoy, CheckCircle, Circle, Eye, X, Play,
-  Shield, BookOpen, BarChart3, FileText, Users, Calendar
+  Shield, BookOpen, BarChart3,
 } from 'lucide-vue-next'
-import {
-  RuneButton,
-  RuneInput,
-  RuneCheckbox,
-  RuneSelect,
-  RuneTable,
-  RuneModal,
-  RuneAvatar,
-  // ...any others you need
-} from '@ist/commonui-components'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)

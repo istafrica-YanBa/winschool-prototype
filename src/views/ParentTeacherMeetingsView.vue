@@ -553,6 +553,29 @@ import { ref, computed, onMounted } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { Calendar, List, Plus, ChevronLeft, ChevronRight, Clock, User, MapPin, X, AlertCircle } from 'lucide-vue-next'
 
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface Meeting {
+  id: number
+  date: string
+  time: string
+  teacher: string
+  teacherAvatar: string
+  subject: string
+  childName: string
+  purpose: string
+  status: 'scheduled' | 'completed' | 'cancelled'
+  location?: string
+  notes?: string
+}
+
+interface Day {
+  day: number
+  date: string
+  isCurrentMonth: boolean
+  isToday: boolean
+  meetings: Meeting[]
+}
+
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
@@ -561,8 +584,8 @@ const currentView = ref('calendar')
 const currentDate = ref(new Date())
 const selectedChild = ref('')
 const selectedStatus = ref('')
-const selectedMeeting = ref(null)
-const selectedDay = ref(null)
+const selectedMeeting = ref<Meeting | null>(null)
+const selectedDay = ref<Day | null>(null)
 const showBookingModal = ref(false)
 
 // Form data
@@ -688,7 +711,7 @@ const upcomingMeetings = computed(() => {
   const now = new Date()
   return meetings.value.filter(meeting => {
     const meetingDate = new Date(meeting.date)
-    return meetingDate >= now && (selectedChild.value === '' || meeting.childName.includes(children.value.find(c => c.id == selectedChild.value)?.name || ''))
+    return meetingDate >= now && (selectedChild.value === '' || meeting.childName.includes(children.value.find(c => String(c.id) === String(selectedChild.value))?.name || ''))
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 })
 
@@ -696,7 +719,7 @@ const pastMeetings = computed(() => {
   const now = new Date()
   return meetings.value.filter(meeting => {
     const meetingDate = new Date(meeting.date)
-    return meetingDate < now && (selectedChild.value === '' || meeting.childName.includes(children.value.find(c => c.id == selectedChild.value)?.name || ''))
+    return meetingDate < now && (selectedChild.value === '' || meeting.childName.includes(children.value.find(c => String(c.id) === String(selectedChild.value))?.name || ''))
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 })
 
@@ -811,7 +834,7 @@ const getMeetingStatusBadgeColor = (status: string) => {
 }
 
 const getMeetingStatusText = (status: string) => {
-  const statusTexts = {
+  const statusTexts: Record<string, Record<string, string>> = {
     en: {
       scheduled: 'Scheduled',
       completed: 'Completed',
@@ -823,7 +846,6 @@ const getMeetingStatusText = (status: string) => {
       cancelled: 'Abgesagt'
     }
   }
-  
   return statusTexts[language.value][status] || status
 }
 

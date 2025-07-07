@@ -204,7 +204,7 @@
                   <td class="px-6 py-4 whitespace-nowrap">
                     <input
                       :value="getGradeValue(student)"
-                      @input="updateGradeValue(student, $event.target.value)"
+                      @input="updateGradeValue(student, ($event.target as HTMLInputElement).value)"
                       type="number"
                       min="1.0"
                       max="6.0"
@@ -428,19 +428,18 @@ const handleCourseChange = () => {
   }
 }
 
-const handleGradeChange = (student: any) => {
-  modifiedGrades.value.add(student.id)
-}
-
 const getGradeValue = (student: any) => {
   const subject = student.subjects.find((s: any) => s.courseId === selectedCourseId.value)
   return subject?.grades[gradeType.value] || ''
 }
 
 const updateGradeValue = (student: any, value: string) => {
-  const subject = student.subjects.find((s: any) => s.courseId === selectedCourseId.value)
-  if (subject) {
-    subject.grades[gradeType.value] = parseFloat(value)
+  if (student && value !== undefined) {
+    student.subjects.forEach((subject: any) => {
+      if (subject.courseId === selectedCourseId.value) {
+        subject.grades[gradeType.value] = parseFloat(value)
+      }
+    })
     modifiedGrades.value.add(student.id)
   }
 }

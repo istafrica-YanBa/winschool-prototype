@@ -561,8 +561,6 @@ const metrics = ref({
   averageStudyTime: 4.2
 })
 
-const selectedTimeRange = ref('last30days')
-const selectedMetric = ref('overall')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 

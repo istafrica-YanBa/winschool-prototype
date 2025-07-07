@@ -552,8 +552,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useThemeStore } from '../stores/theme'
-import { Clock, Users, CalendarDays, BarChart } from 'lucide-vue-next'
 
 // Types
 interface Teacher {
@@ -587,14 +585,10 @@ const currentPage = ref(1)
 const itemsPerPage = ref(5)
 
 const filters = ref({
-  timePeriod: 'week',
   department: '',
   workloadStatus: '',
   viewType: 'table'
 })
-
-const themeStore = useThemeStore()
-const language = computed(() => themeStore.language)
 
 // Mock Data
 const teachers = ref<Teacher[]>([
@@ -810,13 +804,6 @@ const refreshData = async () => {
 
 const exportReport = () => {
   console.log('Exporting hourly monitor report...')
-  
-  const reportData = {
-    generatedAt: new Date().toISOString(),
-    stats: stats.value,
-    teachers: teachers.value,
-    workloadDistribution: workloadDistribution.value
-  }
   
   // Create CSV content
   const csvContent = [

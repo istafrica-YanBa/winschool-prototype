@@ -226,7 +226,7 @@ export function useBreadcrumbs() {
         // Intermediate segments - try to construct route name
         routeName = segment.charAt(0).toUpperCase() + segment.slice(1)
         // Convert kebab-case to PascalCase
-        routeName = routeName.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase())
+        routeName = routeName.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase())
       }
 
       // Get translated label

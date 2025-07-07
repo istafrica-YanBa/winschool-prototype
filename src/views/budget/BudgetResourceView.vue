@@ -250,10 +250,7 @@
 import { ref, computed } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import {
-  PieChart,
-  ChevronRight,
   Filter,
-  Download,
   DollarSign,
   TrendingUp,
   TrendingDown,
@@ -269,6 +266,7 @@ const language = computed(() => languageStore.language)
 
 // Reactive data
 const showFilters = ref(false)
+const showAddBudget = ref(false)
 
 const filters = ref({
   period: 'current-month',
@@ -438,9 +436,9 @@ const editAllocation = (allocation: any) => {
   console.log('Edit allocation:', allocation)
 }
 
-const exportReport = () => {
+const generateReport = () => {
   // In a real app, this would generate and download a budget report
-  console.log('Exporting budget report...')
-  alert(language.value === 'de' ? 'Budget-Bericht wird exportiert...' : 'Exporting budget report...')
+  console.log('Generating budget report...')
+  alert(language.value === 'de' ? 'Budget-Bericht wird generiert...' : 'Generating budget report...')
 }
 </script> 

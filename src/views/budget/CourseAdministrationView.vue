@@ -361,9 +361,9 @@
 import { ref, computed } from 'vue'
 import { useLanguageStore } from '../../stores/language'
 import {
-  GraduationCap, ChevronRight, Filter, BarChart3, Plus, Eye, Edit, X,
+  GraduationCap, Filter, BarChart3, Plus, Eye, Edit, X,
   DollarSign, Package, Users, BookOpen, Microscope, Calculator,
-  Palette, Monitor, Clock, TrendingUp, AlertTriangle, Target
+  Palette, Monitor, AlertTriangle, Target
 } from 'lucide-vue-next'
 
 const languageStore = useLanguageStore()
@@ -371,6 +371,7 @@ const language = computed(() => languageStore.language)
 
 // Reactive data
 const showFilters = ref(false)
+const showBudgetOverview = ref(false)
 const showCreateCourse = ref(false)
 
 const filters = ref({
@@ -608,8 +609,8 @@ const createNewCourse = () => {
     department: newCourse.value.department,
     semester: newCourse.value.semester,
     instructor: newCourse.value.instructor,
-    enrolledStudents: newCourse.value.enrolledStudents,
-    allocatedBudget: newCourse.value.allocatedBudget,
+    enrolledStudents: newCourse.value.enrolledStudents || 0,
+    allocatedBudget: newCourse.value.allocatedBudget || 0,
     usedBudget: 0,
     budgetStatus: 'available',
     resources: [],
@@ -630,10 +631,5 @@ const createNewCourse = () => {
     allocatedBudget: null,
     description: ''
   }
-}
-
-const generateBudgetReport = () => {
-  console.log('Generating budget report...')
-  alert(language.value === 'de' ? 'Budget-Bericht wird generiert...' : 'Generating budget report...')
 }
 </script> 

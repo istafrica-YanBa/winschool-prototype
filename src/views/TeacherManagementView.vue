@@ -225,7 +225,7 @@
           <template v-for="page in visiblePageNumbers" :key="page">
             <button
               v-if="page !== '...'"
-              @click="currentPage = page"
+              @click="currentPage = Number(page)"
               :class="[
                 'px-3 py-2 text-sm font-medium rounded-md transition-colors',
                 currentPage === page
@@ -351,7 +351,7 @@
           <template v-for="page in visiblePageNumbers" :key="page">
             <button
               v-if="page !== '...'"
-              @click="currentPage = page"
+              @click="currentPage = Number(page)"
               :class="[
                 'px-3 py-2 text-sm font-medium rounded-md transition-colors',
                 currentPage === page
@@ -782,7 +782,7 @@ import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from '../stores/theme'
 import { RuneBreadcrumbs } from '@ist/commonui-components'
-import { Search, Clock, Calendar, UserPlus, Eye, Edit, X, Trash2 } from 'lucide-vue-next'
+import { Search, Calendar, Eye, Edit, X, Trash2 } from 'lucide-vue-next'
 
 const router = useRouter()
 const themeStore = useThemeStore()
@@ -964,12 +964,14 @@ const teachers = ref([
 
 // Form States
 const editedTeacher = ref({
-  id: null,
+  id: 0,
   name: '',
   email: '',
   department: '',
-  subjects: [] as string[],
-  status: 'Active'
+  subjects: [],
+  status: 'Active',
+  avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+  weeklyHours: 28
 })
 
 const overtimeForm = ref({
@@ -1099,12 +1101,14 @@ const removeTimeHistoryEntry = (index: number) => {
 const showAddTeacher = () => {
   isEditing.value = false
   editedTeacher.value = {
-    id: null,
+    id: 0,
     name: '',
     email: '',
     department: '',
     subjects: [],
-    status: 'Active'
+    status: 'Active',
+    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    weeklyHours: 28
   }
   showDialog.value = true
 }
@@ -1124,11 +1128,9 @@ const saveTeacher = () => {
     }
   } else {
     // Add new teacher
-    const newId = Math.max(...teachers.value.map(t => t.id)) + 1
     teachers.value.push({
       ...editedTeacher.value,
-      id: newId,
-      avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2'
+      id: Date.now()
     })
   }
   showDialog.value = false
@@ -1139,7 +1141,7 @@ const saveOvertime = () => {
   showOvertimeModal.value = false
   
   // Get selected teacher info for display
-  const selectedTeacherData = teachers.value.find(t => t.id == overtimeForm.value.selectedTeacher)
+  const selectedTeacherData = teachers.value.find(t => t.id === Number(overtimeForm.value.selectedTeacher))
   const teacherName = selectedTeacherData ? selectedTeacherData.name : 'Unknown'
   
   // Reset form
@@ -1166,7 +1168,7 @@ const saveAbsence = () => {
   showAbsenceModal.value = false
   
   // Get selected teacher info for display
-  const selectedTeacherData = teachers.value.find(t => t.id == absenceForm.value.selectedTeacher)
+  const selectedTeacherData = teachers.value.find(t => t.id === Number(absenceForm.value.selectedTeacher))
   const teacherName = selectedTeacherData ? selectedTeacherData.name : 'Unknown'
   
   absenceForm.value = {

@@ -217,7 +217,7 @@
           <template v-for="page in visiblePageNumbers" :key="page">
             <button
               v-if="page !== '...'"
-              @click="currentPage = page"
+              @click="currentPage = Number(page)"
               :class="[
                 'px-3 py-2 text-sm font-medium rounded-md transition-colors',
                 currentPage === page
@@ -440,7 +440,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { Plus, Edit, Eye, Search, X, Lock, Unlock, Upload, Users } from 'lucide-vue-next'
+import { Edit, Eye, Search, X, Lock, Unlock, Upload } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)

@@ -76,9 +76,17 @@
 import { ref, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 
+interface NoteData {
+  id: string
+  date: string
+  template: string
+  comment: string
+  createdBy: string
+}
+
 const props = defineProps({
   noteData: {
-    type: Object,
+    type: Object as () => NoteData,
     default: () => ({})
   },
   isEdit: {
@@ -102,7 +110,7 @@ const availableTemplates = [
   language.value === 'de' ? 'Allgemeine Korrespondenz' : 'General Correspondence'
 ]
 
-const formData = ref({
+const formData = ref<NoteData>({
   id: '',
   date: new Date().toISOString().split('T')[0],
   template: '',

@@ -340,27 +340,56 @@ import { ref, computed, onMounted } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { Plus, Save, Edit, Copy, Trash2, Database } from 'lucide-vue-next'
 
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface Placeholder {
+  id: number;
+  syntax: string;
+  description: string;
+  category: 'student' | 'school' | 'academic' | 'custom';
+  type: 'text' | 'number' | 'date' | 'conditional';
+  defaultValue: string;
+  conditionalLogic?: string;
+}
+interface GenderPlaceholder {
+  id: number;
+  syntax: string;
+  male: string;
+  female: string;
+  fallback: string;
+}
+interface Fallback {
+  field: string;
+  value: string;
+}
+interface Student {
+  id: number;
+  firstName: string;
+  lastName: string;
+  gender: 'male' | 'female' | 'other';
+  averageGrade: string;
+}
+
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
 // State
-const selectedCategory = ref('')
-const searchQuery = ref('')
-const previewText = ref('Dear {{Salutation}}, \n\n{{StudentFirstName}} {{StudentLastName}} has achieved a grade of {{AverageGrade}} this semester.')
-const renderedPreview = ref('')
-const selectedSampleStudent = ref(1)
-const showEditModal = ref(false)
-const editingPlaceholder = ref(null)
+const selectedCategory = ref<string>('')
+const searchQuery = ref<string>('')
+const previewText = ref<string>('Dear {{Salutation}}, \n\n{{StudentFirstName}} {{StudentLastName}} has achieved a grade of {{AverageGrade}} this semester.')
+const renderedPreview = ref<string>('')
+const selectedSampleStudent = ref<number>(1)
+const showEditModal = ref<boolean>(false)
+const editingPlaceholder = ref<Placeholder | null>(null)
 
 // Sample students for preview
-const sampleStudents = ref([
+const sampleStudents = ref<Student[]>([
   { id: 1, firstName: 'Max', lastName: 'Mustermann', gender: 'male', averageGrade: '2.1' },
   { id: 2, firstName: 'Emma', lastName: 'Schmidt', gender: 'female', averageGrade: '1.8' },
   { id: 3, firstName: 'Alex', lastName: 'Johnson', gender: 'other', averageGrade: '2.5' }
 ])
 
 // Placeholder form
-const placeholderForm = ref({
+const placeholderForm = ref<Omit<Placeholder, 'id'>>({
   syntax: '',
   description: '',
   category: 'student',
@@ -370,7 +399,7 @@ const placeholderForm = ref({
 })
 
 // Main placeholders data
-const placeholders = ref([
+const placeholders = ref<Placeholder[]>([
   {
     id: 1,
     syntax: '{{StudentFirstName}}',
@@ -438,7 +467,7 @@ const placeholders = ref([
 ])
 
 // Gender-specific placeholders
-const genderSpecificPlaceholders = ref([
+const genderSpecificPlaceholders = ref<GenderPlaceholder[]>([
   {
     id: 1,
     syntax: '{{Salutation}}',
@@ -456,7 +485,7 @@ const genderSpecificPlaceholders = ref([
 ])
 
 // Default fallbacks
-const defaultFallbacks = ref([
+const defaultFallbacks = ref<Fallback[]>([
   { field: 'StudentFirstName', value: 'Student' },
   { field: 'StudentLastName', value: 'Name' },
   { field: 'AverageGrade', value: '0.0' },
@@ -464,27 +493,27 @@ const defaultFallbacks = ref([
 ])
 
 // Computed properties
-const filteredPlaceholders = computed(() => {
+const filteredPlaceholders = computed<Placeholder[]>(() => {
   if (!selectedCategory.value) return placeholders.value
-  return placeholders.value.filter(p => p.category === selectedCategory.value)
+  return placeholders.value.filter((p: Placeholder) => p.category === selectedCategory.value)
 })
 
-const searchedPlaceholders = computed(() => {
+const searchedPlaceholders = computed<Placeholder[]>(() => {
   if (!searchQuery.value) return placeholders.value
   const query = searchQuery.value.toLowerCase()
-  return placeholders.value.filter(p =>
+  return placeholders.value.filter((p: Placeholder) =>
     p.syntax.toLowerCase().includes(query) ||
     p.description.toLowerCase().includes(query)
   )
 })
 
-// Methods
-const filterPlaceholders = () => {
+// Methods (all params typed)
+const filterPlaceholders = (): void => {
   // Triggered when category changes
 }
 
-const updatePreview = () => {
-  const student = sampleStudents.value.find(s => s.id === selectedSampleStudent.value)
+const updatePreview = (): void => {
+  const student = sampleStudents.value.find((s: Student) => s.id === selectedSampleStudent.value)
   if (!student) return
 
   let preview = previewText.value
@@ -496,7 +525,7 @@ const updatePreview = () => {
   preview = preview.replace(/\{\{AverageGrade\}\}/g, student.averageGrade)
 
   // Replace gender-specific placeholders
-  const salutation = genderSpecificPlaceholders.value.find(p => p.syntax === '{{Salutation}}')
+  const salutation = genderSpecificPlaceholders.value.find((p: GenderPlaceholder) => p.syntax === '{{Salutation}}')
   if (salutation) {
     let salutationText = salutation.fallback
     if (student.gender === 'male') salutationText = salutation.male
@@ -513,7 +542,7 @@ const updatePreview = () => {
   renderedPreview.value = preview.replace(/\n/g, '<br>')
 }
 
-const copyToClipboard = async (text) => {
+const copyToClipboard = async (text: string): Promise<void> => {
   try {
     await navigator.clipboard.writeText(text)
     // Show success notification
@@ -527,7 +556,7 @@ const copyToClipboard = async (text) => {
   }
 }
 
-const addNewPlaceholder = () => {
+const addNewPlaceholder = (): void => {
   editingPlaceholder.value = null
   placeholderForm.value = {
     syntax: '',
@@ -540,24 +569,24 @@ const addNewPlaceholder = () => {
   showEditModal.value = true
 }
 
-const editPlaceholder = (placeholder) => {
+const editPlaceholder = (placeholder: Placeholder): void => {
   editingPlaceholder.value = placeholder
   placeholderForm.value = { ...placeholder }
   showEditModal.value = true
 }
 
-const savePlaceholder = () => {
+const savePlaceholder = (): void => {
   if (!placeholderForm.value.syntax || !placeholderForm.value.description) return
 
   if (editingPlaceholder.value) {
     // Update existing
-    const index = placeholders.value.findIndex(p => p.id === editingPlaceholder.value.id)
+    const index = placeholders.value.findIndex((p: Placeholder) => p.id === editingPlaceholder.value!.id)
     if (index !== -1) {
-      placeholders.value[index] = { ...placeholderForm.value, id: editingPlaceholder.value.id }
+      placeholders.value[index] = { ...placeholderForm.value, id: editingPlaceholder.value!.id }
     }
   } else {
     // Add new
-    const newPlaceholder = {
+    const newPlaceholder: Placeholder = {
       ...placeholderForm.value,
       id: Date.now()
     }
@@ -567,21 +596,21 @@ const savePlaceholder = () => {
   showEditModal.value = false
 }
 
-const deletePlaceholder = (id) => {
+const deletePlaceholder = (id: number): void => {
   if (confirm(language.value === 'de' ? 'Platzhalter wirklich löschen?' : 'Really delete placeholder?')) {
-    const index = placeholders.value.findIndex(p => p.id === id)
+    const index = placeholders.value.findIndex((p: Placeholder) => p.id === id)
     if (index !== -1) {
       placeholders.value.splice(index, 1)
     }
   }
 }
 
-const saveAllPlaceholders = () => {
+const saveAllPlaceholders = (): void => {
   // Simulate saving
   alert(language.value === 'de' ? 'Alle Platzhalter gespeichert!' : 'All placeholders saved!')
 }
 
-const exportPlaceholders = () => {
+const exportPlaceholders = (): void => {
   const data = JSON.stringify(placeholders.value, null, 2)
   const blob = new Blob([data], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -592,19 +621,19 @@ const exportPlaceholders = () => {
   URL.revokeObjectURL(url)
 }
 
-const editGenderPlaceholder = (placeholder) => {
+const editGenderPlaceholder = (placeholder: GenderPlaceholder): void => {
   // Implementation for editing gender-specific placeholders
   console.log('Edit gender placeholder:', placeholder)
 }
 
-const editFallback = (fallback) => {
+const editFallback = (fallback: Fallback): void => {
   // Implementation for editing fallback values
   console.log('Edit fallback:', fallback)
 }
 
 // Utility functions
-const getCategoryColor = (category) => {
-  const colors = {
+const getCategoryColor = (category: Placeholder['category']): string => {
+  const colors: Record<Placeholder['category'], string> = {
     student: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200',
     school: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200',
     academic: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200',
@@ -613,8 +642,8 @@ const getCategoryColor = (category) => {
   return colors[category] || colors.custom
 }
 
-const getCategoryLabel = (category) => {
-  const labels = {
+const getCategoryLabel = (category: Placeholder['category']): string => {
+  const labels: Record<Placeholder['category'], string> = {
     student: language.value === 'de' ? 'Schüler' : 'Student',
     school: language.value === 'de' ? 'Schule' : 'School',
     academic: language.value === 'de' ? 'Akademisch' : 'Academic',
@@ -623,8 +652,8 @@ const getCategoryLabel = (category) => {
   return labels[category] || category
 }
 
-const getTypeColor = (type) => {
-  const colors = {
+const getTypeColor = (type: Placeholder['type']): string => {
+  const colors: Record<Placeholder['type'], string> = {
     text: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-200',
     number: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200',
     date: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200',
@@ -633,8 +662,8 @@ const getTypeColor = (type) => {
   return colors[type] || colors.text
 }
 
-const getTypeLabel = (type) => {
-  const labels = {
+const getTypeLabel = (type: Placeholder['type']): string => {
+  const labels: Record<Placeholder['type'], string> = {
     text: language.value === 'de' ? 'Text' : 'Text',
     number: language.value === 'de' ? 'Zahl' : 'Number',
     date: language.value === 'de' ? 'Datum' : 'Date',

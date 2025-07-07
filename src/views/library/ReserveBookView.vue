@@ -2,17 +2,50 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
-import { BookOpen, Search, Calendar, Clock, User, AlertCircle, CheckCircle } from 'lucide-vue-next'
+import { useBookStore } from '@/stores/library/book'
+import { useThemeStore } from '@/stores/theme'
+import type { Book } from '@/types/library'
+import { BookOpen, Search, Calendar, AlertCircle, CheckCircle } from 'lucide-vue-next'
+
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface BookWithDetails {
+  id: number;
+  title: string;
+  author: string;
+  isbn: string;
+  category: string;
+  publisher: string;
+  publishedYear: number;
+  availableCopies: number;
+  totalCopies: number;
+}
+
+interface Reservation {
+  id: number;
+  bookId: number;
+  bookTitle: string;
+  bookAuthor: string;
+  isbn: string;
+  studentId: string;
+  studentName: string;
+  studentClass: string;
+  reservationDate: string;
+  expiryDate: string;
+  status: 'active' | 'expired' | 'fulfilled' | 'cancelled';
+  notes?: string;
+}
 
 const authStore = useAuthStore()
-const { showToast } = useToast()
+const { addToast } = useToast()
+const bookStore = useBookStore()
+const themeStore = useThemeStore()
 
 // Mock data for demonstration - replace with actual API calls
 const searchQuery = ref('')
 const selectedCategory = ref('')
 const isLoading = ref(false)
 
-const mockBooks = ref([
+const books = ref<BookWithDetails[]>([
   {
     id: 1,
     title: 'Advanced Mathematics',
@@ -48,11 +81,13 @@ const mockBooks = ref([
   }
 ])
 
+const reservations = ref<Reservation[]>([])
+
 const categories = ref(['Mathematics', 'Literature', 'Physics', 'Chemistry', 'History', 'Biology'])
 
 // Reservation modal
 const showReservationModal = ref(false)
-const selectedBook = ref(null)
+const selectedBook = ref<BookWithDetails | null>(null)
 const reservationForm = ref({
   preferredDate: '',
   notes: ''
@@ -60,7 +95,7 @@ const reservationForm = ref({
 
 // Filtered books based on search and category
 const filteredBooks = computed(() => {
-  let filtered = mockBooks.value
+  let filtered = books.value
   
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
@@ -79,7 +114,7 @@ const filteredBooks = computed(() => {
 })
 
 // Open reservation modal
-const openReservationModal = (book) => {
+const openReservationModal = (book: BookWithDetails) => {
   selectedBook.value = book
   reservationForm.value = {
     preferredDate: '',
@@ -93,23 +128,32 @@ const submitReservation = async () => {
   if (!selectedBook.value) return
   
   try {
-    // Mock API call - replace with actual implementation
-    console.log('Submitting reservation:', {
+    const newReservation: Reservation = {
+      id: reservations.value.length + 1,
       bookId: selectedBook.value.id,
-      userId: authStore.user?.id,
-      ...reservationForm.value
-    })
+      bookTitle: selectedBook.value.title,
+      bookAuthor: selectedBook.value.author,
+      isbn: selectedBook.value.isbn,
+      studentId: 'U001', // Mock student ID
+      studentName: 'Current User',
+      studentClass: '12A',
+      reservationDate: new Date().toISOString().split('T')[0],
+      expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      status: 'active',
+      notes: reservationForm.value.notes
+    }
     
-    showToast('Reservation submitted successfully!', 'success')
+    reservations.value.push(newReservation)
+    addToast({ message: 'Reservation submitted successfully!', type: 'success' })
     showReservationModal.value = false
   } catch (error) {
     console.error('Error submitting reservation:', error)
-    showToast('Failed to submit reservation', 'error')
+    addToast({ message: 'Failed to submit reservation', type: 'error' })
   }
 }
 
 // Get availability status
-const getAvailabilityStatus = (book) => {
+const getAvailabilityStatus = (book: BookWithDetails) => {
   if (book.availableCopies > 0) {
     return {
       status: 'available',

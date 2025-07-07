@@ -490,8 +490,8 @@ const filteredGrades = computed(() => {
   }
 
   return filtered.sort((a, b) => {
-    const aValue = a[sortBy.value]
-    const bValue = b[sortBy.value]
+    const aValue = a[sortBy.value as keyof typeof a]
+    const bValue = b[sortBy.value as keyof typeof b]
     if (sortOrder.value === 'asc') {
       return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
     } else {
@@ -538,15 +538,15 @@ const handleSort = () => {
   }
 }
 
-const editGrade = (grade) => {
+const editGrade = (grade: { id: number; studentName: string; studentId: string; studentAvatar: string; class: string; subject: string; assessment: string; grade: string; date: string }) => {
   editingGrade.value = grade
   gradeForm.value = { ...grade }
   showEditGradeModal.value = true
 }
 
-const deleteGrade = (grade) => {
+const deleteGrade = (grade: { id: number }) => {
   if (confirm('Are you sure you want to delete this grade?')) {
-    const index = grades.value.findIndex(g => g.id === grade.id)
+    const index = grades.value.findIndex((g: { id: number }) => g.id === grade.id)
     if (index !== -1) {
       grades.value.splice(index, 1)
     }

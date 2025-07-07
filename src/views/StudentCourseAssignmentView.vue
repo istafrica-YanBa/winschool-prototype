@@ -401,6 +401,7 @@ interface Course {
   credits: number
   capacity: number
   enrolledStudents: number
+  status: 'active' | 'inactive'
 }
 
 interface Assignment {
@@ -435,11 +436,11 @@ const students = ref<Student[]>([
 ])
 
 const courses = ref<Course[]>([
-  { id: 'MATH101', name: 'Algebra I', code: 'MATH101', subject: 'Mathematics', teacher: 'Dr. Smith', credits: 3, capacity: 30, enrolledStudents: 25 },
-  { id: 'PHYS201', name: 'Physics II', code: 'PHYS201', subject: 'Physics', teacher: 'Prof. Johnson', credits: 4, capacity: 25, enrolledStudents: 20 },
-  { id: 'CHEM101', name: 'General Chemistry', code: 'CHEM101', subject: 'Chemistry', teacher: 'Dr. Williams', credits: 4, capacity: 28, enrolledStudents: 15 },
-  { id: 'BIO301', name: 'Advanced Biology', code: 'BIO301', subject: 'Biology', teacher: 'Prof. Brown', credits: 3, capacity: 20, enrolledStudents: 18 },
-  { id: 'CS201', name: 'Computer Science II', code: 'CS201', subject: 'Computer Science', teacher: 'Dr. Davis', credits: 3, capacity: 22, enrolledStudents: 12 }
+  { id: 'MATH101', name: 'Algebra I', code: 'MATH101', subject: 'Mathematics', teacher: 'Dr. Smith', credits: 3, capacity: 30, enrolledStudents: 25, status: 'active' },
+  { id: 'PHYS201', name: 'Physics II', code: 'PHYS201', subject: 'Physics', teacher: 'Prof. Johnson', credits: 4, capacity: 25, enrolledStudents: 20, status: 'active' },
+  { id: 'CHEM101', name: 'General Chemistry', code: 'CHEM101', subject: 'Chemistry', teacher: 'Dr. Williams', credits: 4, capacity: 28, enrolledStudents: 15, status: 'active' },
+  { id: 'BIO301', name: 'Advanced Biology', code: 'BIO301', subject: 'Biology', teacher: 'Prof. Brown', credits: 3, capacity: 20, enrolledStudents: 18, status: 'active' },
+  { id: 'CS201', name: 'Computer Science II', code: 'CS201', subject: 'Computer Science', teacher: 'Dr. Davis', credits: 3, capacity: 22, enrolledStudents: 12, status: 'active' }
 ])
 
 // Computed
@@ -476,12 +477,10 @@ const filteredCourses = computed(() => {
   return filtered
 })
 
-const stats = computed(() => ({
-  totalStudents: students.value.length,
-  totalCourses: courses.value.length,
-  completedAssignments: recentAssignments.value.filter(a => a.status === 'assigned').length,
-  conflicts: students.value.filter(s => s.hasConflict).length
-}))
+const totalStudents = computed(() => students.value.length)
+const assignedStudents = computed(() => recentAssignments.value.filter(a => a.status === 'assigned').length)
+const pendingStudents = computed(() => recentAssignments.value.filter(a => a.status === 'pending').length)
+const availableCourses = computed(() => courses.value.filter(c => c.status === 'active').length)
 
 const allSelected = computed(() => {
   return filteredStudents.value.length > 0 && selectedStudents.value.length === filteredStudents.value.length
@@ -632,36 +631,6 @@ const getStatusBadgeClass = (status: string) => {
       return 'bg-red-100 text-red-800'
     default:
       return 'bg-gray-100 text-gray-800'
-  }
-}
-
-const importAssignments = () => {
-  console.log('Import assignments from CSV')
-  // Implementation for CSV import
-}
-
-const saveAssignments = () => {
-  console.log('Saving all assignments...')
-  // Implementation for saving assignments
-}
-
-const undoLastAssignment = () => {
-  if (recentAssignments.value.length > 0) {
-    const lastAssignment = recentAssignments.value.pop()
-    if (lastAssignment) {
-      const student = students.value.find(s => s.id === lastAssignment.studentId)
-      const course = courses.value.find(c => c.id === lastAssignment.courseId)
-      
-      if (student && course) {
-        const courseIndex = student.courses.indexOf(course.id)
-        if (courseIndex > -1) {
-          student.courses.splice(courseIndex, 1)
-          course.enrolledStudents--
-        }
-      }
-
-      console.log('Last assignment undone')
-    }
   }
 }
 

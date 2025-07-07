@@ -128,9 +128,20 @@ import { ref, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { Star } from 'lucide-vue-next'
 
+interface LanguageData {
+  id: string
+  name: string
+  level: string
+  type: string
+  since: string
+  until: string
+  knowledgeLevel: number
+  notes: string
+}
+
 const props = defineProps({
   languageData: {
-    type: Object,
+    type: Object as () => LanguageData,
     default: () => ({})
   },
   isEdit: {
@@ -165,7 +176,7 @@ const availableLanguages = [
   'Latin'
 ]
 
-const formData = ref({
+const formData = ref<LanguageData>({
   id: '',
   name: '',
   level: '',

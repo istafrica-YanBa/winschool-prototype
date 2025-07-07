@@ -69,9 +69,21 @@ import { computed, defineProps, defineEmits } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { Plus, Edit, Trash2, ArrowUp, ArrowDown, Repeat, GraduationCap, AlertTriangle } from 'lucide-vue-next'
 
+interface CareerEntry {
+  id: string
+  title: string
+  type: string
+  date: string
+  fromGrade: string
+  toGrade: string
+  description: string
+  reason: string
+  isVoluntary: boolean
+}
+
 const props = defineProps({
   careerEntries: {
-    type: Array,
+    type: Array as () => CareerEntry[],
     required: true,
     default: () => []
   }
@@ -83,7 +95,7 @@ const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
 const sortedEntries = computed(() => {
-  return [...props.careerEntries].sort((a, b) => {
+  return [...props.careerEntries].sort((a: CareerEntry, b: CareerEntry) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime()
   })
 })

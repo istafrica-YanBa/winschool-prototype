@@ -43,7 +43,7 @@
             <div
               v-for="message in filteredMessages"
               :key="message.id"
-              @click="selectedMessage = message"
+              @click="selectedMessage = message as Message"
               :class="[
                 'p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
                 selectedMessage?.id === message.id ? 'bg-primary-50 dark:bg-indigo-900/20 border-l-4 border-l-primary-500 dark:border-l-indigo-500' : ''
@@ -189,10 +189,23 @@ const authStore = useAuthStore()
 const language = computed(() => themeStore.language)
 
 const searchQuery = ref('')
-const selectedMessage = ref(null)
+const selectedMessage = ref<Message | null>(null)
 const replyText = ref('')
 
 const currentUserAvatar = computed(() => authStore.user?.avatar)
+
+interface Message {
+  id: number
+  from: string
+  subject: string
+  preview: string
+  content: string
+  time: string
+  timestamp: string
+  read: boolean
+  avatar: string
+  attachments?: { name: string; size: string }[]
+}
 
 const messages = [
   {

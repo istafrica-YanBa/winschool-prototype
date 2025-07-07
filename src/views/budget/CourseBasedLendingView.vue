@@ -324,19 +324,68 @@ import { ref, computed } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import {
   GraduationCap,
-  ChevronRight,
   Filter,
   Plus,
   Search,
   BookOpen,
   Users,
   Calendar,
-  CheckCircle,
   FileText,
   Eye,
   X,
   Target
 } from 'lucide-vue-next'
+
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface Book {
+  id: string;
+  title: string;
+  author: string;
+  isbn: string;
+  available?: boolean;
+  copies?: number;
+}
+
+interface Course {
+  id: string;
+  name: string;
+  code: string;
+}
+
+interface CourseAssignment {
+  id: number;
+  courseId: string;
+  courseName: string;
+  courseCode: string;
+  instructor: string;
+  department: string;
+  semester: string;
+  enrolledStudents: number;
+  assignedBooks: number;
+  status: string;
+  books: Book[];
+}
+
+interface Filters {
+  semester: string;
+  department: string;
+  status: string;
+}
+
+interface CurrentAssignment {
+  courseId: string;
+  selectedBooks: string[];
+  notes: string;
+}
+
+interface CourseStat {
+  title: string;
+  value: string;
+  change: string;
+  changeColor: string;
+  icon: any;
+  iconBg: string;
+}
 
 const languageStore = useLanguageStore()
 const language = computed(() => languageStore.language)
@@ -345,24 +394,25 @@ const language = computed(() => languageStore.language)
 const showFilters = ref(false)
 const showAssignBooks = ref(false)
 const showBookList = ref(false)
-const selectedAssignment = ref(null)
-const viewingAssignment = ref(null)
+const showCreateCourseList = ref(false)
+const selectedAssignment = ref<CourseAssignment | null>(null)
+const viewingAssignment = ref<CourseAssignment | null>(null)
 const searchQuery = ref('')
 
-const filters = ref({
+const filters = ref<Filters>({
   semester: '',
   department: '',
   status: ''
 })
 
-const currentAssignment = ref({
+const currentAssignment = ref<CurrentAssignment>({
   courseId: '',
   selectedBooks: [],
   notes: ''
 })
 
 // Mock data
-const courseAssignments = ref([
+const courseAssignments = ref<CourseAssignment[]>([
   {
     id: 1,
     courseId: 'CS101',
@@ -424,13 +474,13 @@ const courseAssignments = ref([
   }
 ])
 
-const courses = ref([
+const courses = ref<Course[]>([
   { id: 'BIO101', name: 'Introduction to Biology', code: 'BIO101' },
   { id: 'CHEM101', name: 'General Chemistry', code: 'CHEM101' },
   { id: 'PHYS101', name: 'Physics Fundamentals', code: 'PHYS101' }
 ])
 
-const availableBooks = ref([
+const availableBooks = ref<Book[]>([
   { id: 'B006', title: 'Biology Textbook', author: 'Sarah Lee', isbn: '978-0111222333' },
   { id: 'B007', title: 'Chemistry Handbook', author: 'Mike Chen', isbn: '978-0222333444' },
   { id: 'B008', title: 'Physics Principles', author: 'Lisa Wang', isbn: '978-0333444555' },
@@ -438,7 +488,7 @@ const availableBooks = ref([
 ])
 
 // Computed properties
-const courseStats = computed(() => [
+const courseStats = computed((): CourseStat[] => [
   {
     title: language.value === 'de' ? 'Aktive Kurse' : 'Active Courses',
     value: courseAssignments.value.filter(c => c.status === 'Active').length.toString(),
@@ -473,7 +523,7 @@ const courseStats = computed(() => [
   }
 ])
 
-const filteredAssignments = computed(() => {
+const filteredAssignments = computed((): CourseAssignment[] => {
   let assignments = courseAssignments.value
 
   // Apply search filter
@@ -505,7 +555,7 @@ const filteredAssignments = computed(() => {
 })
 
 // Methods
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: string): string => {
   switch (status) {
     case 'Active':
       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
@@ -518,7 +568,7 @@ const getStatusColor = (status: string) => {
   }
 }
 
-const getStatusTranslation = (status: string) => {
+const getStatusTranslation = (status: string): string => {
   const translations: { [key: string]: string } = {
     'Active': 'Aktiv',
     'Pending': 'Ausstehend',
@@ -527,29 +577,29 @@ const getStatusTranslation = (status: string) => {
   return translations[status] || status
 }
 
-const viewBookList = (assignment: any) => {
+const viewBookList = (assignment: CourseAssignment): void => {
   viewingAssignment.value = assignment
   showBookList.value = true
 }
 
-const assignBooks = (assignment: any) => {
+const assignBooks = (assignment: CourseAssignment): void => {
   selectedAssignment.value = assignment
   currentAssignment.value.courseId = assignment.courseId
   showAssignBooks.value = true
 }
 
-const generateLendingList = (assignment: any) => {
+const generateLendingList = (assignment: CourseAssignment): void => {
   // In a real app, this would generate a lending list for all enrolled students
   console.log('Generate lending list for:', assignment)
   // Could download a CSV or PDF with all students and their assigned books
 }
 
-const viewDetails = (assignment: any) => {
+const viewDetails = (assignment: CourseAssignment): void => {
   // In a real app, this would show detailed assignment information
   console.log('View assignment details:', assignment)
 }
 
-const closeModal = () => {
+const closeModal = (): void => {
   showAssignBooks.value = false
   selectedAssignment.value = null
   currentAssignment.value = {
@@ -559,12 +609,12 @@ const closeModal = () => {
   }
 }
 
-const closeBookListModal = () => {
+const closeBookListModal = (): void => {
   showBookList.value = false
   viewingAssignment.value = null
 }
 
-const submitBookAssignment = () => {
+const submitBookAssignment = (): void => {
   const targetCourse = selectedAssignment.value || courses.value.find(c => c.id === currentAssignment.value.courseId)
   
   if (targetCourse && currentAssignment.value.selectedBooks.length > 0) {
@@ -580,9 +630,9 @@ const submitBookAssignment = () => {
       // Update existing assignment
       selectedAssignment.value.books.push(...selectedBooksData)
       selectedAssignment.value.assignedBooks = selectedAssignment.value.books.length
-    } else {
+    } else if ('name' in targetCourse && 'code' in targetCourse) {
       // Create new assignment
-      const newAssignment = {
+      const newAssignment: CourseAssignment = {
         id: Date.now(),
         courseId: targetCourse.id,
         courseName: targetCourse.name,

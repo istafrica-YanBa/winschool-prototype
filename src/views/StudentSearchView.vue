@@ -496,7 +496,7 @@
               <button 
                 v-for="page in visiblePages" 
                 :key="page"
-                @click="currentPage = page"
+                @click="currentPage = Number(page)"
                 :class="[
                   'px-3 py-2 text-sm rounded-lg transition-colors',
                   currentPage === page 
@@ -625,12 +625,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from '../stores/theme'
 import { 
-  Search, Download, Bookmark, InfoIcon, ChevronDown, ChevronUp, 
-  Play, Edit, Trash2, X, Eye, ChevronLeft, ChevronRight, SearchX,
+  Search, InfoIcon, ChevronDown, ChevronUp,
+  Edit, X, Eye, SearchX,
   Users, UserCheck, UserX, CheckCircle
 } from 'lucide-vue-next'
 
@@ -1051,7 +1051,7 @@ const resetAdvancedSearch = () => {
     archived: '',
     language: '',
     languageLevel: ''
-  }
+  } as any
   
   searchResults.value = [...students]
   currentPage.value = 1
@@ -1151,23 +1151,5 @@ const getGradeColor = (grade: string) => {
   if (grade.startsWith('B')) return 'text-blue-600 dark:text-blue-400'
   if (grade.startsWith('C')) return 'text-amber-600 dark:text-amber-400'
   return 'text-red-600 dark:text-red-400'
-}
-
-const getProficiencyLevelColor = (level: string) => {
-  switch (level) {
-    case 'A1':
-    case 'A2':
-      return 'bg-blue-100/20 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
-    case 'B1':
-    case 'B2':
-      return 'bg-green-100/20 text-green-800 dark:bg-green-900/20 dark:text-green-200'
-    case 'C1':
-    case 'C2':
-      return 'bg-purple-100/20 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200'
-    case 'Native':
-      return 'bg-amber-100/20 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200'
-    default:
-      return 'bg-slate-100/20 text-slate-800 dark:bg-slate-900/20 dark:text-slate-200'
-  }
 }
 </script>

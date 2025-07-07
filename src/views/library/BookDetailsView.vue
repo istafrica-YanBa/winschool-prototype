@@ -1,15 +1,82 @@
 <script setup lang="ts">
-import { ref, computed, reactive, watch } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { BookOpen, Users, History, Layers, Info, Search, Plus, Edit, Save, X, Dice5, Pencil, Trash2 } from 'lucide-vue-next'
+import { BookOpen, Search, Plus, Edit, Save, X, Dice5, Pencil, Trash2, Info, Layers, History } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 const isNew = computed(() => route.path.endsWith('/new'))
-const bookId = computed(() => route.params.id)
+
+// Type definitions
+interface Book {
+  id: number | null
+  title: string
+  author: string
+  isbn: string
+  barcode: string
+  signature: string
+  inventoryNumber: string
+  totalCopies: number | string
+  availableCopies: number | string
+  lentCopies: number | string
+  category: string
+  publishedYear: number | string
+  group: string
+  price: string
+  subject: string
+  keywords: string[]
+  acquisitionDate: string
+  supplier: string
+  location: string
+  initialStock: number | string
+  sameIsbnCount: number | string
+  reservedCount: number | string
+  currentStock: number | string
+  publisher: string
+  edition: string
+  year: number | string
+  loanDuration: number | string
+  loanType: string
+  lowValue: boolean
+  retailPrice: string
+  lendingPrice: string
+  discountedPrice: string
+  depreciation: string
+  lendingRate: string
+}
+
+interface LoanHistory {
+  id: number
+  borrower: string
+  role: string
+  start: string
+  end: string
+  status: string
+  damaged: boolean
+  lost: boolean
+}
+
+interface Entry {
+  id: number
+  date: string
+  entry: number | string
+  exit: number | string
+  price?: string
+  reason: string
+  remark: string
+}
+
+// Add this interface for quick lookup results
+interface BookQuickResult {
+  id: number
+  title: string
+  isbn: string
+  barcode: string
+  inventoryNumber: string
+}
 
 // Mock book data (replace with API integration)
-const originalBook = reactive({
+const originalBook = reactive<Book>({
   id: 1,
   title: 'Advanced Mathematics',
   author: 'Dr. Schmidt',
@@ -39,14 +106,13 @@ const originalBook = reactive({
   loanDuration: 30,
   loanType: 'Standard',
   lowValue: false,
-  // Additional fields for right card
   retailPrice: '',
   lendingPrice: '',
   discountedPrice: '',
   depreciation: '',
   lendingRate: ''
 })
-const book = reactive(isNew.value ? {
+const book = reactive<Book>(isNew.value ? {
   id: null,
   title: '',
   author: '',
@@ -84,7 +150,7 @@ const book = reactive(isNew.value ? {
 } : { ...originalBook })
 
 const editMode = ref(isNew.value)
-const backupBook = ref(null)
+const backupBook = ref<Book | null>(null)
 
 function startEdit() {
   backupBook.value = { ...book }
@@ -136,7 +202,7 @@ function cancelEdit() {
   if (isNew.value) {
     resetNewBook()
   } else {
-    Object.assign(book, backupBook.value)
+    if (backupBook.value) Object.assign(book, backupBook.value)
     editMode.value = false
   }
 }
@@ -155,12 +221,12 @@ const tabs = [
 ]
 
 // Mock data for tabs
-const loanHistory = ref(isNew.value ? [] : [
+const loanHistory = ref<LoanHistory[]>(isNew.value ? [] : [
   { id: 1, borrower: 'Emma Müller', role: 'Student', start: '2024-02-01', end: '2024-02-28', status: 'Returned', damaged: false, lost: false },
   { id: 2, borrower: 'Liam Weber', role: 'Staff', start: '2024-03-01', end: '', status: 'In Progress', damaged: false, lost: false },
   { id: 3, borrower: 'Sophie Schmidt', role: 'Student', start: '2023-12-10', end: '2024-01-10', status: 'Overdue', damaged: true, lost: false }
 ])
-const entries = ref(isNew.value ? [] : [
+const entries = ref<Entry[]>(isNew.value ? [] : [
   { id: 1, date: '2025-06-26', entry: 20, exit: '', reason: 'New acquisition', remark: '' },
   { id: 2, date: '2025-07-01', entry: '', exit: 2, reason: 'Damaged', remark: 'Torn pages' },
   { id: 3, date: '2025-07-02', entry: 5, exit: '', reason: 'Donation', remark: 'Parent donation' },
@@ -169,7 +235,7 @@ const entries = ref(isNew.value ? [] : [
 // Quick Lookup Modal
 const showQuickLookup = ref(false)
 const quickQuery = ref('')
-const quickResults = ref([])
+const quickResults = ref<BookQuickResult[]>([])
 function openQuickLookup() { showQuickLookup.value = true }
 function closeQuickLookup() { showQuickLookup.value = false }
 function searchQuick() {
@@ -177,41 +243,33 @@ function searchQuick() {
     { id: 4, title: 'Modern Physics Concepts', isbn: '978-3-16-148412-4', barcode: 'BRC001234569', inventoryNumber: 'INV-2024-003' }
   ]
 }
-function selectQuickResult(result) {
+function selectQuickResult(result: BookQuickResult) {
   router.push(`/dashboard/library/library-books/${result.id}`)
   closeQuickLookup()
 }
 
-const maxWidth = 'max-w-[1300px]'
-
 const keywordsInput = ref(book.keywords.join(', '))
-function onKeywordsInput(e) {
+function onKeywordsInput(e: Event) {
   book.keywords = keywordsInput.value.split(',').map(k => k.trim()).filter(Boolean)
 }
 
 const showEntryModal = ref(false)
-const entryForm = ref({
+const entryForm = ref<{ quantity: number | string; price: string; date: string; reason: string; remark: string }>({
   quantity: '',
   price: '',
   date: '',
   reason: '',
   remark: ''
 })
-const selectedEntryIds = ref([])
-const allEntriesSelected = ref(false)
 
-function toggleAllEntries(event) {
-  allEntriesSelected.value = event.target.checked
-  selectedEntryIds.value = entries.value.map(entry => entry.id)
-}
-
-const editingEntryId = ref(null)
-function editEntry(entry) {
-  entryForm.value = { ...entry, quantity: entry.entry || entry.exit, date: entry.date, price: entry.price || '', reason: entry.reason, remark: entry.remark }
+const editingEntryId = ref<number | null>(null)
+function editEntry(entry: Entry) {
+  entryForm.value = { ...entry, quantity: entry.entry || entry.exit, date: entry.date, price: (entry as any).price || '', reason: entry.reason, remark: entry.remark }
   editingEntryId.value = entry.id
   showEntryModal.value = true
 }
 function addEntry() {
+  const quantity = Number(entryForm.value.quantity)
   if (editingEntryId.value) {
     // Edit existing
     const idx = entries.value.findIndex(e => e.id === editingEntryId.value)
@@ -219,8 +277,8 @@ function addEntry() {
       entries.value[idx] = {
         ...entries.value[idx],
         date: entryForm.value.date,
-        entry: entryForm.value.quantity > 0 ? entryForm.value.quantity : '',
-        exit: entryForm.value.quantity < 0 ? Math.abs(entryForm.value.quantity) : '',
+        entry: quantity > 0 ? quantity : '',
+        exit: quantity < 0 ? Math.abs(quantity) : '',
         price: entryForm.value.price,
         reason: entryForm.value.reason,
         remark: entryForm.value.remark
@@ -232,8 +290,8 @@ function addEntry() {
     entries.value.unshift({
       id: Date.now(),
       date: entryForm.value.date,
-      entry: entryForm.value.quantity > 0 ? entryForm.value.quantity : '',
-      exit: entryForm.value.quantity < 0 ? Math.abs(entryForm.value.quantity) : '',
+      entry: quantity > 0 ? quantity : '',
+      exit: quantity < 0 ? Math.abs(quantity) : '',
       price: entryForm.value.price,
       reason: entryForm.value.reason,
       remark: entryForm.value.remark
@@ -241,7 +299,7 @@ function addEntry() {
   }
   showEntryModal.value = false
 }
-function deleteEntry(id) {
+function deleteEntry(id: number) {
   if (confirm('Are you sure you want to delete this entry?')) {
     entries.value = entries.value.filter(e => e.id !== id)
   }

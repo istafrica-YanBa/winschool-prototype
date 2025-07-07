@@ -203,7 +203,9 @@ import {
   Calendar,
   FileText,
   Award,
-  UserCheck
+  UserCheck,
+  GraduationCap,
+  Trophy
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
@@ -323,27 +325,27 @@ const filteredNotifications = computed(() => {
 })
 
 const getNotificationIcon = (type: string) => {
-  const icons = {
-    academic: FileText,
+  const icons: Record<string, any> = {
+    academic: GraduationCap,
     message: MessageSquare,
     grade: Award,
     event: Calendar,
-    system: Info,
-    achievement: Award,
+    system: Settings,
+    achievement: Trophy,
     warning: AlertTriangle
   }
   return icons[type] || Bell
 }
 
 const getNotificationStyle = (type: string) => {
-  const styles = {
-    academic: 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
-    message: 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400',
-    grade: 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
-    event: 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
+  const styles: Record<string, string> = {
+    academic: 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400',
+    message: 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400',
+    grade: 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400',
+    event: 'bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400',
     system: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
-    achievement: 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400',
-    warning: 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+    achievement: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400',
+    warning: 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400'
   }
   return styles[type] || 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
 }

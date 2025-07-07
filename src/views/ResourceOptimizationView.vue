@@ -556,6 +556,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
+import { useThemeStore } from '@/stores/theme'
+
+const themeStore = useThemeStore()
+const language = computed(() => themeStore.language)
 
 // State Management
 const isOptimizing = ref(false)

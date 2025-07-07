@@ -480,7 +480,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { UploadCloud, Tags, Shield, Search, Eye, Download, History, MoreVertical, X, Edit, Trash2, FileText, File as FilePdf, FileImage, FileSpreadsheet, CheckCircle, RotateCcw, Copy, Upload, LifeBuoy } from 'lucide-vue-next'
+import { UploadCloud, Tags, Shield, Search, Eye, Download, History, MoreVertical, X, Edit, Trash2, FileText, File as FilePdf, FileImage, FileSpreadsheet, CheckCircle, RotateCcw, Upload, LifeBuoy } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
@@ -769,7 +769,6 @@ const getDocumentIcon = (type: string) => {
 }
 
 const getClassificationColor = (id: number) => {
-  const classification = documentClassifications.value.find(c => c.id === id)
   switch (id) {
     case 1: // Public
       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'

@@ -379,7 +379,7 @@ import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { 
   Plus, RefreshCw, ArrowRight, Copy, X, Link, Database, 
-  Calendar, BookOpen, Settings, Zap, Shield
+  Calendar, BookOpen, Settings, Shield
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()

@@ -140,8 +140,8 @@
                 <td class="py-3 px-4">
                   <div class="flex items-center space-x-2">
                     <span class="font-medium text-slate-800 dark:text-slate-200">{{ book.availableCopies }}/{{ book.totalCopies }}</span>
-                    <span class="text-xs" :class="getAvailabilityColor(book.availableCopies, book.totalCopies)">
-                      {{ getAvailabilityStatus(book.availableCopies, book.totalCopies) }}
+                    <span class="text-xs" :class="getAvailabilityColor(book.availableCopies)">
+                      {{ getAvailabilityStatus(book.availableCopies) }}
                     </span>
                   </div>
                 </td>
@@ -338,14 +338,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../../stores/theme'
-import { useAuthStore } from '../../stores/auth'
 import { 
-  BookOpen, Plus, Filter, Search, Edit, Trash2, ChevronRight, Eye,
-  Library, Users, Clock, AlertTriangle
+  BookOpen, Plus, Filter, Search, Edit, Trash2, Eye,
+  Library, Users, AlertTriangle
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
-const authStore = useAuthStore()
 const language = computed(() => themeStore.language)
 
 // State
@@ -496,13 +494,13 @@ const getCategoryColor = (category: string) => {
   return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
 }
 
-const getAvailabilityColor = (available: number, total: number) => {
+const getAvailabilityColor = (available: number) => {
   if (available === 0) return 'text-red-500'
   if (available <= 3) return 'text-yellow-500'
   return 'text-green-500'
 }
 
-const getAvailabilityStatus = (available: number, total: number) => {
+const getAvailabilityStatus = (available: number) => {
   if (available === 0) return language.value === 'de' ? 'Vergriffen' : 'Out'
   if (available <= 3) return language.value === 'de' ? 'Wenig' : 'Low'
   return language.value === 'de' ? 'Gut' : 'Good'

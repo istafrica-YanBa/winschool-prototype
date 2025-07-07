@@ -105,8 +105,7 @@
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { 
-  FileText, Calendar, DollarSign, Plus, Edit, Copy, Trash2, X, Eye, Download,
-  TrendingUp, TrendingDown, CheckCircle, Play, BarChart3, RefreshCw, LifeBuoy
+  FileText, Calendar, DollarSign, LifeBuoy, TrendingDown, BarChart3, RefreshCw
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()

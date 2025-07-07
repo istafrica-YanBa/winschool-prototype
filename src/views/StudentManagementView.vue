@@ -362,7 +362,7 @@
             </div>
 
             <BulkLanguageAssignment 
-              :selected-students="selectedStudents.length"
+              :selected-students="selectedStudents"
               @submit="handleBulkLanguageSubmit"
               @cancel="showBulkLanguageModal = false"
             />
@@ -400,8 +400,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { useRouter } from 'vue-router'
 import { 
-  UserPlus, Search, Eye, Edit, Lock, Unlock, X, Settings, ChevronDown,
-  Languages, Calendar, Download, Upload, Users
+  UserPlus, Search, Eye, Edit, Lock, Unlock, X, Upload, Users
 } from 'lucide-vue-next'
 
 import LanguageAssignmentForm from '../components/student/LanguageAssignmentForm.vue'
@@ -435,7 +434,6 @@ const showCareerEntryModal = ref(false)
 const showCorrespondenceNoteModal = ref(false)
 const showBulkLanguageModal = ref(false)
 const showSchoolYearChangeModal = ref(false)
-const showAddStudentModal = ref(false)
 const showBulkUpload = ref(false)
 const showAddStudent = ref(false)
 
@@ -815,10 +813,6 @@ onUnmounted(() => {
 })
 
 // Toggle functions
-const toggleActionsDropdown = () => {
-  showActionsDropdown.value = !showActionsDropdown.value
-}
-
 const toggleSelectAll = () => {
   if (selectAll.value) {
     selectedStudents.value = paginatedStudents.value.map(student => student.id)

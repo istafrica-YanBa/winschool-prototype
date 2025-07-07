@@ -301,16 +301,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useThemeStore } from '../../stores/theme'
-import { useAuthStore } from '../../stores/auth'
 import { 
-  Package, Plus, Filter, Search, Edit, Trash2, ChevronRight,
-  TrendingUp, AlertTriangle, CheckCircle, Clock
+  Package, Plus, Filter, Search, Edit, Trash2,
+  TrendingUp, AlertTriangle, Clock
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
-const authStore = useAuthStore()
 const language = computed(() => themeStore.language)
-const userRole = computed(() => authStore.user?.role)
 
 // State
 const showFilters = ref(false)

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useBookStore } from '@/stores/library/book'
-import { useLoanStore } from '@/stores/library/loan'
-import { useStudentStore } from '@/stores/student'
+import { useClassStore } from '@/stores/class'
 import Button from '@/components/ui/button.vue'
 import Input from '@/components/ui/input.vue'
 import Table from '@/components/ui/table.vue'
@@ -10,14 +9,12 @@ import Modal from '@/components/ui/modal.vue'
 import DatePicker from '@/components/ui/datepicker.vue'
 import Chart from '@/components/ui/chart.vue'
 import { useToast } from '@/composables/useToast'
-import { useClassStore } from '@/stores/class'
 import type { Book, ClassLoan } from '@/types/library'
+import { ClassLoanStatus } from '@/types/library'
 
 const bookStore = useBookStore()
-const loanStore = useLoanStore()
-const studentStore = useStudentStore()
 const classStore = useClassStore()
-const { toast } = useToast()
+const { addToast } = useToast()
 
 const books = ref<Book[]>([])
 const classLoans = ref<ClassLoan[]>([])
@@ -34,71 +31,51 @@ const itemsPerPage = ref(10)
 const mockClassLoans: ClassLoan[] = [
   {
     id: '1',
-    bookId: '1',
-    bookTitle: 'Advanced Mathematics',
-    bookIsbn: '978-0-123456-78-9',
     classId: '10A',
-    className: '10A - Science',
-    teacherName: 'Mr. Anderson',
-    studentCount: 28,
-    booksLent: 25,
-    loanDate: '2024-01-15',
-    dueDate: '2024-02-15',
-    status: 'active',
-    notes: 'Mathematics textbook for semester 1'
+    bookIds: ['1'],
+    startDate: '2024-01-15',
+    endDate: '2024-02-15',
+    status: ClassLoanStatus.ACTIVE,
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15'
   },
   {
     id: '2',
-    bookId: '2',
-    bookTitle: 'Physics Fundamentals',
-    bookIsbn: '978-0-234567-89-0',
     classId: '11B',
-    className: '11B - Science',
-    teacherName: 'Ms. Johnson',
-    studentCount: 24,
-    booksLent: 24,
-    loanDate: '2024-01-10',
-    dueDate: '2024-03-10',
-    status: 'active',
-    notes: 'Complete set for physics course'
+    bookIds: ['2'],
+    startDate: '2024-01-10',
+    endDate: '2024-03-10',
+    status: ClassLoanStatus.ACTIVE,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-10'
   },
   {
     id: '3',
-    bookId: '3',
-    bookTitle: 'Literature Analysis',
-    bookIsbn: '978-0-345678-90-1',
     classId: '12A',
-    className: '12A - Literature',
-    teacherName: 'Dr. Smith',
-    studentCount: 22,
-    booksLent: 20,
-    loanDate: '2024-01-20',
-    dueDate: '2024-04-20',
-    status: 'overdue',
-    notes: '2 books still pending return'
+    bookIds: ['3'],
+    startDate: '2024-01-20',
+    endDate: '2024-04-20',
+    status: ClassLoanStatus.CANCELLED,
+    createdAt: '2024-01-20',
+    updatedAt: '2024-01-20'
   },
   {
     id: '4',
-    bookId: '4',
-    bookTitle: 'World History',
-    bookIsbn: '978-0-456789-01-2',
     classId: '9C',
-    className: '9C - History',
-    teacherName: 'Mr. Wilson',
-    studentCount: 26,
-    booksLent: 26,
-    loanDate: '2024-01-05',
-    dueDate: '2024-01-25',
-    status: 'returned',
-    notes: 'All books returned on time'
+    bookIds: ['4'],
+    startDate: '2024-01-05',
+    endDate: '2024-01-25',
+    status: ClassLoanStatus.COMPLETED,
+    createdAt: '2024-01-05',
+    updatedAt: '2024-01-05'
   }
 ]
 
 // Statistics data
 const lendingStats = computed(() => [
-  { label: 'Active Loans', value: classLoans.value.filter(loan => loan.status === 'active').length, color: '#10B981' },
-  { label: 'Overdue', value: classLoans.value.filter(loan => loan.status === 'overdue').length, color: '#EF4444' },
-  { label: 'Returned', value: classLoans.value.filter(loan => loan.status === 'returned').length, color: '#3B82F6' },
+  { label: 'Active Loans', value: classLoans.value.filter(loan => loan.status === ClassLoanStatus.ACTIVE).length, color: '#10B981' },
+  { label: 'Overdue', value: classLoans.value.filter(loan => loan.status === ClassLoanStatus.CANCELLED).length, color: '#EF4444' },
+  { label: 'Completed', value: classLoans.value.filter(loan => loan.status === ClassLoanStatus.COMPLETED).length, color: '#3B82F6' },
   { label: 'Total Classes', value: new Set(classLoans.value.map(loan => loan.classId)).size, color: '#8B5CF6' }
 ])
 
@@ -114,8 +91,8 @@ const booksLentStats = computed(() => [
 const classDistribution = computed(() => {
   const distribution: { [key: string]: number } = {}
   classLoans.value.forEach(loan => {
-    if (loan.status === 'active') {
-      distribution[loan.className] = (distribution[loan.className] || 0) + loan.booksLent
+    if (loan.status === ClassLoanStatus.ACTIVE) {
+      distribution[loan.classId] = (distribution[loan.classId] || 0) + loan.bookIds.length
     }
   })
   return Object.entries(distribution).map(([label, value]) => ({ label, value }))
@@ -124,9 +101,8 @@ const classDistribution = computed(() => {
 const filteredLoans = computed(() => {
   if (!searchQuery.value) return classLoans.value
   return classLoans.value.filter(loan => 
-    loan.bookTitle.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    loan.className.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    loan.teacherName.toLowerCase().includes(searchQuery.value.toLowerCase())
+    loan.bookIds.length > 0 ||
+    loan.classId.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 })
 
@@ -141,40 +117,35 @@ const classes = computed(() => classStore.classes)
 
 const handleLendBook = async () => {
   if (!selectedBook.value || !selectedClass.value || !dueDate.value) {
-    toast('Please fill in all required fields', 'error')
+    addToast({ message: 'Please fill in all required fields', type: 'error' })
     return
   }
 
   const selectedClassData = classes.value.find(c => c.id === selectedClass.value)
   if (!selectedClassData) {
-    toast('Invalid class selected', 'error')
+    addToast({ message: 'Invalid class selected', type: 'error' })
     return
   }
 
   try {
     const newLoan: ClassLoan = {
       id: Date.now().toString(),
-      bookId: selectedBook.value.id,
-      bookTitle: selectedBook.value.title,
-      bookIsbn: selectedBook.value.isbn,
       classId: selectedClassData.id,
-      className: selectedClassData.name,
-      teacherName: selectedClassData.teacher,
-      studentCount: selectedClassData.studentCount,
-      booksLent: quantity.value,
-      loanDate: new Date().toISOString().split('T')[0],
-      dueDate: dueDate.value,
-      status: 'active',
-      notes: `${quantity.value} books lent to class ${selectedClassData.name}`
+      bookIds: [selectedBook.value.id],
+      startDate: dueDate.value,
+      endDate: dueDate.value,
+      status: ClassLoanStatus.ACTIVE,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
 
     classLoans.value.unshift(newLoan)
     
-    toast('Books successfully lent to class', 'success')
+    addToast({ message: 'Books successfully lent to class', type: 'success' })
     showLendModal.value = false
     resetForm()
   } catch (error) {
-    toast('Failed to lend books to class', 'error')
+    addToast({ message: 'Failed to lend books to class', type: 'error' })
   }
 }
 
@@ -182,11 +153,11 @@ const handleReturnBooks = async (loanId: string) => {
   try {
     const loanIndex = classLoans.value.findIndex(loan => loan.id === loanId)
     if (loanIndex !== -1) {
-      classLoans.value[loanIndex].status = 'returned'
-      toast('Books marked as returned', 'success')
+      classLoans.value[loanIndex].status = ClassLoanStatus.COMPLETED
+      addToast({ message: 'Books marked as returned', type: 'success' })
     }
   } catch (error) {
-    toast('Failed to return books', 'error')
+    addToast({ message: 'Failed to return books', type: 'error' })
   }
 }
 
@@ -197,17 +168,17 @@ const resetForm = () => {
   quantity.value = 1
 }
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: ClassLoanStatus) => {
   switch (status) {
-    case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    case 'overdue': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-    case 'returned': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+    case ClassLoanStatus.ACTIVE: return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+    case ClassLoanStatus.CANCELLED: return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    case ClassLoanStatus.COMPLETED: return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
   }
 }
 
 onMounted(async () => {
-  books.value = await bookStore.getBooks()
+  books.value = await bookStore.getBooks({ page: 1, limit: 100, search: '' })
   classLoans.value = mockClassLoans
   await classStore.loadClasses()
 })
@@ -293,24 +264,20 @@ onMounted(async () => {
           <tr v-for="loan in paginatedLoans" :key="loan.id" class="border-b border-gray-200 dark:border-gray-700">
             <td class="py-3">
               <div>
-                <div class="font-medium text-gray-900 dark:text-gray-100">{{ loan.bookTitle }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">ISBN: {{ loan.bookIsbn }}</div>
+                <div class="font-medium text-gray-900 dark:text-gray-100">{{ loan.bookIds.length > 0 ? loan.bookIds.join(', ') : 'No books' }}</div>
               </div>
             </td>
             <td class="py-3">
-              <div class="font-medium text-gray-900 dark:text-gray-100">{{ loan.className }}</div>
+              <div class="font-medium text-gray-900 dark:text-gray-100">{{ loan.classId }}</div>
             </td>
             <td class="py-3">
-              <div class="text-gray-700 dark:text-gray-300">{{ loan.teacherName }}</div>
+              <div class="text-gray-700 dark:text-gray-300">{{ loan.classId }}</div>
             </td>
             <td class="py-3">
-              <div class="text-gray-700 dark:text-gray-300">{{ loan.studentCount }}</div>
+              <div class="text-gray-700 dark:text-gray-300">{{ loan.bookIds.length }}</div>
             </td>
-            <td class="py-3">
-              <div class="font-medium text-gray-900 dark:text-gray-100">{{ loan.booksLent }}</div>
-            </td>
-            <td class="py-3">{{ new Date(loan.loanDate).toLocaleDateString() }}</td>
-            <td class="py-3">{{ new Date(loan.dueDate).toLocaleDateString() }}</td>
+            <td class="py-3">{{ new Date(loan.startDate).toLocaleDateString() }}</td>
+            <td class="py-3">{{ new Date(loan.endDate).toLocaleDateString() }}</td>
             <td class="py-3">
               <span
                 :class="getStatusColor(loan.status)"
@@ -322,7 +289,7 @@ onMounted(async () => {
             <td class="py-3">
               <div class="flex space-x-2">
                 <Button
-                  v-if="loan.status === 'active'"
+                  v-if="loan.status === ClassLoanStatus.ACTIVE"
                   variant="primary"
                   size="sm"
                   @click="handleReturnBooks(loan.id)"
@@ -330,7 +297,7 @@ onMounted(async () => {
                   Mark Returned
                 </Button>
                 <Button
-                  v-if="loan.status === 'overdue'"
+                  v-if="loan.status === ClassLoanStatus.CANCELLED"
                   variant="danger"
                   size="sm"
                   @click="handleReturnBooks(loan.id)"

@@ -200,7 +200,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { Plus, Search, Eye, Edit, Lock, Unlock, X, UserPlus, Download, Users } from 'lucide-vue-next'
+import { Search, Eye, Edit, Lock, Unlock, X, UserPlus, Download, Users } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)

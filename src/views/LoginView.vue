@@ -261,6 +261,6 @@ const toggleLanguage = () => {
 }
 
 const toggleTheme = () => {
-  themeStore.toggleDarkMode()
+  themeStore.toggleTheme()
 }
 </script>

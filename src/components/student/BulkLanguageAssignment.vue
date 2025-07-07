@@ -141,27 +141,6 @@ const emit = defineEmits(['submit', 'cancel'])
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
-const availableLanguages = [
-  'English',
-  'German',
-  'French',
-  'Spanish',
-  'Italian',
-  'Russian',
-  'Chinese',
-  'Japanese',
-  'Arabic',
-  'Portuguese',
-  'Dutch',
-  'Swedish',
-  'Greek',
-  'Turkish',
-  'Polish',
-  'Korean',
-  'Hindi',
-  'Latin'
-]
-
 const languageEntries = ref([
   {
     name: '',
@@ -173,6 +152,18 @@ const languageEntries = ref([
     notes: ''
   }
 ])
+
+const selectedLanguages = ref<string[]>([])
+const selectedLevel = ref('')
+const selectedType = ref('')
+const startDate = ref('')
+const endDate = ref('')
+const notes = ref('')
+
+const availableLanguages = [
+  'English', 'German', 'French', 'Spanish', 'Italian', 'Russian', 
+  'Chinese', 'Japanese', 'Arabic', 'Portuguese', 'Dutch', 'Swedish'
+]
 
 const addLanguageEntry = () => {
   languageEntries.value.push({
@@ -191,18 +182,34 @@ const removeLanguageEntry = (index: number) => {
 }
 
 const applyToAll = () => {
-  // Validate entries
-  const isValid = languageEntries.value.every(entry => 
-    entry.name && entry.level && entry.type && entry.since
-  )
-  
-  if (!isValid) {
-    alert(language.value === 'de' 
-      ? 'Bitte füllen Sie alle erforderlichen Felder aus' 
-      : 'Please fill in all required fields')
+  if (selectedLanguages.value.length === 0) {
+    alert(language.value === 'de' ? 'Bitte wählen Sie mindestens eine Sprache aus.' : 'Please select at least one language.')
     return
   }
   
-  emit('submit', languageEntries.value)
+  if (!selectedLevel.value) {
+    alert(language.value === 'de' ? 'Bitte wählen Sie ein Niveau aus.' : 'Please select a proficiency level.')
+    return
+  }
+  
+  if (!selectedType.value) {
+    alert(language.value === 'de' ? 'Bitte wählen Sie einen Typ aus.' : 'Please select a language type.')
+    return
+  }
+  
+  if (!startDate.value) {
+    alert(language.value === 'de' ? 'Bitte wählen Sie ein Startdatum aus.' : 'Please select a start date.')
+    return
+  }
+  
+  emit('submit', {
+    students: props.selectedStudents,
+    languages: selectedLanguages.value,
+    level: selectedLevel.value,
+    type: selectedType.value,
+    startDate: startDate.value,
+    endDate: endDate.value,
+    notes: notes.value
+  })
 }
 </script>

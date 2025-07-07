@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useBookStore } from '@/stores/library/book'
-import { useLoanStore } from '@/stores/library/loan'
 import { useCourseStore } from '@/stores/course'
 import type { Book, CourseLoan } from '@/types/library'
 import Button from '@/components/ui/button.vue'
@@ -11,9 +10,6 @@ import Modal from '@/components/ui/modal.vue'
 import DatePicker from '@/components/ui/datepicker.vue'
 import { useToast } from '@/composables/useToast'
 
-const bookStore = useBookStore()
-const loanStore = useLoanStore()
-const courseStore = useCourseStore()
 const toast = useToast()
 
 const courseLoans = ref<CourseLoan[]>([])
@@ -27,7 +23,6 @@ const endDate = ref('')
 const handleCourseSearch = async (query: string) => {
   if (!query) return
   try {
-    const courses = await courseStore.searchCourses(query)
     // Handle course selection UI
   } catch (error) {
     toast.error('Failed to search courses')
@@ -37,11 +32,6 @@ const handleCourseSearch = async (query: string) => {
 const handleBookSearch = async (query: string) => {
   if (!query) return
   try {
-    const response = await bookStore.getBooks({
-      search: query,
-      page: 1,
-      limit: 10
-    })
     // Handle book selection UI
   } catch (error) {
     toast.error('Failed to search books')

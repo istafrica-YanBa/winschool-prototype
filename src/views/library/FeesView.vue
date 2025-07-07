@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useBookStore } from '@/stores/library/book'
-import { useLoanStore } from '@/stores/library/loan'
 import { useFeeStore } from '@/stores/library/fee'
 import type { BookFee } from '@/types/library'
 import Button from '@/components/ui/button.vue'

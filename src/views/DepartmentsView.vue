@@ -277,7 +277,7 @@
                 {{ language === 'de' ? 'Fächer' : 'Subjects' }}
               </label>
               <div class="space-y-2">
-                <div v-for="(subject, index) in departmentForm.subjects" :key="index" class="flex items-center space-x-2">
+                <div v-for="(_subject, index) in departmentForm.subjects" :key="index" class="flex items-center space-x-2">
                   <input
                     v-model="departmentForm.subjects[index]"
                     type="text"
@@ -312,7 +312,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { Plus, Edit, Eye, Users, Search, X, Trash2, BookOpen, Award, Target, Layers, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { Edit, Eye, Users, Search, X, Trash2, BookOpen, Award, Layers, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)

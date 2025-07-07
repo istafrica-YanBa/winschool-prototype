@@ -641,6 +641,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useThemeStore } from '@/stores/theme'
+
+const themeStore = useThemeStore()
+const language = computed(() => themeStore.language)
 
 // Constants
 const planningTypes = [
@@ -673,7 +677,7 @@ const planningSettings = ref({
   priority: '',
   title: '',
   description: '',
-  dueDate: '',
+  dueDate: '' as string | null,
   tags: [] as string[],
   setReminder: false
 })

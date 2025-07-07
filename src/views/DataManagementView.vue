@@ -697,7 +697,7 @@ import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { 
   Upload, FileText, Shield, Edit, Copy, Trash2, X, Users, Database, 
-  HardDrive, Clock, RefreshCw
+  HardDrive, Clock
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
@@ -765,6 +765,12 @@ const roomTypes = ref([
   { id: 5, name: 'Art Studio', capacity: 25 }
 ])
 
+interface DuplicateRecord {
+  original: Record<string, any>
+  duplicate: Record<string, any>
+  merged: Record<string, any>
+}
+
 const potentialDuplicates = ref([
   {
     id: 1,
@@ -810,7 +816,7 @@ const potentialDuplicates = ref([
   }
 ])
 
-const selectedDuplicate = ref(null)
+const selectedDuplicate = ref<DuplicateRecord | null>(null)
 
 const auditEntries = ref([
   {
@@ -847,23 +853,23 @@ const auditEntries = ref([
   }
 ])
 
-const filteredAuditEntries = computed(() => {
-  let filtered = auditEntries.value
-
-  if (auditFilters.dataType) {
-    filtered = filtered.filter(entry => entry.dataType === auditFilters.dataType)
-  }
-
-  if (auditFilters.action) {
-    filtered = filtered.filter(entry => entry.action === auditFilters.action)
-  }
-
-  return filtered
-})
-
 const auditFilters = ref({
   dataType: '',
   action: ''
+})
+
+const filteredAuditEntries = computed(() => {
+  let filtered = auditEntries.value
+
+  if (auditFilters.value.dataType) {
+    filtered = filtered.filter(entry => entry.dataType === auditFilters.value.dataType)
+  }
+
+  if (auditFilters.value.action) {
+    filtered = filtered.filter(entry => entry.action === auditFilters.value.action)
+  }
+
+  return filtered
 })
 
 const exportSettings = ref({

@@ -567,12 +567,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useToast } from '@/composables/useToast'
 import {
-  Settings, Save, BookOpen, Users, GraduationCap, Building, 
-  Clock, RotateCcw, Mail, Shield, AlertCircle, CheckCircle,
-  ToggleLeft, ToggleRight, Calendar, Hash, FileText, Bell
+  Settings, Save, BookOpen, Users, 
+  Clock, RotateCcw, CheckCircle,
+  ToggleLeft, ToggleRight, Calendar, FileText
 } from 'lucide-vue-next'
 
-const { showToast } = useToast()
+const { addToast } = useToast()
 
 // UI State
 const isSaving = ref(false)
@@ -658,9 +658,9 @@ const saveAllSettings = async () => {
     // Simulate API call to save settings
     await new Promise(resolve => setTimeout(resolve, 1500))
     
-    showToast('Library configuration saved successfully!', 'success')
+    addToast({ message: 'Library configuration saved successfully!', type: 'success' })
   } catch (error) {
-    showToast('Failed to save configuration', 'error')
+    addToast({ message: 'Failed to save configuration', type: 'error' })
   } finally {
     isSaving.value = false
   }
@@ -702,11 +702,11 @@ const resetToDefaults = () => {
       autoBlockingEnabled: true
     }
     
-    showToast('Settings reset to defaults', 'success')
+    addToast({ message: 'Settings reset to defaults', type: 'success' })
   }
 }
 
-const getSectionIcon = (section) => {
+const getSectionIcon = (section: string) => {
   switch (section) {
     case 'lending-rules': return Clock
     case 'return-behavior': return RotateCcw

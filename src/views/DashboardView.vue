@@ -63,22 +63,6 @@ const language = computed(() => themeStore.language)
 const currentTime = ref('')
 const currentDate = ref('')
 
-const dashboardComponents = {
-  student: StudentDashboard,
-  parent: ParentDashboard,
-  teacher: TeacherDashboard,
-  admin: AdminDashboard,
-  principal: PrincipalDashboard,
-  inspector: InspectorDashboard,
-  superadmin: SuperAdminDashboard,
-  schooladmin: AdminDashboard, // School admin uses the same dashboard as regular admin for now
-  schoolstaff: SchoolStaffDashboard // School staff now has its own dedicated dashboard
-}
-
-const dashboardComponent = computed(() => {
-  return dashboardComponents[user.value?.role || 'student']
-})
-
 const updateTime = () => {
   const now = new Date()
   currentTime.value = now.toLocaleTimeString(language.value === 'de' ? 'de-DE' : 'en-US', {
@@ -93,7 +77,7 @@ const updateTime = () => {
   })
 }
 
-let timeInterval: number
+let timeInterval: NodeJS.Timeout
 
 onMounted(() => {
   updateTime()

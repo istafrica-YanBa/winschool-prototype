@@ -975,7 +975,19 @@ import { Edit, Trash2, X, FileText } from 'lucide-vue-next'
 const props = defineProps({
   student: {
     type: Object,
-    required: true
+    required: false,
+    default: () => ({
+      id: 1,
+      name: 'Max Mustermann',
+      email: 'max.mustermann@example.com',
+      class: '12A',
+      status: 'Active',
+      enrollmentDate: '2020-09-01',
+      nationality: 'German',
+      contactPerson: 'present',
+      archived: false,
+      languages: []
+    })
   }
 })
 
@@ -1023,10 +1035,10 @@ const certificateItemsPerPage = ref(5)
 const showAddCertificateModal = ref(false)
 const showEditCertificateModal = ref(false)
 const selectAllCertificates = ref(false)
-const selectedCertificates = ref([])
+const selectedCertificates = ref<number[]>([])
 const certificateFilter = ref({ subject: '', status: '' })
 const certificateForm = ref({
-  id: null,
+  id: 0,
   subject: '',
   type: 'written',
   date: '',
@@ -1127,13 +1139,13 @@ watch([certificateFilter], () => {
 
 function toggleSelectAllCertificates() {
   if (selectAllCertificates.value) {
-    selectedCertificates.value = paginatedCertificates.value.map(cert => cert.id)
+    selectedCertificates.value = paginatedCertificates.value.map((cert: { id: number }) => cert.id)
   } else {
     selectedCertificates.value = []
   }
 }
 
-function getCertificateStatusColor(status) {
+function getCertificateStatusColor(status: string) {
   switch (status) {
     case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
     case 'excused': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
@@ -1142,7 +1154,7 @@ function getCertificateStatusColor(status) {
   }
 }
 
-function getCertificateStatusText(status) {
+function getCertificateStatusText(status: string) {
   if (language.value === 'de') {
     return status === 'completed' ? 'Abgeschlossen' : status === 'excused' ? 'Entschuldigt' : status === 'not_taken' ? 'Nicht angetreten' : status
   } else {
@@ -1153,30 +1165,30 @@ function getCertificateStatusText(status) {
 function closeCertificateModal() {
   showAddCertificateModal.value = false
   showEditCertificateModal.value = false
-  certificateForm.value = { id: null, subject: '', type: 'written', date: '', duration: '', evaluation: '', teacher: '', status: 'completed', semester: '' }
+  certificateForm.value = { id: 0, subject: '', type: 'written', date: '', duration: '', evaluation: '', teacher: '', status: 'completed', semester: '' }
 }
 
 function saveCertificate() {
   if (showEditCertificateModal.value) {
     // Update existing
-    const idx = certificates.value.findIndex(c => c.id === certificateForm.value.id)
+    const idx = certificates.value.findIndex((c: { id: number }) => c.id === certificateForm.value.id)
     if (idx !== -1) certificates.value[idx] = { ...certificateForm.value }
   } else {
     // Add new
-    const newId = Math.max(0, ...certificates.value.map(c => c.id)) + 1
+    const newId = Math.max(0, ...certificates.value.map((c: { id: number }) => c.id)) + 1
     certificates.value.push({ ...certificateForm.value, id: newId })
   }
   closeCertificateModal()
 }
 
-function editCertificate(cert) {
+function editCertificate(cert: { id: number; subject: string; type: string; date: string; duration: string; evaluation: string; teacher: string; status: string; semester: string }) {
   certificateForm.value = { ...cert }
   showEditCertificateModal.value = true
 }
 
-function deleteCertificate(id) {
-  certificates.value = certificates.value.filter(c => c.id !== id)
-  selectedCertificates.value = selectedCertificates.value.filter(certId => certId !== id)
+function deleteCertificate(id: number) {
+  certificates.value = certificates.value.filter((c: { id: number }) => c.id !== id)
+  selectedCertificates.value = selectedCertificates.value.filter((certId: number) => certId !== id)
 }
 
 function printCertificates() {
@@ -1191,10 +1203,10 @@ const reExamItemsPerPage = ref(5)
 const showAddReExamModal = ref(false)
 const showEditReExamModal = ref(false)
 const selectAllReExams = ref(false)
-const selectedReExams = ref([])
+const selectedReExams = ref<number[]>([])
 const reExamFilter = ref({ subject: '', status: '' })
 const reExamForm = ref({
-  id: null,
+  id: 0,
   subject: '',
   type: 'written',
   date: '',
@@ -1289,13 +1301,13 @@ watch([reExamFilter], () => {
 
 function toggleSelectAllReExams() {
   if (selectAllReExams.value) {
-    selectedReExams.value = paginatedReExams.value.map(exam => exam.id)
+    selectedReExams.value = paginatedReExams.value.map((exam: { id: number }) => exam.id)
   } else {
     selectedReExams.value = []
   }
 }
 
-function getReExamStatusColor(status) {
+function getReExamStatusColor(status: string) {
   switch (status) {
     case 'registered': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
     case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -1304,7 +1316,7 @@ function getReExamStatusColor(status) {
   }
 }
 
-function getReExamStatusText(status) {
+function getReExamStatusText(status: string) {
   if (language.value === 'de') {
     return status === 'registered' ? 'Angemeldet' : status === 'completed' ? 'Abgeschlossen' : status === 'not_passed' ? 'Nicht bestanden' : status
   } else {
@@ -1315,30 +1327,30 @@ function getReExamStatusText(status) {
 function closeReExamModal() {
   showAddReExamModal.value = false
   showEditReExamModal.value = false
-  reExamForm.value = { id: null, subject: '', type: 'written', date: '', teacher: '', status: 'registered' }
+  reExamForm.value = { id: 0, subject: '', type: 'written', date: '', teacher: '', status: 'registered' }
 }
 
 function saveReExam() {
   if (showEditReExamModal.value) {
     // Update existing
-    const idx = reExams.value.findIndex(e => e.id === reExamForm.value.id)
+    const idx = reExams.value.findIndex((e: { id: number }) => e.id === reExamForm.value.id)
     if (idx !== -1) reExams.value[idx] = { ...reExamForm.value }
   } else {
     // Add new
-    const newId = Math.max(0, ...reExams.value.map(e => e.id)) + 1
+    const newId = Math.max(0, ...reExams.value.map((e: { id: number }) => e.id)) + 1
     reExams.value.push({ ...reExamForm.value, id: newId })
   }
   closeReExamModal()
 }
 
-function editReExam(exam) {
+function editReExam(exam: { id: number; subject: string; type: string; date: string; teacher: string; status: string }) {
   reExamForm.value = { ...exam }
   showEditReExamModal.value = true
 }
 
-function deleteReExam(id) {
-  reExams.value = reExams.value.filter(e => e.id !== id)
-  selectedReExams.value = selectedReExams.value.filter(examId => examId !== id)
+function deleteReExam(id: number) {
+  reExams.value = reExams.value.filter((e: { id: number }) => e.id !== id)
+  selectedReExams.value = selectedReExams.value.filter((examId: number) => examId !== id)
 }
 
 function printReExams() {
@@ -1353,14 +1365,14 @@ const goalItemsPerPage = ref(5)
 const showAddGoalModal = ref(false)
 const showEditGoalModal = ref(false)
 const selectAllGoals = ref(false)
-const selectedGoals = ref([])
+const selectedGoals = ref<number[]>([])
 const goalFilter = ref({ subject: '', status: '' })
 const goalForm = ref({
-  id: null,
+  id: 0,
   title: '',
   subject: '',
   standard: '',
-  status: 'in_progress',
+  status: '',
   progress: 0
 })
 
@@ -1457,27 +1469,27 @@ function toggleSelectAllGoals() {
   }
 }
 
-function getGoalStatusColor(status) {
+function getGoalStatusColor(status: string) {
   switch (status) {
-    case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-    case 'achieved': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    case 'not_achieved': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    case 'not_started': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+    case 'in_progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
   }
 }
 
-function getGoalStatusText(status) {
+function getGoalStatusText(status: string) {
   if (language.value === 'de') {
-    return status === 'in_progress' ? 'In Bearbeitung' : status === 'achieved' ? 'Erreicht' : status === 'not_achieved' ? 'Nicht erreicht' : status
+    return status === 'not_started' ? 'Nicht begonnen' : status === 'in_progress' ? 'In Bearbeitung' : status === 'completed' ? 'Abgeschlossen' : status
   } else {
-    return status === 'in_progress' ? 'In Progress' : status === 'achieved' ? 'Achieved' : status === 'not_achieved' ? 'Not Achieved' : status
+    return status === 'not_started' ? 'Not Started' : status === 'in_progress' ? 'In Progress' : status === 'completed' ? 'Completed' : status
   }
 }
 
 function closeGoalModal() {
   showAddGoalModal.value = false
   showEditGoalModal.value = false
-  goalForm.value = { id: null, title: '', subject: '', standard: '', status: 'in_progress', progress: 0 }
+  goalForm.value = { id: 0, title: '', subject: '', standard: '', status: '', progress: 0 }
 }
 
 function saveGoal() {
@@ -1493,14 +1505,14 @@ function saveGoal() {
   closeGoalModal()
 }
 
-function editGoal(goal) {
+function editGoal(goal: { id: number; title: string; subject: string; standard: string; status: string; progress: number }) {
   goalForm.value = { ...goal }
   showEditGoalModal.value = true
 }
 
-function deleteGoal(id) {
-  learningGoals.value = learningGoals.value.filter(g => g.id !== id)
-  selectedGoals.value = selectedGoals.value.filter(goalId => goalId !== id)
+function deleteGoal(id: number) {
+  learningGoals.value = learningGoals.value.filter((g: { id: number }) => g.id !== id)
+  selectedGoals.value = selectedGoals.value.filter((goalId: number) => goalId !== id)
 }
 
 function printLearningGoals() {

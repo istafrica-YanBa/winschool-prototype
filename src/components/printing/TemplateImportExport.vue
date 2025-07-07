@@ -103,16 +103,16 @@ import { ref, computed, defineProps, defineEmits } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { Upload, InfoIcon } from 'lucide-vue-next'
 
-const props = defineProps({
-  isImport: {
-    type: Boolean,
-    default: true
-  },
-  templates: {
-    type: Array,
-    default: () => []
-  }
-})
+// Type definitions
+interface Template {
+  id: number;
+  name: string;
+}
+
+const props = defineProps<{
+  isImport: boolean;
+  templates: Template[];
+}>()
 
 const emit = defineEmits(['process', 'cancel'])
 

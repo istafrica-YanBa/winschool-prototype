@@ -44,7 +44,7 @@
           <tr v-for="language in languages" :key="language.id" class="border-b border-gray-100 dark:border-gray-700">
             <td class="py-3 px-4 font-medium text-gray-900 dark:text-white">{{ language.name }}</td>
             <td class="py-3 px-4">
-              <span :class="getProficiencyLevelColor(language.level)" class="px-2 py-1 text-xs font-medium rounded-full">
+              <span :class="getLevelColor(language.level)" class="px-2 py-1 text-xs font-medium rounded-full">
                 {{ language.level }}
               </span>
             </td>
@@ -56,7 +56,7 @@
                 <button @click="$emit('edit', language)" class="text-primary-600 hover:text-primary-800">
                   <Edit class="h-4 w-4" />
                 </button>
-                <button @click="$emit('remove', language)" class="text-red-600 hover:text-red-800">
+                <button @click="$emit('delete', language)" class="text-red-600 hover:text-red-800">
                   <Trash2 class="h-4 w-4" />
                 </button>
               </div>
@@ -69,36 +69,51 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, defineEmits } from 'vue'
+import { ref, computed } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { Plus, Edit, Trash2 } from 'lucide-vue-next'
 
-const props = defineProps({
-  languages: {
-    type: Array,
-    required: true,
-    default: () => []
-  }
-})
-
-defineEmits(['add', 'edit', 'remove'])
+const emit = defineEmits(['add', 'edit', 'delete'])
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
-const getProficiencyLevelColor = (level: string) => {
+const languages = ref([
+  {
+    id: '1',
+    name: 'English',
+    level: 'B2',
+    type: 'Required',
+    since: '2020-09-01',
+    until: '',
+    knowledgeLevel: 4,
+    notes: 'Primary foreign language'
+  },
+  {
+    id: '2',
+    name: 'French',
+    level: 'A2',
+    type: 'Elective',
+    since: '2021-09-01',
+    until: '',
+    knowledgeLevel: 2,
+    notes: 'Second foreign language'
+  }
+])
+
+const getLevelColor = (level: string) => {
   switch (level) {
     case 'A1':
     case 'A2':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
     case 'B1':
     case 'B2':
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
     case 'C1':
     case 'C2':
-      return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
     case 'Native':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
     default:
       return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
   }

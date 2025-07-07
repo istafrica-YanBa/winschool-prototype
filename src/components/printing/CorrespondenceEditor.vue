@@ -62,19 +62,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits } from 'vue'
+import { ref, computed, defineEmits } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 
-const props = defineProps({
-  templates: {
-    type: Array,
-    default: () => []
-  },
-  recipients: {
-    type: Array,
-    default: () => []
-  }
-})
+// Type definitions
+interface Recipient {
+  id: string;
+  name: string;
+}
+
+interface Template {
+  id: string;
+  name: string;
+}
+
+defineProps<{
+  templates: Template[];
+  recipients: Recipient[];
+}>()
 
 const emit = defineEmits(['create', 'cancel'])
 

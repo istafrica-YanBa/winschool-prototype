@@ -575,6 +575,28 @@ import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { Calendar, List, Plus, Clock, TrendingUp, CheckCircle, AlertCircle, X, ChevronLeft, ChevronRight, User, MapPin } from 'lucide-vue-next'
 
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface Meeting {
+  id: number
+  date: string
+  time: string
+  parentName: string
+  parentAvatar: string
+  studentName: string
+  purpose: string
+  status: 'scheduled' | 'completed' | 'cancelled'
+  location?: string
+  notes?: string
+}
+
+interface Day {
+  day: number
+  date: string
+  isCurrentMonth: boolean
+  isToday: boolean
+  meetings: Meeting[]
+}
+
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
@@ -594,8 +616,8 @@ const requestForm = ref({
 
 // Calendar data
 const currentDate = ref(new Date())
-const selectedDay = ref(null)
-const selectedMeeting = ref(null)
+const selectedDay = ref<Day | null>(null)
+const selectedMeeting = ref<Meeting | null>(null)
 
 // Sample data for teacher perspective
 const students = ref([
@@ -721,7 +743,7 @@ const upcomingMeetings = computed(() => {
   const now = new Date()
   return meetings.value.filter(meeting => {
     const meetingDate = new Date(meeting.date)
-    return meetingDate >= now && (selectedStudent.value === '' || meeting.studentName.includes(students.value.find(s => s.id == selectedStudent.value)?.name || ''))
+    return meetingDate >= now && (selectedStudent.value === '' || meeting.studentName.includes(students.value.find(s => String(s.id) === selectedStudent.value)?.name || ''))
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 })
 
@@ -729,7 +751,7 @@ const pastMeetings = computed(() => {
   const now = new Date()
   return meetings.value.filter(meeting => {
     const meetingDate = new Date(meeting.date)
-    return meetingDate < now && (selectedStudent.value === '' || meeting.studentName.includes(students.value.find(s => s.id == selectedStudent.value)?.name || ''))
+    return meetingDate < now && (selectedStudent.value === '' || meeting.studentName.includes(students.value.find(s => String(s.id) === selectedStudent.value)?.name || ''))
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 })
 
@@ -848,19 +870,18 @@ const getMeetingStatusBadgeColor = (status: string) => {
 }
 
 const getMeetingStatusText = (status: string) => {
-  const statusTexts = {
-    en: {
-      scheduled: 'Scheduled',
-      completed: 'Completed',
-      cancelled: 'Cancelled'
-    },
+  const statusTexts: Record<string, Record<string, string>> = {
     de: {
       scheduled: 'Geplant',
       completed: 'Abgeschlossen',
       cancelled: 'Abgesagt'
+    },
+    en: {
+      scheduled: 'Scheduled',
+      completed: 'Completed',
+      cancelled: 'Cancelled'
     }
   }
-  
   return statusTexts[language.value][status] || status
 }
 
@@ -912,10 +933,26 @@ const declineRequest = (request: any) => {
 }
 
 const requestMeeting = () => {
-  // Implementation for teacher requesting meeting with parent
-  console.log('Requesting meeting:', requestForm.value)
-  showRequestModal.value = false
-  requestForm.value = { studentId: '', preferredDate: '', preferredTime: '', purpose: '' }
+  const selectedTeacher = teachers.value.find(t => String(t.id) === bookingForm.value.teacherId)
+  const selectedChildName = children.value.find(c => String(c.id) === bookingForm.value.childId)?.name
+  
+  if (selectedTeacher && selectedChildName) {
+    meetings.value.push({
+      id: Date.now(),
+      date: new Date().toISOString().split('T')[0],
+      time: 'TBD',
+      parentName: 'You',
+      parentAvatar: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+      studentName: selectedChildName,
+      purpose: bookingForm.value.purpose,
+      status: 'scheduled',
+      location: 'TBD',
+      notes: ''
+    })
+    
+    showBookingModal.value = false
+    bookingForm.value = { studentId: '', preferredDate: '', preferredTime: '', purpose: '' }
+  }
 }
 </script>
 

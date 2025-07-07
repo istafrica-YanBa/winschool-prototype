@@ -1,27 +1,52 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useBookStore } from '@/stores/library/book'
-import { useLoanStore } from '@/stores/library/loan'
 import { useStudentStore } from '@/stores/student'
-import Button from '@/components/ui/button.vue'
-import Input from '@/components/ui/input.vue'
-import Table from '@/components/ui/table.vue'
-import Modal from '@/components/ui/modal.vue'
-import DatePicker from '@/components/ui/datepicker.vue'
-import Chart from '@/components/ui/chart.vue'
-import BarcodeScanner from '@/components/library/BarcodeScanner.vue'
 import { useToast } from '@/composables/useToast'
-import type { Book, StudentLoan } from '@/types/library'
+import type { Book } from '@/types/library'
 import { 
   BookOpen, Users, GraduationCap, Building, 
-  AlertCircle, Calendar, Search, Plus, RotateCcw, 
-  Eye, Filter, Clock, User, Book
+  AlertCircle, Search, Plus, RotateCcw, 
+  Eye, User, Filter, X, ChevronLeft, ChevronRight, Download
 } from 'lucide-vue-next'
+import { LoanStatus } from '@/types/library'
 
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface StudentLoan {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentClass: string;
+  bookId: string;
+  bookTitle: string;
+  bookAuthor: string;
+  isbn: string;
+  lentDate: string;
+  dueDate: string;
+  returnDate?: string;
+  fine?: number;
+  status: 'active' | 'returned' | 'overdue';
+  renewCount: number;
+  maxRenewals: number;
+}
+
+interface LendingRecord {
+  id: string;
+  type: string;
+  borrowerName: string;
+  borrowerId: string;
+  bookTitle: string;
+  bookId: string;
+  isbn: string;
+  dateBorrowed: string;
+  dueDate: string;
+  status: 'active' | 'returned' | 'overdue';
+  notes: string;
+}
+
+const { addToast } = useToast()
 const bookStore = useBookStore()
-const loanStore = useLoanStore()
 const studentStore = useStudentStore()
-const { toast } = useToast()
 
 const books = ref<Book[]>([])
 const studentLoans = ref<StudentLoan[]>([])
@@ -34,7 +59,6 @@ const dueDate = ref('')
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
-const filterStatus = ref('all')
 const selectedLoanForReturn = ref<StudentLoan | null>(null)
 
 // Active tab management
@@ -45,7 +69,7 @@ const isLoading = ref(false)
 const isMobile = ref(false)
 const showLendingModal = ref(false)
 const showTakeBackModal = ref(false)
-const selectedLending = ref(null)
+const selectedLending = ref<StudentLoan | null>(null)
 
 // Mock lending data
 const lendings = ref([
@@ -60,7 +84,7 @@ const lendings = ref([
     isbn: '978-3-16-148410-0',
     dateBorrowed: '2024-03-01',
     dueDate: '2024-03-31',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     notes: 'For semester project'
   },
   {
@@ -73,7 +97,7 @@ const lendings = ref([
     isbn: '978-3-16-148411-7',
     dateBorrowed: '2024-02-15',
     dueDate: '2024-03-15',
-    status: 'overdue',
+    status: LoanStatus.OVERDUE,
     notes: 'Research material'
   },
   // Staff Lendings
@@ -87,7 +111,7 @@ const lendings = ref([
     isbn: '978-3-16-148412-4',
     dateBorrowed: '2024-03-10',
     dueDate: '2024-04-10',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     notes: 'Teaching reference'
   },
   // Class Lendings
@@ -101,7 +125,7 @@ const lendings = ref([
     isbn: '978-3-16-148413-1',
     dateBorrowed: '2024-03-05',
     dueDate: '2024-04-05',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     notes: 'Class set for experiments'
   },
   // Course Lendings
@@ -115,7 +139,7 @@ const lendings = ref([
     isbn: '978-3-16-148414-8',
     dateBorrowed: '2024-02-20',
     dueDate: '2024-05-20',
-    status: 'active',
+    status: LoanStatus.ACTIVE,
     notes: 'Semester textbook'
   }
 ])
@@ -151,48 +175,34 @@ const monthlyLoans = computed(() => [
 ])
 
 const classDistribution = computed(() => {
-  const distribution: { [key: string]: number } = {}
+  const distribution: Record<string, number> = {}
+  
   studentLoans.value.forEach(loan => {
     if (loan.status === 'active') {
       distribution[loan.studentClass] = (distribution[loan.studentClass] || 0) + 1
     }
   })
-  return Object.entries(distribution).map(([label, value]) => ({ label, value }))
+  
+  return Object.entries(distribution).map(([className, count]) => ({
+    name: className,
+    value: count
+  }))
 })
 
 const totalFines = computed(() => {
-  return studentLoans.value.reduce((total, loan) => total + loan.fineAmount, 0)
+  return studentLoans.value.reduce((total, loan) => total + (loan.fine || 0), 0)
 })
 
 const overdueLoans = computed(() => {
   return studentLoans.value.filter(loan => loan.status === 'overdue')
 })
 
-const filteredLoans = computed(() => {
-  let filtered = studentLoans.value
-
-  if (searchQuery.value) {
-    filtered = filtered.filter(loan => 
-      loan.bookTitle.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      loan.studentName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      loan.studentClass.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      loan.bookIsbn.includes(searchQuery.value)
-    )
-  }
-
-  if (filterStatus.value !== 'all') {
-    filtered = filtered.filter(loan => loan.status === filterStatus.value)
-  }
-
-  return filtered
-})
-
 const paginatedLoans = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
-  return filteredLoans.value.slice(start, start + itemsPerPage.value)
+  return studentLoans.value.slice(start, start + itemsPerPage.value)
 })
 
-const totalPages = computed(() => Math.ceil(filteredLoans.value.length / itemsPerPage.value))
+const totalPages = computed(() => Math.ceil(studentLoans.value.length / itemsPerPage.value))
 
 const students = computed(() => studentStore.students)
 
@@ -200,70 +210,70 @@ const handleLendBook = async (scannedStudentId?: string) => {
   const finalStudentId = scannedStudentId || selectedStudent.value
   
   if (!selectedBook.value || !finalStudentId || !dueDate.value) {
-    toast('Please fill in all required fields', 'error')
+    addToast({ message: 'Please fill in all required fields', type: 'error' })
     return
   }
 
   const student = students.value.find(s => s.id === finalStudentId)
   if (!student) {
-    toast('Invalid student selected', 'error')
+    addToast({ message: 'Invalid student selected', type: 'error' })
     return
   }
 
   try {
     const newLoan: StudentLoan = {
-      id: Date.now().toString(),
-      bookId: selectedBook.value.id,
-      bookTitle: selectedBook.value.title,
-      bookIsbn: selectedBook.value.isbn,
+      id: String(studentLoans.value.length + 1),
       studentId: student.id,
       studentName: student.name,
       studentClass: student.class,
-      studentEmail: student.email,
-      loanDate: new Date().toISOString().split('T')[0],
+      bookId: selectedBook.value.id,
+      bookTitle: selectedBook.value.title,
+      bookAuthor: selectedBook.value.author,
+      isbn: selectedBook.value.isbn,
+      lentDate: new Date().toISOString().split('T')[0],
       dueDate: dueDate.value,
-      returnDate: null,
+      returnDate: undefined,
       status: 'active',
       renewCount: 0,
-      maxRenewals: 2,
-      fineAmount: 0,
-      notes: `Book lent to ${student.name}`
+      maxRenewals: 2
     }
-
-    studentLoans.value.unshift(newLoan)
     
-    toast('Book successfully lent to student', 'success')
+    studentLoans.value.push(newLoan)
+    addToast({ message: 'Book lent successfully!', type: 'success' })
     showLendModal.value = false
     showScannerModal.value = false
     resetForm()
   } catch (error) {
-    toast('Failed to lend book to student', 'error')
+    console.error('Error lending book:', error)
+    addToast({ message: 'Failed to lend book', type: 'error' })
   }
 }
 
 const handleReturnBook = async () => {
   if (!selectedLoanForReturn.value) return
-
+  
   try {
     const loan = studentLoans.value.find(l => l.id === selectedLoanForReturn.value!.id)
-    if (loan) {
-      loan.status = 'returned'
-      loan.returnDate = new Date().toISOString().split('T')[0]
-      
-      // Calculate fine if overdue
-      const dueDate = new Date(loan.dueDate)
-      const returnDate = new Date()
-      if (returnDate > dueDate) {
-        const overdueDays = Math.ceil((returnDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-        loan.fineAmount = overdueDays * 1.50 // $1.50 per day
-      }
-      
-      toast('Book returned successfully', 'success')
-      showReturnModal.value = false
-      selectedLoanForReturn.value = null
+    if (!loan) return
+    
+    loan.status = 'returned'
+    loan.returnDate = new Date().toISOString().split('T')[0]
+    
+    // Calculate fine if overdue
+    const dueDate = new Date(loan.dueDate)
+    const returnDate = new Date(loan.returnDate)
+    const overdueDays = Math.max(0, Math.floor((returnDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)))
+    
+    if (overdueDays > 0) {
+      loan.fine = overdueDays * 1.50 // $1.50 per day
     }
+    
+    addToast({ message: 'Book returned successfully!', type: 'success' })
+    showReturnModal.value = false
+    selectedLoanForReturn.value = null
   } catch (error) {
-    toast('Failed to return book', 'error')
+    console.error('Error returning book:', error)
+    addToast({ message: 'Failed to return book', type: 'error' })
   }
 }
 
@@ -276,12 +286,12 @@ const handleRenewLoan = async (loanId: string) => {
       currentDueDate.setDate(currentDueDate.getDate() + 14) // Add 2 weeks
       loan.dueDate = currentDueDate.toISOString().split('T')[0]
       
-      toast('Loan renewed successfully', 'success')
+      addToast({ message: 'Loan renewed successfully', type: 'success' })
     } else {
-      toast('Maximum renewals reached', 'error')
+      addToast({ message: 'Maximum renewals reached', type: 'error' })
     }
   } catch (error) {
-    toast('Failed to renew loan', 'error')
+    addToast({ message: 'Failed to renew loan', type: 'error' })
   }
 }
 
@@ -291,11 +301,11 @@ const resetForm = () => {
   dueDate.value = ''
 }
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: LoanStatus) => {
   switch (status) {
-    case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    case 'overdue': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-    case 'returned': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+    case LoanStatus.ACTIVE: return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+    case LoanStatus.OVERDUE: return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    case LoanStatus.RETURNED: return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
   }
 }
@@ -311,7 +321,7 @@ const getDaysOverdue = (dueDate: string) => {
 
 // Computed metrics for infographics
 const totalActiveLendings = computed(() => 
-  lendings.value.filter(l => l.status === 'active').length
+  lendings.value.filter(l => l.status === LoanStatus.ACTIVE).length
 )
 
 const studentLendings = computed(() => 
@@ -331,7 +341,7 @@ const courseLendings = computed(() =>
 )
 
 const overdueReturns = computed(() => 
-  lendings.value.filter(l => l.status === 'overdue').length
+  lendings.value.filter(l => l.status === LoanStatus.OVERDUE).length
 )
 
 // Filtered lendings by active tab
@@ -356,83 +366,77 @@ const paginatedLendings = computed(() => {
   return filteredLendings.value.slice(start, start + itemsPerPage.value)
 })
 
-const totalPages = computed(() => 
-  Math.ceil(filteredLendings.value.length / itemsPerPage.value)
-)
-
 // Methods
-const formatDate = (dateString) => {
+const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString('de-DE')
 }
 
-const getDaysUntilDue = (dueDate) => {
+const getDaysUntilDue = (dueDate: string): number => {
   const today = new Date()
   const due = new Date(dueDate)
-  const diffTime = due - today
+  const diffTime = due.getTime() - today.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   return diffDays
 }
 
-const getStatusText = (status) => {
+const getStatusText = (status: LoanStatus): string => {
   switch (status) {
-    case 'active': return 'Active'
-    case 'overdue': return 'Overdue'
-    case 'returned': return 'Returned'
-    default: return status
+    case LoanStatus.ACTIVE: return 'Active'
+    case LoanStatus.OVERDUE: return 'Overdue'
+    case LoanStatus.RETURNED: return 'Returned'
+    default: return String(status)
   }
 }
 
-const openLendingModal = () => {
-  newLending.value.type = activeTab.value
+const openLendingModal = (): void => {
+  newLending.value.type = activeTab.value as 'student' | 'staff' | 'class' | 'course'
   showLendingModal.value = true
 }
 
-const openTakeBackModal = (lending) => {
+const openTakeBackModal = (lending: StudentLoan): void => {
   selectedLending.value = lending
   showTakeBackModal.value = true
 }
 
-const handleNewLending = async () => {
+const handleNewLending = async (): Promise<void> => {
   try {
     isLoading.value = true
-    
-    const lending = {
-      id: lendings.value.length + 1,
+    const lending: StudentLoan = {
+      id: String(lendings.value.length + 1),
       ...newLending.value,
       status: 'active'
     }
-    
     lendings.value.push(lending)
-    toast('Book lent successfully!', 'success')
+    addToast({ message: 'Book lent successfully!', type: 'success' })
     showLendingModal.value = false
     resetLendingForm()
   } catch (error) {
-    toast('Failed to lend book', 'error')
+    addToast({ message: 'Failed to lend book', type: 'error' })
   } finally {
     isLoading.value = false
   }
 }
 
-const handleTakeBack = async () => {
+const handleTakeBack = async (): Promise<void> => {
   try {
     isLoading.value = true
-    
-    const index = lendings.value.findIndex(l => l.id === selectedLending.value.id)
+    if (!selectedLending.value) return
+    const index = lendings.value.findIndex(l => l.id === selectedLending.value!.id)
     if (index !== -1) {
       lendings.value[index].status = 'returned'
-      toast('Book returned successfully!', 'success')
+      addToast({ message: 'Book returned successfully!', type: 'success' })
       showTakeBackModal.value = false
     }
   } catch (error) {
-    toast('Failed to process return', 'error')
+    addToast({ message: 'Failed to process return', type: 'error' })
   } finally {
     isLoading.value = false
   }
 }
 
-const resetLendingForm = () => {
+const resetLendingForm = (): void => {
   newLending.value = {
-    type: activeTab.value,
+    type: activeTab.value as 'student' | 'staff' | 'class' | 'course',
     borrowerId: '',
     borrowerName: '',
     bookId: '',
@@ -448,19 +452,44 @@ const checkMobile = () => {
   isMobile.value = window.innerWidth < 768
 }
 
-const getTabIcon = (tabName) => {
+const getTabIcon = (tabName: string) => {
   switch (tabName) {
     case 'student': return User
     case 'staff': return GraduationCap
     case 'class': return Users
     case 'course': return Building
-    default: return Book
+    default: return BookOpen
+  }
+}
+
+const addMockLending = () => {
+  const lending: LendingRecord = {
+    id: String(lendings.value.length + 1),
+    type: 'student',
+    borrowerName: 'Emma Thompson',
+    borrowerId: 'S001',
+    bookTitle: 'Advanced Mathematics',
+    bookId: 'B001',
+    isbn: '978-3-16-148410-0',
+    dateBorrowed: '2024-03-15',
+    dueDate: '2024-03-29',
+    status: 'active',
+    notes: 'For calculus exam preparation'
+  }
+  
+  lendings.value.push(lending)
+}
+
+const removeLending = (lendingId: string) => {
+  const index = lendings.value.findIndex(l => l.id === lendingId)
+  if (index > -1) {
+    lendings.value.splice(index, 1)
   }
 }
 
 onMounted(async () => {
-  books.value = await bookStore.getBooks()
-  studentLoans.value = mockStudentLoans
+  books.value = await bookStore.getBooks({ page: 1, limit: 100, search: '' })
+  studentLoans.value = []
   await studentStore.loadStudents()
   checkMobile()
   window.addEventListener('resize', checkMobile)
@@ -642,7 +671,7 @@ onMounted(async () => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-gray-300">
                     <div>{{ formatDate(lending.dueDate) }}</div>
-                    <div v-if="lending.status === 'active'" :class="[
+                    <div v-if="lending.status === LoanStatus.ACTIVE" :class="[
                       'text-xs',
                       getDaysUntilDue(lending.dueDate) < 0 ? 'text-red-600' : 
                       getDaysUntilDue(lending.dueDate) <= 3 ? 'text-yellow-600' : 'text-green-600'
@@ -663,7 +692,7 @@ onMounted(async () => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                     <button
-                      v-if="lending.status !== 'returned'"
+                      v-if="lending.status !== LoanStatus.RETURNED"
                       @click="openTakeBackModal(lending)"
                       class="inline-flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
                     >
@@ -711,7 +740,7 @@ onMounted(async () => {
               
               <div class="flex gap-2">
                 <button
-                  v-if="lending.status !== 'returned'"
+                  v-if="lending.status !== LoanStatus.RETURNED"
                   @click="openTakeBackModal(lending)"
                   class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors text-sm"
                 >

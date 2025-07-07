@@ -1288,49 +1288,48 @@ const gradeSystems = [
 ]
 
 // Sample data for grade values
-const gradeValues = {
+const gradeValues = ref<Record<number, Array<{
+  id: number
+  value: string
+  description: string
+  minValue: number
+  maxValue: number
+  isPassing: boolean
+}>>>({
   1: [
-    { id: 1, value: '1', description: 'Sehr gut', minValue: 1.0, maxValue: 1.5, isPassing: true },
-    { id: 2, value: '2', description: 'Gut', minValue: 1.6, maxValue: 2.5, isPassing: true },
-    { id: 3, value: '3', description: 'Befriedigend', minValue: 2.6, maxValue: 3.5, isPassing: true },
-    { id: 4, value: '4', description: 'Ausreichend', minValue: 3.6, maxValue: 4.0, isPassing: true },
-    { id: 5, value: '5', description: 'Mangelhaft', minValue: 4.1, maxValue: 5.0, isPassing: false },
-    { id: 6, value: '6', description: 'Ungenügend', minValue: 5.1, maxValue: 6.0, isPassing: false }
+    { id: 1, value: 'A+', description: 'Excellent', minValue: 95, maxValue: 100, isPassing: true },
+    { id: 2, value: 'A', description: 'Very Good', minValue: 90, maxValue: 94, isPassing: true },
+    { id: 3, value: 'B+', description: 'Good', minValue: 85, maxValue: 89, isPassing: true },
+    { id: 4, value: 'B', description: 'Satisfactory', minValue: 80, maxValue: 84, isPassing: true },
+    { id: 5, value: 'C+', description: 'Below Average', minValue: 75, maxValue: 79, isPassing: true },
+    { id: 6, value: 'C', description: 'Poor', minValue: 70, maxValue: 74, isPassing: true },
+    { id: 7, value: 'F', description: 'Fail', minValue: 0, maxValue: 69, isPassing: false }
   ],
   2: [
-    { id: 1, value: '15', description: 'Sehr gut +', minValue: 15.0, maxValue: 15.0, isPassing: true },
-    { id: 2, value: '14', description: 'Sehr gut', minValue: 14.0, maxValue: 14.0, isPassing: true },
-    { id: 3, value: '13', description: 'Sehr gut -', minValue: 13.0, maxValue: 13.0, isPassing: true },
-    { id: 4, value: '12', description: 'Gut +', minValue: 12.0, maxValue: 12.0, isPassing: true },
-    { id: 5, value: '11', description: 'Gut', minValue: 11.0, maxValue: 11.0, isPassing: true },
-    { id: 6, value: '10', description: 'Gut -', minValue: 10.0, maxValue: 10.0, isPassing: true },
-    { id: 7, value: '9', description: 'Befriedigend +', minValue: 9.0, maxValue: 9.0, isPassing: true },
-    { id: 8, value: '8', description: 'Befriedigend', minValue: 8.0, maxValue: 8.0, isPassing: true },
-    { id: 9, value: '7', description: 'Befriedigend -', minValue: 7.0, maxValue: 7.0, isPassing: true },
-    { id: 10, value: '6', description: 'Ausreichend +', minValue: 6.0, maxValue: 6.0, isPassing: true },
-    { id: 11, value: '5', description: 'Ausreichend', minValue: 5.0, maxValue: 5.0, isPassing: true },
-    { id: 12, value: '4', description: 'Ausreichend -', minValue: 4.0, maxValue: 4.0, isPassing: true },
-    { id: 13, value: '3', description: 'Mangelhaft +', minValue: 3.0, maxValue: 3.0, isPassing: false },
-    { id: 14, value: '2', description: 'Mangelhaft', minValue: 2.0, maxValue: 2.0, isPassing: false },
-    { id: 15, value: '1', description: 'Mangelhaft -', minValue: 1.0, maxValue: 1.0, isPassing: false },
-    { id: 16, value: '0', description: 'Ungenügend', minValue: 0.0, maxValue: 0.0, isPassing: false }
+    { id: 1, value: '1', description: 'Very Good', minValue: 90, maxValue: 100, isPassing: true },
+    { id: 2, value: '2', description: 'Good', minValue: 80, maxValue: 89, isPassing: true },
+    { id: 3, value: '3', description: 'Satisfactory', minValue: 70, maxValue: 79, isPassing: true },
+    { id: 4, value: '4', description: 'Sufficient', minValue: 60, maxValue: 69, isPassing: true },
+    { id: 5, value: '5', description: 'Insufficient', minValue: 50, maxValue: 59, isPassing: false },
+    { id: 6, value: '6', description: 'Fail', minValue: 0, maxValue: 49, isPassing: false }
   ],
   3: [
+    { id: 1, value: '15', description: 'Excellent', minValue: 95, maxValue: 100, isPassing: true },
+    { id: 2, value: '14', description: 'Very Good', minValue: 90, maxValue: 94, isPassing: true },
+    { id: 3, value: '13', description: 'Good', minValue: 85, maxValue: 89, isPassing: true },
+    { id: 4, value: '12', description: 'Satisfactory', minValue: 80, maxValue: 84, isPassing: true },
+    { id: 5, value: '11', description: 'Below Average', minValue: 75, maxValue: 79, isPassing: true },
+    { id: 6, value: '10', description: 'Poor', minValue: 70, maxValue: 74, isPassing: true },
+    { id: 7, value: '0', description: 'Fail', minValue: 0, maxValue: 69, isPassing: false }
+  ],
+  4: [
     { id: 1, value: 'A', description: 'Excellent', minValue: 90, maxValue: 100, isPassing: true },
     { id: 2, value: 'B', description: 'Good', minValue: 80, maxValue: 89, isPassing: true },
     { id: 3, value: 'C', description: 'Satisfactory', minValue: 70, maxValue: 79, isPassing: true },
-    { id: 4, value: 'D', description: 'Sufficient', minValue: 60, maxValue: 69, isPassing: true },
-    { id: 5, value: 'E', description: 'Poor', minValue: 50, maxValue: 59, isPassing: false },
-    { id: 6, value: 'F', description: 'Fail', minValue: 0, maxValue: 49, isPassing: false }
-  ],
-  4: [
-    { id: 1, value: 'Excellent', description: 'Outstanding performance', minValue: 90, maxValue: 100, isPassing: true },
-    { id: 2, value: 'Good', description: 'Above average performance', minValue: 75, maxValue: 89, isPassing: true },
-    { id: 3, value: 'Satisfactory', description: 'Average performance', minValue: 60, maxValue: 74, isPassing: true },
-    { id: 4, value: 'Needs Improvement', description: 'Below average performance', minValue: 40, maxValue: 59, isPassing: true },
-    { id: 5, value: 'Unsatisfactory', description: 'Poor performance', minValue: 0, maxValue: 39, isPassing: false }
+    { id: 4, value: 'D', description: 'Below Average', minValue: 60, maxValue: 69, isPassing: true },
+    { id: 5, value: 'F', description: 'Fail', minValue: 0, maxValue: 59, isPassing: false }
   ]
-}
+})
 
 // Sample data for subject types
 const subjectTypes = [
@@ -1494,7 +1493,7 @@ const getSelectedGradeSystemName = () => {
 }
 
 const getGradeValues = () => {
-  return gradeValues[parseInt(selectedGradeSystem.value) as keyof typeof gradeValues] || []
+  return gradeValues.value[parseInt(selectedGradeSystem.value)] || []
 }
 
 const getReportTypeName = () => {
@@ -1629,7 +1628,7 @@ const saveGradeSystem = () => {
     })
     
     // Initialize empty grade values array
-    gradeValues[newId] = []
+    gradeValues.value[newId] = []
   }
   
   // If this is set as default, update other systems
@@ -1670,7 +1669,7 @@ const editGradeValue = (value: any) => {
 }
 
 const saveGradeValue = () => {
-  const values = gradeValues[parseInt(selectedGradeSystem.value) as keyof typeof gradeValues]
+  const values = gradeValues.value[parseInt(selectedGradeSystem.value)]
   
   if (isEditMode.value) {
     // Update existing value
@@ -1691,7 +1690,7 @@ const saveGradeValue = () => {
 }
 
 const moveGradeUp = (grade: any) => {
-  const values = gradeValues[parseInt(selectedGradeSystem.value) as keyof typeof gradeValues]
+  const values = gradeValues.value[parseInt(selectedGradeSystem.value)]
   const index = values.findIndex(v => v.id === grade.id)
   
   if (index > 0) {
@@ -1703,7 +1702,7 @@ const moveGradeUp = (grade: any) => {
 }
 
 const moveGradeDown = (grade: any) => {
-  const values = gradeValues[parseInt(selectedGradeSystem.value) as keyof typeof gradeValues]
+  const values = gradeValues.value[parseInt(selectedGradeSystem.value)]
   const index = values.findIndex(v => v.id === grade.id)
   
   if (index < values.length - 1) {

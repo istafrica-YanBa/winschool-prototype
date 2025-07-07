@@ -49,9 +49,17 @@ import { computed, defineProps, defineEmits } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 import { Plus, Edit, Trash2, Mail } from 'lucide-vue-next'
 
+interface Note {
+  id: string
+  date: string
+  template: string
+  comment: string
+  createdBy: string
+}
+
 const props = defineProps({
   notes: {
-    type: Array,
+    type: Array as () => Note[],
     required: true,
     default: () => []
   }
@@ -63,7 +71,7 @@ const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
 const sortedNotes = computed(() => {
-  return [...props.notes].sort((a, b) => {
+  return [...props.notes].sort((a: Note, b: Note) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime()
   })
 })

@@ -510,6 +510,7 @@ interface CourseUnit {
 }
 
 interface Course {
+  id: string
   name: string
   code: string
   subjectId: string
@@ -520,10 +521,14 @@ interface Course {
   primaryTeacherId: string
   assistantTeacherId: string
   preferredRoomId: string
+  maxStudents: number
+  prerequisites: string[]
+  status: 'ACTIVE' | 'INACTIVE'
 }
 
 // State
 const courseForm = ref<Course>({
+  id: '',
   name: '',
   code: '',
   subjectId: '',
@@ -533,8 +538,16 @@ const courseForm = ref<Course>({
   units: [],
   primaryTeacherId: '',
   assistantTeacherId: '',
-  preferredRoomId: ''
+  preferredRoomId: '',
+  maxStudents: 0,
+  prerequisites: [],
+  status: 'ACTIVE'
 })
+
+const courses = ref<Course[]>([])
+const teachers = ref<any[]>([])
+const rooms = ref<any[]>([])
+const showCourseModal = ref<boolean>(false)
 
 // Mock Data
 const subjects = ref([
@@ -543,22 +556,6 @@ const subjects = ref([
   { id: '3', name: 'Chemistry' },
   { id: '4', name: 'Biology' },
   { id: '5', name: 'Computer Science' }
-])
-
-const teachers = ref([
-  { id: '1', name: 'Dr. Smith', subject: 'Mathematics' },
-  { id: '2', name: 'Prof. Johnson', subject: 'Physics' },
-  { id: '3', name: 'Dr. Williams', subject: 'Chemistry' },
-  { id: '4', name: 'Prof. Brown', subject: 'Biology' },
-  { id: '5', name: 'Dr. Davis', subject: 'Computer Science' }
-])
-
-const rooms = ref([
-  { id: '1', name: 'Room A101', capacity: 30 },
-  { id: '2', name: 'Lab B205', capacity: 25 },
-  { id: '3', name: 'Lecture Hall C301', capacity: 100 },
-  { id: '4', name: 'Room D102', capacity: 35 },
-  { id: '5', name: 'Computer Lab E201', capacity: 20 }
 ])
 
 // Computed
@@ -587,6 +584,11 @@ const completionPercentage = computed(() => {
   
   return Math.round((completed / total) * 100)
 })
+
+const totalCourses = computed(() => courses.value.length)
+const activeCourses = computed(() => courses.value.filter(course => course.status === 'ACTIVE').length)
+const totalTeachers = computed(() => teachers.value.length)
+const totalRooms = computed(() => rooms.value.length)
 
 // Methods
 const addUnit = () => {
@@ -634,6 +636,32 @@ const duplicateCourse = () => {
 const exportCourse = () => {
   console.log('Exporting course...')
   // Export logic here
+}
+
+const exportCourses = (): void => {
+  // Implementation for exporting courses
+  console.log('Exporting courses...')
+}
+
+const createNewCourse = (): void => {
+  // Reset form and show modal
+  courseForm.value = {
+    id: '',
+    name: '',
+    code: '',
+    subjectId: '',
+    credits: 0,
+    blockSize: '',
+    description: '',
+    units: [],
+    primaryTeacherId: '',
+    assistantTeacherId: '',
+    preferredRoomId: '',
+    maxStudents: 0,
+    prerequisites: [],
+    status: 'ACTIVE'
+  }
+  showCourseModal.value = true
 }
 
 // Lifecycle

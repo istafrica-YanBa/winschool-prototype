@@ -321,8 +321,8 @@
 import { ref, computed } from 'vue'
 import { useLanguageStore } from '../../stores/language'
 import {
-  Package, ChevronRight, Filter, Download, Plus, Eye, Edit, Truck, X,
-  Building, ShoppingCart, Clock, CheckCircle, AlertCircle, DollarSign
+  Package, Filter, Plus, Eye, Edit, Truck, X,
+  Building, ShoppingCart, Clock, CheckCircle, DollarSign
 } from 'lucide-vue-next'
 
 const languageStore = useLanguageStore()
@@ -330,6 +330,8 @@ const language = computed(() => languageStore.language)
 
 // Reactive data
 const showFilters = ref(false)
+const showVendors = ref(false)
+const showNewOrder = ref(false)
 const showNewOrderModal = ref(false)
 
 const filters = ref({
@@ -553,8 +555,8 @@ const createNewOrder = () => {
     vendorContact: selectedVendor?.contact || '',
     category: newOrder.value.category,
     description: newOrder.value.description,
-    itemCount: newOrder.value.itemCount,
-    totalAmount: newOrder.value.totalAmount,
+    itemCount: newOrder.value.itemCount || 0,
+    totalAmount: newOrder.value.totalAmount || 0,
     status: 'pending',
     orderDate: new Date().toISOString().split('T')[0],
     expectedDelivery: newOrder.value.expectedDelivery,
@@ -576,10 +578,5 @@ const createNewOrder = () => {
     expectedDelivery: '',
     notes: ''
   }
-}
-
-const exportOrders = () => {
-  console.log('Exporting orders...')
-  alert(language.value === 'de' ? 'Bestellungen werden exportiert...' : 'Exporting orders...')
 }
 </script> 

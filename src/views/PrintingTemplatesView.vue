@@ -372,9 +372,9 @@
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { 
-  Plus, Search, Edit, Copy, Trash2, X, Upload, Download, Printer, 
-  FileText, FileOutput, InfoIcon, SearchX, Variable, Type, Table, Image,
-  Play, LifeBuoy
+  Plus, Search, Edit, Copy, X, Upload, Download, Printer, 
+  FileText, FileOutput, SearchX, Variable, Table,
+  LifeBuoy
 } from 'lucide-vue-next'
 import TemplateWizard from '../components/printing/TemplateWizard.vue'
 import TemplateImportExport from '../components/printing/TemplateImportExport.vue'
@@ -400,138 +400,138 @@ const showWizardModal = ref(false)
 // Sample data
 const categories = ref([
   {
-    id: 1,
+    id: '1',
     name: language.value === 'de' ? 'Allgemeine Korrespondenz' : 'General Correspondence',
     description: language.value === 'de' ? 'Briefe und Mitteilungen' : 'Letters and communications',
-    templates: [1, 2, 3]
+    templates: ['1', '2', '3']
   },
   {
-    id: 2,
+    id: '2',
     name: language.value === 'de' ? 'Zeugnisse' : 'Certificates',
     description: language.value === 'de' ? 'Schulzeugnisse und Bescheinigungen' : 'School certificates and attestations',
-    templates: [4, 5]
+    templates: ['4', '5']
   },
   {
-    id: 3,
+    id: '3',
     name: language.value === 'de' ? 'Listen & Berichte' : 'Lists & Reports',
     description: language.value === 'de' ? 'Schülerlisten und statistische Berichte' : 'Student lists and statistical reports',
-    templates: [6, 7, 8]
+    templates: ['6', '7', '8']
   },
   {
-    id: 4,
+    id: '4',
     name: language.value === 'de' ? 'Elternbriefe' : 'Parent Letters',
     description: language.value === 'de' ? 'Kommunikation mit Eltern' : 'Communication with parents',
-    templates: [9, 10]
+    templates: ['9', '10']
   }
 ])
 
 const templates = ref([
   {
-    id: 1,
+    id: '1',
     name: language.value === 'de' ? 'Standardbrief' : 'Standard Letter',
     type: 'WW',
     recordType: 'students',
-    categoryId: 1,
+    categoryId: '1',
     lastModified: '2024-03-15'
   },
   {
-    id: 2,
+    id: '2',
     name: language.value === 'de' ? 'Mahnungsvorlage' : 'Warning Template',
     type: 'WW',
     recordType: 'students',
-    categoryId: 1,
+    categoryId: '1',
     lastModified: '2024-03-10'
   },
   {
-    id: 3,
+    id: '3',
     name: language.value === 'de' ? 'Einladung zum Elterngespräch' : 'Parent Conference Invitation',
     type: 'WW',
     recordType: 'students',
-    categoryId: 1,
+    categoryId: '1',
     lastModified: '2024-03-05'
   },
   {
-    id: 4,
+    id: '4',
     name: language.value === 'de' ? 'Halbjahreszeugnis' : 'Mid-Year Report Card',
     type: 'WW',
     recordType: 'students',
-    categoryId: 2,
+    categoryId: '2',
     lastModified: '2024-02-28'
   },
   {
-    id: 5,
+    id: '5',
     name: language.value === 'de' ? 'Abschlusszeugnis' : 'Final Certificate',
     type: 'WW',
     recordType: 'students',
-    categoryId: 2,
+    categoryId: '2',
     lastModified: '2024-02-25'
   },
   {
-    id: 6,
+    id: '6',
     name: language.value === 'de' ? 'Klassenliste' : 'Class List',
     type: 'WS',
     recordType: 'classes',
-    categoryId: 3,
+    categoryId: '3',
     lastModified: '2024-02-20'
   },
   {
-    id: 7,
+    id: '7',
     name: language.value === 'de' ? 'Notenliste' : 'Grade List',
     type: 'WS',
     recordType: 'grades',
-    categoryId: 3,
+    categoryId: '3',
     lastModified: '2024-02-15'
   },
   {
-    id: 8,
+    id: '8',
     name: language.value === 'de' ? 'Anwesenheitsstatistik' : 'Attendance Statistics',
     type: 'WS',
     recordType: 'attendance',
-    categoryId: 3,
+    categoryId: '3',
     lastModified: '2024-02-10'
   },
   {
-    id: 9,
+    id: '9',
     name: language.value === 'de' ? 'Elternabend-Einladung' : 'Parents Evening Invitation',
     type: 'WW',
     recordType: 'classes',
-    categoryId: 4,
+    categoryId: '4',
     lastModified: '2024-02-05'
   },
   {
-    id: 10,
+    id: '10',
     name: language.value === 'de' ? 'Schulausflug-Genehmigung' : 'School Trip Permission',
     type: 'WW',
     recordType: 'students',
-    categoryId: 4,
+    categoryId: '4',
     lastModified: '2024-02-01'
   }
 ])
 
 const recentActivity = ref([
   {
-    id: 1,
+    id: '1',
     user: 'Admin Master',
     action: language.value === 'de' ? 'hat erstellt' : 'created',
     template: language.value === 'de' ? 'Standardbrief' : 'Standard Letter',
     time: '2 hours ago'
   },
   {
-    id: 2,
+    id: '2',
     user: 'Sarah Fischer',
     action: language.value === 'de' ? 'hat bearbeitet' : 'edited',
     template: language.value === 'de' ? 'Halbjahreszeugnis' : 'Mid-Year Report Card',
     time: '5 hours ago'
   },
   {
-    id: 3,
+    id: '3',
     user: 'Dr. Thomas Weber',
     action: language.value === 'de' ? 'hat gedruckt' : 'printed',
     template: language.value === 'de' ? 'Klassenliste' : 'Class List',
     time: '1 day ago'
   },
   {
-    id: 4,
+    id: '4',
     user: 'Admin Master',
     action: language.value === 'de' ? 'hat importiert' : 'imported',
     template: '5 templates',
@@ -541,23 +541,23 @@ const recentActivity = ref([
 
 const searchMacros = ref([
   {
-    id: 1,
+    id: '1',
     name: language.value === 'de' ? 'Minderjährige ohne Erziehungsberechtigten' : 'Minors without Guardian',
     description: language.value === 'de' ? 'Schüler unter 18 Jahre ohne Erziehungsberechtigten' : 'Students under 18 years without a guardian'
   },
   {
-    id: 2,
+    id: '2',
     name: language.value === 'de' ? 'Abschlussklasse 2024' : 'Graduating Class 2024',
     description: language.value === 'de' ? 'Schüler, die 2024 ihren Abschluss machen' : 'Students graduating in 2024'
   }
 ])
 
 const recipients = ref([
-  { id: 1, name: 'Emma Müller', type: 'student' },
-  { id: 2, name: 'Liam Weber', type: 'student' },
-  { id: 3, name: 'Sophie Schmidt', type: 'student' },
-  { id: 4, name: 'Class 10A', type: 'class' },
-  { id: 5, name: 'Dr. Thomas Weber', type: 'teacher' }
+  { id: '1', name: 'Emma Müller', type: 'student' },
+  { id: '2', name: 'Liam Weber', type: 'student' },
+  { id: '3', name: 'Sophie Schmidt', type: 'student' },
+  { id: '4', name: 'Class 10A', type: 'class' },
+  { id: '5', name: 'Dr. Thomas Weber', type: 'teacher' }
 ])
 
 // Computed properties
@@ -651,23 +651,23 @@ const printTemplate = (template: any) => {
   alert(`${language.value === 'de' ? 'Vorlage drucken' : 'Print template'}: ${template.name}`)
 }
 
-const createTemplate = (templateData: any) => {
+const createTemplate = () => {
   alert(language.value === 'de' ? 'Neue Vorlage erstellt!' : 'New template created!')
   showTemplateModal.value = false
   showWizardModal.value = false
 }
 
-const importTemplates = (importData: any) => {
+const importTemplates = () => {
   alert(language.value === 'de' ? 'Vorlagen importiert!' : 'Templates imported!')
   showImportModal.value = false
 }
 
-const exportTemplates = (exportData: any) => {
+const exportTemplates = () => {
   alert(language.value === 'de' ? 'Vorlagen exportiert!' : 'Templates exported!')
   showExportModal.value = false
 }
 
-const createCorrespondence = (correspondenceData: any) => {
+const createCorrespondence = () => {
   alert(language.value === 'de' ? 'Korrespondenz erstellt und in Word geöffnet!' : 'Correspondence created and opened in Word!')
   showCorrespondenceModal.value = false
 }
@@ -676,7 +676,7 @@ const previewList = () => {
   alert(language.value === 'de' ? 'Listenvorschau wird angezeigt' : 'Showing list preview')
 }
 
-const saveList = (listData: any) => {
+const saveList = () => {
   alert(language.value === 'de' ? 'Liste gespeichert!' : 'List saved!')
   showListGeneratorModal.value = false
 }

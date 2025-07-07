@@ -400,7 +400,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { useAuthStore } from '../stores/auth'
 import { Calendar, CheckCircle, Clock, X, Star, BookOpen, Download, Users } from 'lucide-vue-next'

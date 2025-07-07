@@ -126,9 +126,21 @@
 import { ref, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 
+interface CareerEntryData {
+  id: string
+  title: string
+  type: string
+  date: string
+  fromGrade: string
+  toGrade: string
+  description: string
+  reason: string
+  isVoluntary: boolean
+}
+
 const props = defineProps({
   careerEntryData: {
-    type: Object,
+    type: Object as () => CareerEntryData,
     default: () => ({})
   },
   isEdit: {
@@ -142,7 +154,7 @@ const emit = defineEmits(['submit', 'cancel'])
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
 
-const formData = ref({
+const formData = ref<CareerEntryData>({
   id: '',
   title: '',
   type: '',

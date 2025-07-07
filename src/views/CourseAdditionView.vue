@@ -303,7 +303,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { subjects } from '../mock/subjects'
 import { teachers } from '../mock/teachers'
 

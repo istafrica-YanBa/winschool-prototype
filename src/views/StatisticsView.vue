@@ -394,15 +394,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
+import { useToast } from '@/composables/useToast'
 import { 
   BarChart3, Plus, Upload, List, Edit3, Play, Trash2, X, CheckCircle,
-  Download, Search
+  Download
 } from 'lucide-vue-next'
+
+// --- Domain Types (see autocoding/context/ and frontend patterns) ---
+interface QueryParameter {
+  name: string;
+  type: string;
+}
+
+interface QueryForm {
+  name: string;
+  category: string;
+  description: string;
+  sql: string;
+  parameters: QueryParameter[];
+}
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
+
+const { addToast } = useToast()
 
 // State
 const activeTab = ref('list')
@@ -417,7 +434,7 @@ const resultsPerPage = ref(50)
 const importPreview = ref<any[]>([])
 
 // Query form
-const queryForm = ref({
+const queryForm = ref<QueryForm>({
   name: '',
   category: '',
   description: '',
