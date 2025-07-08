@@ -435,15 +435,14 @@ const menuItems = computed(() => {
       createMenuItem('Attendance', 'Anwesenheit', '/dashboard/attendance', Calendar, 'academic'),
       createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'academic'),
       createMenuItem('Grades & Reports', 'Noten & Berichte', '/dashboard/academics', FileText, 'academic'),
-      
+      // Library
+      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
       // Communication
       createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
-      
       // Support
       createMenuItem('Settings', 'Einstellungen', '/dashboard/settings', Settings, 'support'),
       createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
       createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
-      
       // Advanced Modules (Future/Mock)
       createMenuItem('Internship Portal', 'Praktikumsportal', '/dashboard/internship-portal', Briefcase, 'advanced')
     ],
@@ -455,27 +454,22 @@ const menuItems = computed(() => {
       createMenuItem('Grade Entry', 'Notenerfassung', '/dashboard/grade-entry', FileText, 'academic'),
       createMenuItem('Attendance & Behavior', 'Anwesenheit & Verhalten', '/dashboard/attendance-behavior', Calendar, 'academic'),
       createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
-      
+      // Library
+      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
       // Planning
       createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'planning'),
-      
       // Administration
       createMenuItem('Career Profile', 'Lehrerlaufbahn', '/dashboard/teacher-career', Award, 'administration'),
-      
       // Reports
       createMenuItem('Print Templates', 'Druckvorlagen', '/dashboard/printing-templates', Printer, 'reports'),
-      
       // Communication
       createMenuItem('Parent Meetings', 'Elterngespräche', '/dashboard/teacher-meetings', Calendar, 'communication'),
       createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
-      
       // Support
       createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
       createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
-      
       // Mock Links
       createMenuItem('Resource Room Access', 'Ressourcen-Zugang', '/dashboard/resource-room', Key, 'advanced'),
-
       // Learning Areas Module
       createMenuItem('Learning Areas', 'Lernfelder', '/dashboard/learning-areas', Target, 'academic'),
       createMenuItem('Learning Field Assessments', 'Lernfeld-Bewertungen', '/dashboard/learning-field-assessments', FileText, 'academic'),
@@ -487,19 +481,17 @@ const menuItems = computed(() => {
       createMenuItem('My Children', 'Meine Kinder', '/dashboard/students', Users, 'academic'),
       createMenuItem('Attendance & Behavior', 'Anwesenheit & Verhalten', '/dashboard/attendance', Calendar, 'academic'),
       createMenuItem('Grades & Attendance', 'Noten & Anwesenheit', '/dashboard/parent-academics', BookOpen, 'academic'),
-      
+      // Library - Parent should have option to select student
+      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
       // Communication
       createMenuItem('Parent-Teacher Meetings', 'Elterngespräche', '/dashboard/parent-meetings', Calendar, 'communication'),
       createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
       createMenuItem('Notifications', 'Benachrichtigungen', '/dashboard/notifications', Bell, 'communication'),
-      
       // Applications
       createMenuItem('Applications (Admissions)', 'Anträge (Aufnahme)', '/dashboard/enrollment', UserPlus, 'applications'),
-      
       // Support
       createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
       createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
-      
       // Mock Links
       createMenuItem('Fee Statements', 'Gebührenabrechnungen', '/dashboard/fee-statements', DollarSign, 'finance')
     ],
@@ -509,17 +501,14 @@ const menuItems = computed(() => {
       // Library Management - Full access for librarians only
       createMenuItem('Books Inventory', 'Bücher-Inventar', '/dashboard/library/books', BookOpen, 'library-management'),
       createMenuItem('Book Lending', 'Buchausleihe', '/dashboard/library/book-lending', Calendar, 'library-management'),
-      createMenuItem('Library Module', 'Bibliotheksmodul', '/dashboard/library/library-module', BookOpen, 'library-management'),
-      createMenuItem('Book Fees', 'Buchgebühren', '/dashboard/library/book-fees', DollarSign, 'library-management'),
+      createMenuItem('Library Configuration', 'Bibliothekskonfiguration', '/dashboard/library/library-module', BookOpen, 'library-management'),
+      // HIDE: Book Fees and Course-Based Books for prototype (sidebar only)
+      // createMenuItem('Book Fees', 'Buchgebühren', '/dashboard/library/book-fees', DollarSign, 'library-management'),
       createMenuItem('Reservations', 'Reservierungen', '/dashboard/library/reservations', Clock, 'library-management'),
-      createMenuItem('Course-Based Books', 'Kursbezogene Bücher', '/dashboard/library/course-books', BookOpen, 'library-management'),
-      
-      // Academic
-      createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
-      
-      // Communication
-      createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
-      
+      // createMenuItem('Course-Based Books', 'Kursbezogene Bücher', '/dashboard/library/course-books', BookOpen, 'library-management'),
+      // HIDE: Academic and Communication menus for prototype (sidebar only)
+      // createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
+      // createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
       // Support
       createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
       createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support')
@@ -716,21 +705,11 @@ const menuItems = computed(() => {
     ],
 
     schoolstaff: [
-      // Academic
-      createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
-      createMenuItem('Bookings', 'Buchungen', '/dashboard/academic/bookings', Calendar, 'academic'),
-      
-      // Library - Simplified for school staff
-      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
-      
+      // Dashboard is always present
       // Administration
       createMenuItem('GDPR', 'DSGVO', '/dashboard/gdpr', Shield, 'administration'),
-      createMenuItem('Finance Tools', 'Finanz-Tools', '/dashboard/finances', DollarSign, 'administration'),
-      createMenuItem('Attendance Tracking', 'Anwesenheitsverfolgung', '/dashboard/attendance-behavior', Calendar, 'administration'),
-      
-      // Support
-      createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
-      createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support')
+      // Library - Simplified for school staff
+      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
     ]
   }
 

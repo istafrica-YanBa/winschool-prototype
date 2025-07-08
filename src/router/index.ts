@@ -669,7 +669,7 @@ const router = createRouter({
               name: 'library-history',
               component: () => import('../views/library/ReadingHistoryView.vue'),
               meta: {
-                roles: ['schooladmin', 'admin', 'schoolstaff', 'principal']
+                roles: ['schooladmin', 'admin', 'schoolstaff', 'principal', 'parent', 'student', 'teacher']
               }
             },
             {

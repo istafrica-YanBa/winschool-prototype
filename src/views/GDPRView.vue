@@ -33,7 +33,7 @@
           <input
             v-model="searchFilters.firstName"
             :placeholder="language === 'de' ? 'Vorname eingeben...' : 'Enter first name...'"
-            class="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-50 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            class="block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-50 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 px-3 py-2 sm:text-sm"
             @keyup.enter="performSearch"
           />
         </div>
@@ -45,7 +45,7 @@
           <input
             v-model="searchFilters.lastName"
             :placeholder="language === 'de' ? 'Nachname eingeben...' : 'Enter last name...'"
-            class="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-50 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            class="block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-50 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 px-3 py-2 sm:text-sm"
             @keyup.enter="performSearch"
           />
         </div>
@@ -57,7 +57,7 @@
           <input
             v-model="searchFilters.date"
             type="date"
-            class="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-50 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            class="block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-50 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 px-3 py-2 sm:text-sm"
             @change="performSearch"
           />
         </div>
@@ -304,7 +304,7 @@
               v-model="exportOptions.password"
               type="password"
               :placeholder="language === 'de' ? 'Sicheres Passwort eingeben...' : 'Enter secure password...'"
-              class="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-50 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              class="block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-50 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 px-3 py-2 sm:text-sm"
               required
             />
           </div>

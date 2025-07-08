@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { BookOpen, Calendar, Clock, Search, AlertCircle, CheckCircle, History, Plus } from 'lucide-vue-next'
 import { LoanStatus } from '@/types/library'
 import type { Book } from '@/types/library'
+import { useAuthStore } from '@/stores/auth'
+import { useStudentStore } from '@/stores/student'
 
 // --- Domain Types (see autocoding/context/ and frontend patterns) ---
 
@@ -16,6 +18,7 @@ const activeTab = ref('history')
 const readingHistory = ref([
   {
     id: 1,
+    studentId: '1',
     title: 'Advanced Mathematics',
     author: 'Dr. Schmidt',
     borrowDate: '2024-01-15',
@@ -24,6 +27,7 @@ const readingHistory = ref([
   },
   {
     id: 2,
+    studentId: '2',
     title: 'Physics Fundamentals',
     author: 'Prof. Weber',
     borrowDate: '2024-02-20',
@@ -196,6 +200,27 @@ const getAvailabilityStatus = (book: any) => {
   }
 }
 
+const authStore = useAuthStore()
+const studentStore = useStudentStore()
+const user = computed(() => authStore.user)
+const isParent = computed(() => user.value?.role === 'parent')
+
+// MOCK: For prototype, hardcode 3 children for the parent
+const parentStudents = ref([
+  { id: '1', name: 'John Doe', class: '10A' },
+  { id: '2', name: 'Jane Smith', class: '10B' },
+  { id: '3', name: 'Mike Johnson', class: '11A' }
+])
+const selectedStudentId = ref(parentStudents.value[0].id)
+
+// Filter readingHistory by selected student for parents
+const filteredReadingHistory = computed(() => {
+  if (isParent.value && selectedStudentId.value) {
+    return readingHistory.value.filter(h => h.studentId === selectedStudentId.value)
+  }
+  return readingHistory.value
+})
+
 onMounted(() => {
   isLoading.value = false
 })
@@ -229,6 +254,22 @@ onMounted(() => {
             Make Reservation
           </button>
         </div>
+      </div>
+
+      <!-- Student Selector for Parents -->
+      <div v-if="isParent && parentStudents.length" class="mb-4">
+        <label for="student-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Select Student
+        </label>
+        <select
+          id="student-select"
+          v-model="selectedStudentId"
+          class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white"
+        >
+          <option v-for="student in parentStudents" :key="student.id" :value="student.id">
+            {{ student.name }} ({{ student.class }})
+          </option>
+        </select>
       </div>
 
       <!-- Tab Navigation -->
@@ -317,7 +358,7 @@ onMounted(() => {
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  <tr v-for="book in readingHistory" :key="book.id" class="hover:bg-gray-50 dark:hover:bg-gray-750">
+                  <tr v-for="book in filteredReadingHistory" :key="book.id" class="hover:bg-gray-50 dark:hover:bg-gray-750">
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div class="text-sm font-medium text-gray-900 dark:text-white">{{ book.title }}</div>
