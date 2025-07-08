@@ -366,7 +366,6 @@ import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 import { useBreadcrumbs } from '../composables/useBreadcrumbs'
 import { GraduationCap, Menu, Bell, Globe, Sun, Moon, ChevronDown, User, LogOut, Settings, HelpCircle, Home, Users, BookOpen, DollarSign, Calendar, MessageSquare, FileText, BarChart3, Shield, Building, UserPlus, Target, Award, Layers, Brain, Zap, Link, Database, Upload, Clock, Search, Printer, Plus, UserCheck, Briefcase, Key, TrendingUp, Package, LifeBuoy, Download, DoorOpen } from 'lucide-vue-next'
-// Remove import { RuneBreadcrumbs } from '@ist/commonui-components'
 
 const router = useRouter()
 const route = useRoute()

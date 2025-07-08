@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
-    "@ist/commonui-components": "^3.0.1",
     "@mdi/font": "^7.4.47",
     "@vueuse/core": "^10.5.0",
     "axios": "^1.10.0",
