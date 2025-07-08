@@ -232,7 +232,7 @@ onMounted(() => {
       <!-- Header -->
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div class="flex items-start">
-          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-indigo-700 to-blue-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-winschool-primary rounded-xl flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
             <BookOpen class="h-5 w-5 sm:h-7 sm:w-7 text-white" />
           </div>
           <div class="min-w-0 flex-1">
@@ -248,7 +248,7 @@ onMounted(() => {
         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
           <button 
             @click="activeTab = 'reservations'" 
-            class="w-full sm:w-auto bg-gradient-to-r from-indigo-700 to-blue-600 hover:from-indigo-800 hover:to-blue-700 text-white font-medium px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-sm sm:text-base"
+            class="w-full sm:w-auto bg-winschool-primary hover:bg-winschool-primary-dark text-white font-medium px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-sm sm:text-base shadow focus:outline-none focus:ring-2 focus:ring-winschool-primary-dark"
           >
             <Plus class="h-4 w-4 mr-2" />
             Make Reservation
@@ -258,18 +258,28 @@ onMounted(() => {
 
       <!-- Student Selector for Parents -->
       <div v-if="isParent && parentStudents.length" class="mb-4">
-        <label for="student-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Select Student
         </label>
-        <select
-          id="student-select"
-          v-model="selectedStudentId"
-          class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white"
-        >
-          <option v-for="student in parentStudents" :key="student.id" :value="student.id">
-            {{ student.name }} ({{ student.class }})
-          </option>
-        </select>
+        <div class="flex flex-wrap gap-4">
+          <label
+            v-for="student in parentStudents"
+            :key="student.id"
+            class="flex items-center cursor-pointer rounded-lg border-2 p-3 transition-all shadow-sm min-w-[180px]"
+            :class="selectedStudentId === student.id ? 'border-winschool-primary-dark bg-yellow-50 dark:bg-yellow-900/30' : 'border-gray-300 bg-white dark:bg-gray-700'"
+          >
+            <input
+              type="radio"
+              class="form-radio accent-winschool-primary-dark mr-3 h-5 w-5"
+              :value="student.id"
+              v-model="selectedStudentId"
+            />
+            <div>
+              <div class="font-semibold text-gray-800 dark:text-white">{{ student.name }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-300">Class: {{ student.class }}</div>
+            </div>
+          </label>
+        </div>
       </div>
 
       <!-- Tab Navigation -->
@@ -281,7 +291,7 @@ onMounted(() => {
               :class="[
                 'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
                 activeTab === 'history'
-                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                  ? 'border-winschool-primary-dark text-winschool-primary-dark bg-yellow-50 dark:bg-yellow-900/30'
                   : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
               ]"
             >
@@ -293,7 +303,7 @@ onMounted(() => {
               :class="[
                 'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
                 activeTab === 'reservations'
-                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                  ? 'border-winschool-primary-dark text-winschool-primary-dark bg-yellow-50 dark:bg-yellow-900/30'
                   : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
               ]"
             >
@@ -307,14 +317,14 @@ onMounted(() => {
         <div v-if="activeTab === 'history'" class="p-6">
           <!-- Statistics Cards -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <div class="bg-winschool-primary/10 dark:bg-yellow-900/20 rounded-lg p-4">
               <div class="flex items-center">
-                <div class="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
-                  <BookOpen class="w-6 h-6 text-blue-600" />
+                <div class="p-2 bg-winschool-primary dark:bg-yellow-700 rounded-lg">
+                  <BookOpen class="w-6 h-6 text-winschool-primary-dark" />
                 </div>
                 <div class="ml-4">
-                  <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Books Read</p>
-                  <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ totalBooksRead }}</p>
+                  <p class="text-sm font-medium text-winschool-primary-dark dark:text-yellow-400">Books Read</p>
+                  <p class="text-2xl font-bold text-winschool-primary-dark dark:text-yellow-100">{{ totalBooksRead }}</p>
                 </div>
               </div>
             </div>

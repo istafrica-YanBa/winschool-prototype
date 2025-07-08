@@ -111,6 +111,7 @@
         </p>
         <div class="space-y-2 text-xs text-white">
           <div class="grid grid-cols-2 gap-2">
+            <!--
             <button
               @click="setDemoCredentials('superadmin')"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
@@ -123,6 +124,7 @@
             >
               {{ language === 'de' ? 'Schul-Admin' : 'School Admin' }}
             </button>
+            -->
             <button
               @click="setDemoCredentials('student')"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
@@ -153,6 +155,7 @@
             >
               {{ language === 'de' ? 'Bibliothekar' : 'Librarian' }}
             </button>
+            <!--
             <button
               @click="setDemoCredentials('principal')"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
@@ -165,6 +168,7 @@
             >
               {{ language === 'de' ? 'Inspektor' : 'Inspector' }}
             </button>
+            -->
           </div>
           <p class="text-center mt-2 text-slate-200" style="font-family: 'Inter', system-ui, sans-serif;">
             {{ language === 'de' ? 'Passwort: demo123 (für alle Rollen)' : 'Password: demo123 (for all roles)' }}

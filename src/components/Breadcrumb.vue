@@ -11,7 +11,7 @@
     </router-link>
     
     <template v-for="(segment, index) in segments" :key="index">
-      <span class="text-slate-400 dark:text-slate-500">/</span>
+      <span class="text-slate-400 dark:text-slate-500">&gt;</span>
       <router-link
         v-if="segment.to && index < segments.length - 1"
         :to="segment.to"

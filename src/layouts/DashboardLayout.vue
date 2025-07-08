@@ -430,70 +430,56 @@ const menuItems = computed(() => {
 
   const roleMenus = {
     student: [
-      // Academic
-      createMenuItem('Academic Profile', 'Akademisches Profil', '/dashboard/student-academic-profile', User, 'academic'),
-      createMenuItem('Attendance', 'Anwesenheit', '/dashboard/attendance', Calendar, 'academic'),
-      createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'academic'),
-      createMenuItem('Grades & Reports', 'Noten & Berichte', '/dashboard/academics', FileText, 'academic'),
+      // Dashboard is always present
+      // createMenuItem('Academic Profile', 'Akademisches Profil', '/dashboard/student-academic-profile', User, 'academic'),
+      // createMenuItem('Attendance', 'Anwesenheit', '/dashboard/attendance', Calendar, 'academic'),
+      // createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'academic'),
+      // createMenuItem('Grades & Reports', 'Noten & Berichte', '/dashboard/academics', FileText, 'academic'),
       // Library
       createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
-      // Communication
-      createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
-      // Support
-      createMenuItem('Settings', 'Einstellungen', '/dashboard/settings', Settings, 'support'),
-      createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
-      createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
-      // Advanced Modules (Future/Mock)
-      createMenuItem('Internship Portal', 'Praktikumsportal', '/dashboard/internship-portal', Briefcase, 'advanced')
+      // createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
+      // createMenuItem('Settings', 'Einstellungen', '/dashboard/settings', Settings, 'support'),
+      // createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
+      // createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
+      // createMenuItem('Internship Portal', 'Praktikumsportal', '/dashboard/internship-portal', Briefcase, 'advanced')
     ],
 
     teacher: [
-      // Academic
-      createMenuItem('My Classes', 'Meine Klassen', '/dashboard/my-classes', Users, 'academic'),
-      createMenuItem('Subject Assignment', 'Fachzuordnung', '/dashboard/subject-assignment', Layers, 'academic'),
-      createMenuItem('Grade Entry', 'Notenerfassung', '/dashboard/grade-entry', FileText, 'academic'),
-      createMenuItem('Attendance & Behavior', 'Anwesenheit & Verhalten', '/dashboard/attendance-behavior', Calendar, 'academic'),
-      createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
+      // Dashboard is always present
+      // createMenuItem('My Classes', 'Meine Klassen', '/dashboard/my-classes', Users, 'academic'),
+      // createMenuItem('Subject Assignment', 'Fachzuordnung', '/dashboard/subject-assignment', Layers, 'academic'),
+      // createMenuItem('Grade Entry', 'Notenerfassung', '/dashboard/grade-entry', FileText, 'academic'),
+      // createMenuItem('Attendance & Behavior', 'Anwesenheit & Verhalten', '/dashboard/attendance-behavior', Calendar, 'academic'),
+      // createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
       // Library
       createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
-      // Planning
-      createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'planning'),
-      // Administration
-      createMenuItem('Career Profile', 'Lehrerlaufbahn', '/dashboard/teacher-career', Award, 'administration'),
-      // Reports
-      createMenuItem('Print Templates', 'Druckvorlagen', '/dashboard/printing-templates', Printer, 'reports'),
-      // Communication
-      createMenuItem('Parent Meetings', 'Elterngespräche', '/dashboard/teacher-meetings', Calendar, 'communication'),
-      createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
-      // Support
-      createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
-      createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
-      // Mock Links
-      createMenuItem('Resource Room Access', 'Ressourcen-Zugang', '/dashboard/resource-room', Key, 'advanced'),
-      // Learning Areas Module
-      createMenuItem('Learning Areas', 'Lernfelder', '/dashboard/learning-areas', Target, 'academic'),
-      createMenuItem('Learning Field Assessments', 'Lernfeld-Bewertungen', '/dashboard/learning-field-assessments', FileText, 'academic'),
-      createMenuItem('Timetable Learning Areas', 'Stundenplan Lernfelder', '/dashboard/timetable-learning-areas', Calendar, 'academic')
+      // createMenuItem('My Timetable', 'Mein Stundenplan', '/dashboard/timetable', Calendar, 'planning'),
+      // createMenuItem('Career Profile', 'Lehrerlaufbahn', '/dashboard/teacher-career', Award, 'administration'),
+      // createMenuItem('Print Templates', 'Druckvorlagen', '/dashboard/printing-templates', Printer, 'reports'),
+      // createMenuItem('Parent Meetings', 'Elterngespräche', '/dashboard/teacher-meetings', Calendar, 'communication'),
+      // createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
+      // createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
+      // createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
+      // createMenuItem('Resource Room Access', 'Ressourcen-Zugang', '/dashboard/resource-room', Key, 'advanced'),
+      // createMenuItem('Learning Areas', 'Lernfelder', '/dashboard/learning-areas', Target, 'academic'),
+      // createMenuItem('Learning Field Assessments', 'Lernfeld-Bewertungen', '/dashboard/learning-field-assessments', FileText, 'academic'),
+      // createMenuItem('Timetable Learning Areas', 'Stundenplan Lernfelder', '/dashboard/timetable-learning-areas', Calendar, 'academic')
     ],
 
     parent: [
-      // Academic
-      createMenuItem('My Children', 'Meine Kinder', '/dashboard/students', Users, 'academic'),
-      createMenuItem('Attendance & Behavior', 'Anwesenheit & Verhalten', '/dashboard/attendance', Calendar, 'academic'),
-      createMenuItem('Grades & Attendance', 'Noten & Anwesenheit', '/dashboard/parent-academics', BookOpen, 'academic'),
+      // Dashboard is always present
+      // createMenuItem('My Children', 'Meine Kinder', '/dashboard/students', Users, 'academic'),
+      // createMenuItem('Attendance & Behavior', 'Anwesenheit & Verhalten', '/dashboard/attendance', Calendar, 'academic'),
+      // createMenuItem('Grades & Attendance', 'Noten & Anwesenheit', '/dashboard/parent-academics', BookOpen, 'academic'),
       // Library - Parent should have option to select student
       createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
-      // Communication
-      createMenuItem('Parent-Teacher Meetings', 'Elterngespräche', '/dashboard/parent-meetings', Calendar, 'communication'),
-      createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
-      createMenuItem('Notifications', 'Benachrichtigungen', '/dashboard/notifications', Bell, 'communication'),
-      // Applications
-      createMenuItem('Applications (Admissions)', 'Anträge (Aufnahme)', '/dashboard/enrollment', UserPlus, 'applications'),
-      // Support
-      createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
-      createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
-      // Mock Links
-      createMenuItem('Fee Statements', 'Gebührenabrechnungen', '/dashboard/fee-statements', DollarSign, 'finance')
+      // createMenuItem('Parent-Teacher Meetings', 'Elterngespräche', '/dashboard/parent-meetings', Calendar, 'communication'),
+      // createMenuItem('Messages', 'Nachrichten', '/dashboard/messages', MessageSquare, 'communication'),
+      // createMenuItem('Notifications', 'Benachrichtigungen', '/dashboard/notifications', Bell, 'communication'),
+      // createMenuItem('Applications (Admissions)', 'Anträge (Aufnahme)', '/dashboard/enrollment', UserPlus, 'applications'),
+      // createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
+      // createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
+      // createMenuItem('Fee Statements', 'Gebührenabrechnungen', '/dashboard/fee-statements', DollarSign, 'finance')
     ],
 
     // New dedicated librarian role configuration
