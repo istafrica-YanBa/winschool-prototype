@@ -142,10 +142,10 @@ const libraryMetrics = ref([
 ])
 
 const quickActions = ref([
-  { label: 'Books Management', to: '/library/books', icon: Book },
-  { label: 'Student Lending', to: '/library/student-lending', icon: BookOpen },
-  { label: 'Class Lending', to: '/library/class-lending', icon: Users },
-  { label: 'Reservations', to: '/library/reservations', icon: BookMarked }
+  { label: 'Books Management', to: '/dashboard/library/books', icon: Book },
+  { label: 'Student Lending', to: '/dashboard/library/book-lending', icon: BookOpen },
+  { label: 'Class Lending', to: '/dashboard/library/book-lending', icon: Users },
+  { label: 'Reservations', to: '/dashboard/library/reservations', icon: BookMarked }
 ])
 
 const recentActivity = ref([

@@ -155,13 +155,13 @@
             >
               {{ language === 'de' ? 'Bibliothekar' : 'Librarian' }}
             </button>
-            <!--
             <button
               @click="setDemoCredentials('principal')"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
             >
               {{ language === 'de' ? 'Direktor' : 'Principal' }}
             </button>
+            <!--
             <button
               @click="setDemoCredentials('inspector')"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"

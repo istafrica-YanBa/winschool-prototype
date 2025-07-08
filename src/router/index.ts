@@ -535,7 +535,7 @@ const router = createRouter({
           path: 'gdpr',
           name: 'GDPR',
           component: () => import('../views/GDPRView.vue'),
-          meta: { roles: ['schoolstaff', 'schooladmin', 'admin', 'superadmin'] }
+          meta: { roles: ['schoolstaff', 'schooladmin', 'admin', 'superadmin', 'principal'] }
         },
         // Printing Templates
         {

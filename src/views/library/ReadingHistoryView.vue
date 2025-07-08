@@ -221,6 +221,19 @@ const filteredReadingHistory = computed(() => {
   return readingHistory.value
 })
 
+const getLibraryTitle = computed(() => {
+  if (user.value?.role === 'parent') return 'Student Library'
+  if (user.value?.role === 'student') return 'My Library'
+  if (user.value?.role === 'teacher') return 'Class Library'
+  return 'Library'
+})
+const getLibrarySubtitle = computed(() => {
+  if (user.value?.role === 'parent') return 'View and manage your child’s reading history and book reservations'
+  if (user.value?.role === 'student') return 'Manage your reading history and book reservations'
+  if (user.value?.role === 'teacher') return 'View and manage class book lending and reservations'
+  return 'Manage reading history and book reservations'
+})
+
 onMounted(() => {
   isLoading.value = false
 })
@@ -233,14 +246,14 @@ onMounted(() => {
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div class="flex items-start">
           <div class="w-10 h-10 sm:w-12 sm:h-12 bg-winschool-primary rounded-xl flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
-            <BookOpen class="h-5 w-5 sm:h-7 sm:w-7 text-white" />
+            <BookOpen class="h-5 w-5 sm:h-7 sm:w-7 text-black" />
           </div>
           <div class="min-w-0 flex-1">
             <h1 class="text-2xl sm:text-3xl font-bold text-slate-500 dark:text-slate-400 leading-tight">
-              My Library
+              {{ getLibraryTitle }}
             </h1>
             <p class="mt-1 sm:mt-2 text-sm sm:text-base text-slate-800 dark:text-slate-50">
-              Manage your reading history and book reservations
+              {{ getLibrarySubtitle }}
             </p>
           </div>
         </div>

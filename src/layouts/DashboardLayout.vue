@@ -566,41 +566,28 @@ const menuItems = computed(() => {
     ],
 
     principal: [
-      // Academic
-      createMenuItem('Teachers & Classes Overview', 'Lehrer & Klassen Übersicht', '/dashboard/teachers', BookOpen, 'academic'),
-      createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
-      createMenuItem('Bookings', 'Buchungen', '/dashboard/academic/bookings', Calendar, 'academic'),
-      createMenuItem('Course Administration', 'Kursverwaltung', '/dashboard/academic/course-administration', Target, 'academic'),
-      
-      // Learning Areas Module
-      createMenuItem('Learning Areas', 'Lernfelder', '/dashboard/learning-areas', Target, 'academic'),
-      createMenuItem('Learning Field Assessments', 'Lernfeld-Bewertungen', '/dashboard/learning-field-assessments', FileText, 'academic'),
-      createMenuItem('Timetable Learning Areas', 'Stundenplan Lernfelder', '/dashboard/timetable-learning-areas', Calendar, 'academic'),
-      createMenuItem('Subject Allocation', 'Fachzuteilung', '/dashboard/subject-allocation-learning-areas', BookOpen, 'academic'),
-      
-      // Library - Simplified for principals
-      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
-      
-      // Administration
-      createMenuItem('Reports (Academic & Financial)', 'Berichte (Akademisch & Finanziell)', '/dashboard/reports', BarChart3, 'administration'),
-      createMenuItem('Budget Management', 'Budget-Management', '/dashboard/budget-management', DollarSign, 'administration'),
-      
-      // Budget & Orders - Budget Subcategory (Principal Access)
-      createMenuItem('Budget Resources', 'Budget-Ressourcen', '/dashboard/budget-management/resources', TrendingUp, 'budget-orders'),
-      createMenuItem('Inventory Management', 'Bestandsverwaltung', '/dashboard/budget-management/inventory', Package, 'inventory-media'),
-      createMenuItem('Orders Management', 'Bestellverwaltung', '/dashboard/budget-management/orders', Package, 'budget-orders'),
-      
-      // Communication
-      createMenuItem('Communication Center', 'Kommunikationszentrum', '/dashboard/messages', MessageSquare, 'communication'),
-      
-      // Support
-      createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
-      createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
-      
-      // Mock Links
-      createMenuItem('Inspectors\' Logs', 'Inspektoren-Protokolle', '/dashboard/inspector-logs', Shield, 'administration'),
-      createMenuItem('Principal Notes', 'Schulleiternotizen', '/dashboard/principal-notes', FileText, 'administration'),
-      createMenuItem('Performance Trends', 'Leistungstrends', '/dashboard/performance-trends', TrendingUp, 'administration')
+      // Dashboard is always present
+      // createMenuItem('Teachers & Classes Overview', 'Lehrer & Klassen Übersicht', '/dashboard/teachers', BookOpen, 'academic'),
+      // createMenuItem('Student Search', 'Schülersuche', '/dashboard/student-search', Search, 'academic'),
+      // createMenuItem('Bookings', 'Buchungen', '/dashboard/academic/bookings', Calendar, 'academic'),
+      // createMenuItem('Course Administration', 'Kursverwaltung', '/dashboard/academic/course-administration', Target, 'academic'),
+      // createMenuItem('Learning Areas', 'Lernfelder', '/dashboard/learning-areas', Target, 'academic'),
+      // createMenuItem('Learning Field Assessments', 'Lernfeld-Bewertungen', '/dashboard/learning-field-assessments', FileText, 'academic'),
+      // createMenuItem('Timetable Learning Areas', 'Stundenplan Lernfelder', '/dashboard/timetable-learning-areas', Calendar, 'academic'),
+      // createMenuItem('Subject Allocation', 'Fachzuteilung', '/dashboard/subject-allocation-learning-areas', BookOpen, 'academic'),
+      // createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
+      // createMenuItem('Reports (Academic & Financial)', 'Berichte (Akademisch & Finanziell)', '/dashboard/reports', BarChart3, 'administration'),
+      createMenuItem('GDPR', 'DSGVO', '/dashboard/gdpr', Shield, 'administration'),
+      // createMenuItem('Budget Management', 'Budget-Management', '/dashboard/budget-management', DollarSign, 'administration'),
+      // createMenuItem('Budget Resources', 'Budget-Ressourcen', '/dashboard/budget-management/resources', TrendingUp, 'budget-orders'),
+      // createMenuItem('Inventory Management', 'Bestandsverwaltung', '/dashboard/budget-management/inventory', Package, 'inventory-media'),
+      // createMenuItem('Orders Management', 'Bestellverwaltung', '/dashboard/budget-management/orders', Package, 'budget-orders'),
+      // createMenuItem('Communication Center', 'Kommunikationszentrum', '/dashboard/messages', MessageSquare, 'communication'),
+      // createMenuItem('Support', 'Support', '/dashboard/support', LifeBuoy, 'support'),
+      // createMenuItem('Help', 'Hilfe', '/dashboard/help', HelpCircle, 'support'),
+      // createMenuItem('Inspectors\' Logs', 'Inspektoren-Protokolle', '/dashboard/inspector-logs', Shield, 'administration'),
+      // createMenuItem('Principal Notes', 'Schulleiternotizen', '/dashboard/principal-notes', FileText, 'administration'),
+      // createMenuItem('Performance Trends', 'Leistungstrends', '/dashboard/performance-trends', TrendingUp, 'administration')
     ],
 
     inspector: [
@@ -694,8 +681,8 @@ const menuItems = computed(() => {
       // Dashboard is always present
       // Administration
       createMenuItem('GDPR', 'DSGVO', '/dashboard/gdpr', Shield, 'administration'),
-      // Library - Simplified for school staff
-      createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
+      // Library - Removed for prototype
+      // createMenuItem('My Library', 'Meine Bibliothek', '/dashboard/library/history', BookOpen, 'library-simple'),
     ]
   }
 
