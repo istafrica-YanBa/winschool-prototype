@@ -4,20 +4,20 @@
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-          {{ language.value === 'de' ? 'Erweiterte Analytik' : 'Advanced Analytics' }}
+          {{ language === 'de' ? 'Erweiterte Analytik' : 'Advanced Analytics' }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
-          {{ language.value === 'de' ? 'Umfassende Nutzungs- und Effizienzanalysen' : 'Comprehensive utilization and efficiency analytics' }}
+          {{ language === 'de' ? 'Umfassende Nutzungs- und Effizienzanalysen' : 'Comprehensive utilization and efficiency analytics' }}
         </p>
       </div>
       <div class="flex space-x-2">
         <button @click="refreshData" class="btn-secondary flex items-center">
           <RefreshCw class="h-4 w-4 mr-2" />
-          {{ language.value === 'de' ? 'Daten aktualisieren' : 'Refresh Data' }}
+          {{ language === 'de' ? 'Daten aktualisieren' : 'Refresh Data' }}
         </button>
         <button @click="exportReport" class="btn-primary flex items-center">
           <Download class="h-4 w-4 mr-2" />
-          {{ language.value === 'de' ? 'Bericht exportieren' : 'Export Report' }}
+          {{ language === 'de' ? 'Bericht exportieren' : 'Export Report' }}
         </button>
       </div>
     </div>
@@ -45,14 +45,14 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-          {{ language.value === 'de' ? 'Nutzungsanalyse' : 'Utilization Analytics' }}
+          {{ language === 'de' ? 'Nutzungsanalyse' : 'Utilization Analytics' }}
         </h2>
         <div class="flex space-x-2">
           <select v-model="selectedPeriod" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-            <option value="day">{{ language.value === 'de' ? 'Heute' : 'Today' }}</option>
-            <option value="week">{{ language.value === 'de' ? 'Diese Woche' : 'This Week' }}</option>
-            <option value="month">{{ language.value === 'de' ? 'Dieser Monat' : 'This Month' }}</option>
-            <option value="quarter">{{ language.value === 'de' ? 'Dieses Quartal' : 'This Quarter' }}</option>
+            <option value="day">{{ language === 'de' ? 'Heute' : 'Today' }}</option>
+            <option value="week">{{ language === 'de' ? 'Diese Woche' : 'This Week' }}</option>
+            <option value="month">{{ language === 'de' ? 'Dieser Monat' : 'This Month' }}</option>
+            <option value="quarter">{{ language === 'de' ? 'Dieses Quartal' : 'This Quarter' }}</option>
           </select>
         </div>
       </div>
@@ -61,7 +61,7 @@
         <!-- Resource Utilization -->
         <div>
           <h3 class="font-medium text-gray-900 dark:text-white mb-4">
-            {{ language.value === 'de' ? 'Ressourcennutzung' : 'Resource Utilization' }}
+            {{ language === 'de' ? 'Ressourcennutzung' : 'Resource Utilization' }}
           </h3>
           <div class="space-y-4">
             <div v-for="resource in resourceUtilization" :key="resource.id" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -74,15 +74,15 @@
               
               <div class="grid grid-cols-3 gap-4 text-sm mb-3">
                 <div>
-                  <p class="text-gray-600 dark:text-gray-400">{{ language.value === 'de' ? 'Kapazität' : 'Capacity' }}</p>
+                  <p class="text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Kapazität' : 'Capacity' }}</p>
                   <p class="font-medium text-gray-900 dark:text-white">{{ resource.capacity }}</p>
                 </div>
                 <div>
-                  <p class="text-gray-600 dark:text-gray-400">{{ language.value === 'de' ? 'Spitzenzeit' : 'Peak Time' }}</p>
+                  <p class="text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Spitzenzeit' : 'Peak Time' }}</p>
                   <p class="font-medium text-gray-900 dark:text-white">{{ resource.peakTime }}</p>
                 </div>
                 <div>
-                  <p class="text-gray-600 dark:text-gray-400">{{ language.value === 'de' ? 'Trend' : 'Trend' }}</p>
+                  <p class="text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Trend' : 'Trend' }}</p>
                   <p :class="resource.trend === 'up' ? 'text-green-600' : 'text-red-600'" class="font-medium flex items-center">
                     <component :is="resource.trend === 'up' ? TrendingUp : TrendingDown" class="h-4 w-4 mr-1" />
                     {{ resource.trendValue }}%
@@ -100,7 +100,7 @@
         <!-- Efficiency Metrics -->
         <div>
           <h3 class="font-medium text-gray-900 dark:text-white mb-4">
-            {{ language.value === 'de' ? 'Effizienz-Metriken' : 'Efficiency Metrics' }}
+            {{ language === 'de' ? 'Effizienz-Metriken' : 'Efficiency Metrics' }}
           </h3>
           <div class="space-y-4">
             <div v-for="metric in efficiencyMetrics" :key="metric.id" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -118,9 +118,9 @@
               </div>
               
               <div class="flex justify-between items-center mt-3">
-                <span class="text-xs text-gray-500 dark:text-gray-500">{{ language.value === 'de' ? 'Benchmark:' : 'Benchmark:' }} {{ metric.benchmark }}/10</span>
+                <span class="text-xs text-gray-500 dark:text-gray-500">{{ language === 'de' ? 'Benchmark:' : 'Benchmark:' }} {{ metric.benchmark }}/10</span>
                 <button @click="viewMetricDetails(metric)" class="text-xs text-primary-600 hover:text-primary-800">
-                  {{ language.value === 'de' ? 'Details' : 'Details' }}
+                  {{ language === 'de' ? 'Details' : 'Details' }}
                 </button>
               </div>
             </div>
@@ -132,14 +132,14 @@
     <!-- Predictive Planning Insights -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-        {{ language.value === 'de' ? 'Prädiktive Planungseinblicke' : 'Predictive Planning Insights' }}
+        {{ language === 'de' ? 'Prädiktive Planungseinblicke' : 'Predictive Planning Insights' }}
       </h2>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Predictions -->
         <div class="lg:col-span-2">
           <h3 class="font-medium text-gray-900 dark:text-white mb-4">
-            {{ language.value === 'de' ? 'Vorhersagen' : 'Predictions' }}
+            {{ language === 'de' ? 'Vorhersagen' : 'Predictions' }}
           </h3>
           <div class="space-y-4">
             <div v-for="prediction in predictiveInsights" :key="prediction.id" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -149,27 +149,27 @@
                   <p class="text-sm text-gray-600 dark:text-gray-400">{{ prediction.description }}</p>
                 </div>
                 <span :class="getConfidenceColor(prediction.confidence)" class="px-2 py-1 text-xs font-medium rounded-full">
-                  {{ prediction.confidence }}% {{ language.value === 'de' ? 'Konfidenz' : 'Confidence' }}
+                  {{ prediction.confidence }}% {{ language === 'de' ? 'Konfidenz' : 'Confidence' }}
                 </span>
               </div>
               
               <div class="grid grid-cols-2 gap-4 text-sm mb-3">
                 <div>
-                  <p class="text-gray-600 dark:text-gray-400">{{ language.value === 'de' ? 'Zeitrahmen' : 'Timeframe' }}</p>
+                  <p class="text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Zeitrahmen' : 'Timeframe' }}</p>
                   <p class="font-medium text-gray-900 dark:text-white">{{ prediction.timeframe }}</p>
                 </div>
                 <div>
-                  <p class="text-gray-600 dark:text-gray-400">{{ language.value === 'de' ? 'Auswirkung' : 'Impact' }}</p>
+                  <p class="text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Auswirkung' : 'Impact' }}</p>
                   <span :class="getImpactColor(prediction.impact)" class="font-medium">{{ prediction.impact }}</span>
                 </div>
               </div>
               
               <div class="flex space-x-2">
                 <button @click="applyPrediction(prediction)" class="btn-primary text-sm">
-                  {{ language.value === 'de' ? 'Anwenden' : 'Apply' }}
+                  {{ language === 'de' ? 'Anwenden' : 'Apply' }}
                 </button>
                 <button @click="viewPredictionDetails(prediction)" class="btn-secondary text-sm">
-                  {{ language.value === 'de' ? 'Details' : 'Details' }}
+                  {{ language === 'de' ? 'Details' : 'Details' }}
                 </button>
               </div>
             </div>
@@ -179,7 +179,7 @@
         <!-- Resource Waste Identification -->
         <div>
           <h3 class="font-medium text-gray-900 dark:text-white mb-4">
-            {{ language.value === 'de' ? 'Ressourcenverschwendung' : 'Resource Waste Identification' }}
+            {{ language === 'de' ? 'Ressourcenverschwendung' : 'Resource Waste Identification' }}
           </h3>
           <div class="space-y-3">
             <div v-for="waste in resourceWaste" :key="waste.id" class="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
@@ -189,9 +189,9 @@
                   <h4 class="font-medium text-red-800 dark:text-red-200">{{ waste.title }}</h4>
                   <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ waste.description }}</p>
                   <div class="flex justify-between items-center mt-2">
-                    <span class="text-xs text-red-500 dark:text-red-500">{{ language.value === 'de' ? 'Potenzielle Einsparung:' : 'Potential savings:' }} {{ waste.potentialSavings }}</span>
+                    <span class="text-xs text-red-500 dark:text-red-500">{{ language === 'de' ? 'Potenzielle Einsparung:' : 'Potential savings:' }} {{ waste.potentialSavings }}</span>
                     <button @click="addressWaste(waste)" class="text-xs text-red-600 hover:text-red-800 dark:text-red-400">
-                      {{ language.value === 'de' ? 'Beheben' : 'Address' }}
+                      {{ language === 'de' ? 'Beheben' : 'Address' }}
                     </button>
                   </div>
                 </div>
@@ -206,10 +206,10 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-          {{ language.value === 'de' ? 'KPI-Dashboard' : 'KPI Dashboard' }}
+          {{ language === 'de' ? 'KPI-Dashboard' : 'KPI Dashboard' }}
         </h2>
         <button @click="customizeKPIs" class="btn-secondary text-sm">
-          {{ language.value === 'de' ? 'KPIs anpassen' : 'Customize KPIs' }}
+          {{ language === 'de' ? 'KPIs anpassen' : 'Customize KPIs' }}
         </button>
       </div>
 
@@ -223,7 +223,7 @@
           <p class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ kpi.value }}</p>
           
           <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600 dark:text-gray-400">{{ language.value === 'de' ? 'Ziel:' : 'Target:' }} {{ kpi.target }}</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ language === 'de' ? 'Ziel:' : 'Target:' }} {{ kpi.target }}</span>
             <span :class="kpi.trend === 'up' ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium">
               {{ kpi.change }}
             </span>
@@ -249,13 +249,13 @@ import {
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
-const language = computed(() => themeStore.language)
+const language = themeStore.language
 
 const selectedPeriod = ref('week')
 
 const analyticsMetrics = ref([
   {
-    title: language.value === 'de' ? 'Ressourcenauslastung' : 'Resource Utilization',
+    title: language === 'de' ? 'Ressourcenauslastung' : 'Resource Utilization',
     value: '87%',
     change: '+12% vs. last period',
     changeColor: 'text-green-600',
@@ -264,7 +264,7 @@ const analyticsMetrics = ref([
     iconBg: 'bg-blue-600'
   },
   {
-    title: language.value === 'de' ? 'Durchschnittliche Klassenauslastung' : 'Average Class Utilization',
+    title: language === 'de' ? 'Durchschnittliche Klassenauslastung' : 'Average Class Utilization',
     value: '92%',
     change: '+8% vs. last period',
     changeColor: 'text-green-600',
@@ -273,7 +273,7 @@ const analyticsMetrics = ref([
     iconBg: 'bg-green-600'
   },
   {
-    title: language.value === 'de' ? 'Durchschnittliche Wartezeit' : 'Average Wait Time',
+    title: language === 'de' ? 'Durchschnittliche Wartezeit' : 'Average Wait Time',
     value: '1.2m',
     change: '-15% vs. last period',
     changeColor: 'text-green-600',
@@ -282,7 +282,7 @@ const analyticsMetrics = ref([
     iconBg: 'bg-yellow-600'
   },
   {
-    title: language.value === 'de' ? 'Kosten pro Schüler' : 'Cost per Student',
+    title: language === 'de' ? 'Kosten pro Schüler' : 'Cost per Student',
     value: '€42',
     change: '-5% vs. last period',
     changeColor: 'text-green-600',
@@ -397,7 +397,7 @@ const resourceWaste = ref([
 const keyPerformanceIndicators = ref([
   {
     id: 1,
-    name: language.value === 'de' ? 'Raumauslastung' : 'Room Utilization',
+    name: language === 'de' ? 'Raumauslastung' : 'Room Utilization',
     value: '87%',
     target: '90%',
     trend: 'up',
@@ -405,7 +405,7 @@ const keyPerformanceIndicators = ref([
   },
   {
     id: 2,
-    name: language.value === 'de' ? 'Lehrerauslastung' : 'Teacher Utilization',
+    name: language === 'de' ? 'Lehrerauslastung' : 'Teacher Utilization',
     value: '92%',
     target: '85%',
     trend: 'up',
@@ -413,7 +413,7 @@ const keyPerformanceIndicators = ref([
   },
   {
     id: 3,
-    name: language.value === 'de' ? 'Energieeffizienz' : 'Energy Efficiency',
+    name: language === 'de' ? 'Energieeffizienz' : 'Energy Efficiency',
     value: '78%',
     target: '85%',
     trend: 'up',
@@ -421,7 +421,7 @@ const keyPerformanceIndicators = ref([
   },
   {
     id: 4,
-    name: language.value === 'de' ? 'Planungskonflikte' : 'Scheduling Conflicts',
+    name: language === 'de' ? 'Planungskonflikte' : 'Scheduling Conflicts',
     value: '3',
     target: '0',
     trend: 'down',
@@ -430,31 +430,31 @@ const keyPerformanceIndicators = ref([
 ])
 
 const refreshData = () => {
-  alert(language.value === 'de' ? 'Daten werden aktualisiert...' : 'Refreshing data...')
+  alert(language === 'de' ? 'Daten werden aktualisiert...' : 'Refreshing data...')
 }
 
 const exportReport = () => {
-  alert(language.value === 'de' ? 'Bericht wird exportiert...' : 'Exporting report...')
+  alert(language === 'de' ? 'Bericht wird exportiert...' : 'Exporting report...')
 }
 
 const viewMetricDetails = (metric: any) => {
-  alert(`${language.value === 'de' ? 'Metrik-Details anzeigen' : 'View metric details'}: ${metric.name}`)
+  alert(`${language === 'de' ? 'Metrik-Details anzeigen' : 'View metric details'}: ${metric.name}`)
 }
 
 const applyPrediction = (prediction: any) => {
-  alert(`${language.value === 'de' ? 'Vorhersage anwenden' : 'Apply prediction'}: ${prediction.title}`)
+  alert(`${language === 'de' ? 'Vorhersage anwenden' : 'Apply prediction'}: ${prediction.title}`)
 }
 
 const viewPredictionDetails = (prediction: any) => {
-  alert(`${language.value === 'de' ? 'Vorhersage-Details anzeigen' : 'View prediction details'}: ${prediction.title}`)
+  alert(`${language === 'de' ? 'Vorhersage-Details anzeigen' : 'View prediction details'}: ${prediction.title}`)
 }
 
 const addressWaste = (waste: any) => {
-  alert(`${language.value === 'de' ? 'Verschwendung beheben' : 'Address waste'}: ${waste.title}`)
+  alert(`${language === 'de' ? 'Verschwendung beheben' : 'Address waste'}: ${waste.title}`)
 }
 
 const customizeKPIs = () => {
-  alert(language.value === 'de' ? 'KPIs anpassen' : 'Customize KPIs')
+  alert(language === 'de' ? 'KPIs anpassen' : 'Customize KPIs')
 }
 
 const getUtilizationColor = (utilization: number) => {
