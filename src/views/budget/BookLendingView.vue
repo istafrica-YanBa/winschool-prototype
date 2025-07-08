@@ -320,6 +320,7 @@
               class="flex-1 bg-slate-500 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
             >
               {{ language === 'de' ? 'Abbrechen' : 'Cancel' }}
+              {{ language === 'de' ? 'Abbrechen' : 'Cancel' }}
             </button>
           </div>
         </form>

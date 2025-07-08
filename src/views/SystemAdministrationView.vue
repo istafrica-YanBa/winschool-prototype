@@ -1,13 +1,6 @@
 <template>
   <div class="space-y-6">
     <!-- Breadcrumb Navigation -->
-    <RuneBreadcrumbs
-      truncate
-      max-width=""
-      :items="breadcrumbItems"
-    />
-    
-    <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -1096,7 +1089,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { RuneBreadcrumbs } from '@ist/commonui-components'
 import { 
   Save, Database, Award, BookOpen, Lock, Edit, Eye, EyeOff, ChevronUp, ChevronDown,
   Trash2, X, FileText
@@ -1104,13 +1096,6 @@ import {
 
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
-
-// Breadcrumb items for RuneBreadcrumbs
-const breadcrumbItems = [
-  { label: 'Home', href: '/dashboard' },
-  { label: 'System', href: '/dashboard' },
-  { label: 'System Administration', href: '' }
-]
 
 // Active tab state
 const activeTab = ref('tables')

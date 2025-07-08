@@ -1,11 +1,13 @@
 <template>
   <div class="teacher-management bg-gray-50 dark:bg-gray-900 min-h-screen p-3 sm:p-6">
     <!-- Breadcrumb Navigation -->
-    <RuneBreadcrumbs
-      truncate
-      max-width=""
-      :items="breadcrumbItems"
-    />
+    <div class="flex items-center text-sm text-gray-700 dark:text-gray-300 mb-4">
+      <a href="/dashboard" class="hover:underline">Home</a>
+      <span class="mx-1">/</span>
+      <a href="/dashboard" class="hover:underline">Administration</a>
+      <span class="mx-1">/</span>
+      <span class="font-medium">Teacher Management</span>
+    </div>
     
     <!-- Header -->
     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
@@ -781,19 +783,11 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from '../stores/theme'
-import { RuneBreadcrumbs } from '@ist/commonui-components'
 import { Search, Calendar, Eye, Edit, X, Trash2 } from 'lucide-vue-next'
 
 const router = useRouter()
 const themeStore = useThemeStore()
 const language = computed(() => themeStore.language)
-
-// Breadcrumb items for RuneBreadcrumbs
-const breadcrumbItems = [
-  { label: 'Home', href: '/dashboard' },
-  { label: 'Administration', href: '/dashboard' },
-  { label: 'Teacher Management', href: '' }
-]
 
 // State
 const search = ref('')

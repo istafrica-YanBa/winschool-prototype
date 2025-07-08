@@ -94,5 +94,5 @@ import { computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { FileText, Settings, Database, BookOpen, Printer, LifeBuoy } from 'lucide-vue-next'
 const themeStore = useThemeStore()
-const language = computed(() => themeStore.language)
+const language = themeStore.language
 </script> 

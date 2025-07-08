@@ -26,11 +26,13 @@
             <!-- Vertical Separator and Breadcrumb -->
             <div v-if="breadcrumbSegments.length > 0" class="hidden lg:flex items-center" :style="{ marginLeft: sidebarCollapsed ? '54px' : '64px' }">
               <div class="h-6 w-px bg-slate-300 dark:bg-slate-600 mr-6"></div>
-              <RuneBreadcrumbs
-                truncate
-                max-width=""
-                :items="breadcrumbItems"
-              />
+              <div class="flex items-center">
+                <Home class="h-5 w-5 mr-2 text-slate-500 dark:text-slate-400" />
+                <span v-for="(segment, index) in breadcrumbSegments" :key="segment.label" class="text-sm text-slate-500 dark:text-slate-400">
+                  {{ segment.label }}
+                  <span v-if="index < breadcrumbSegments.length - 1"> / </span>
+                </span>
+              </div>
             </div>
           </div>
           <!-- Right side -->
@@ -364,7 +366,7 @@ import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 import { useBreadcrumbs } from '../composables/useBreadcrumbs'
 import { GraduationCap, Menu, Bell, Globe, Sun, Moon, ChevronDown, User, LogOut, Settings, HelpCircle, Home, Users, BookOpen, DollarSign, Calendar, MessageSquare, FileText, BarChart3, Shield, Building, UserPlus, Target, Award, Layers, Brain, Zap, Link, Database, Upload, Clock, Search, Printer, Plus, UserCheck, Briefcase, Key, TrendingUp, Package, LifeBuoy, Download, DoorOpen } from 'lucide-vue-next'
-import { RuneBreadcrumbs } from '@ist/commonui-components'
+// Remove import { RuneBreadcrumbs } from '@ist/commonui-components'
 
 const router = useRouter()
 const route = useRoute()
@@ -375,20 +377,7 @@ const themeStore = useThemeStore()
 const { breadcrumbSegments } = useBreadcrumbs()
 
 // Convert breadcrumb segments to RuneBreadcrumbs format
-const breadcrumbItems = computed(() => {
-  const items = [
-    { label: 'Home', href: '/dashboard' }
-  ]
-  
-  breadcrumbSegments.value.forEach(segment => {
-    items.push({
-      label: segment.label,
-      href: segment.to || ''
-    })
-  })
-  
-  return items
-})
+// Remove the unused breadcrumbItems computed property
 
 const sidebarOpen = ref(false)
 const sidebarCollapsed = ref(false)

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { RuneBreadcrumbs } from '@ist/commonui-components'
 
 const router = useRouter()
 const activeTab = ref('books')
@@ -26,12 +25,6 @@ const handleTabChange = (tabId: string) => {
 
 <template>
   <div class="p-4 space-y-4">
-    <RuneBreadcrumbs
-      truncate
-      max-width=""
-      :items="[{ label: 'Home', href: '/dashboard' }, { label: 'Library', href: '/dashboard/library' }]"
-    />
-    
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
       <h1 class="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Library Management</h1>
       

@@ -20,63 +20,77 @@
       <form @submit.prevent="handleLogin" class="mt-8 space-y-6">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 space-y-4 border border-slate-200 dark:border-slate-700">
           <!-- Email Input -->
-          <RuneInput
-            id="email"
-            v-model="credentials.email"
-            type="text"
-            :label="language === 'de' ? 'E-Mail-Adresse' : 'Email Address'"
-            :placeholder="language === 'de' ? 'ihre.email@winschool.de' : 'your.email@winschool.de'"
-            required
-          />
+          <div>
+            <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300" style="font-family: 'Inter', system-ui, sans-serif;">
+              {{ language === 'de' ? 'E-Mail-Adresse' : 'Email Address' }}
+            </label>
+            <input
+              type="text"
+              id="email"
+              v-model="credentials.email"
+              class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white sm:text-sm"
+              :placeholder="language === 'de' ? 'ihre.email@winschool.de' : 'your.email@winschool.de'"
+              required
+            />
+          </div>
 
           <!-- Password Input -->
           <div>
-            <RuneInput
-              id="password"
-              v-model="credentials.password"
-              :type="showPassword ? 'text' : 'text'"
-              :label="language === 'de' ? 'Passwort' : 'Password'"
-              :placeholder="language === 'de' ? 'Ihr Passwort' : 'Your password'"
-              required
-            />
-            <div class="relative">
-              <button
-                type="button"
-                @click="showPassword = !showPassword"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-              >
-                <component :is="showPassword ? EyeOff : Eye" class="h-5 w-5" />
-              </button>
+            <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300" style="font-family: 'Inter', system-ui, sans-serif;">
+              {{ language === 'de' ? 'Passwort' : 'Password' }}
+            </label>
+            <div class="relative mt-1">
+              <input
+                type="password"
+                id="password"
+                v-model="credentials.password"
+                class="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white sm:text-sm"
+                :placeholder="language === 'de' ? 'Ihr Passwort' : 'Your password'"
+                required
+              />
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                >
+                  <component :is="showPassword ? EyeOff : Eye" class="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </div>
 
           <!-- Remember Me & Forgot Password -->
           <div class="flex items-center justify-between">
-            <RuneCheckbox
-              v-model="credentials.rememberMe"
-              :label="language === 'de' ? 'Angemeldet bleiben' : 'Remember me'"
-              wcag-label="Remember me checkbox"
-            />
-            <RuneLink
-              href="#"
-              wcag-label="Forgot password link"
-            >
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                v-model="credentials.rememberMe"
+                class="h-4 w-4 text-winschool-primary-dark focus:ring-winschool-primary-dark border-slate-300 rounded dark:bg-slate-700 dark:border-slate-600 dark:ring-offset-slate-800 dark:focus:ring-offset-slate-800"
+              />
+              <label for="rememberMe" class="ml-2 block text-sm text-slate-700 dark:text-slate-300" style="font-family: 'Inter', system-ui, sans-serif;">
+                {{ language === 'de' ? 'Angemeldet bleiben' : 'Remember me' }}
+              </label>
+            </div>
+            <a href="#" class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400" style="font-family: 'Inter', system-ui, sans-serif;">
               {{ language === 'de' ? 'Passwort vergessen?' : 'Forgot password?' }}
-            </RuneLink>
+            </a>
           </div>
 
           <!-- Login Button -->
-          <RuneButton
+          <button
             type="submit"
             :disabled="isLoading"
-            :text="language === 'de' ? 'Anmelden' : 'Sign In'"
-            variant="primary"
-            size="lg"
-            :loading="isLoading"
-            loading-placement="left"
-            wcag-label="Sign in button"
-            class="w-full"
-          />
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-winschool-primary hover:bg-winschool-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-winschool-primary-dark"
+            :class="{ 'opacity-50 cursor-not-allowed': isLoading }"
+          >
+            <span v-if="!isLoading">{{ language === 'de' ? 'Anmelden' : 'Sign In' }}</span>
+            <svg v-if="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
         </div>
       </form>
 
@@ -97,78 +111,60 @@
         </p>
         <div class="space-y-2 text-xs text-white">
           <div class="grid grid-cols-2 gap-2">
-            <RuneButton
+            <button
               @click="setDemoCredentials('superadmin')"
-              :text="language === 'de' ? 'Super Admin' : 'Super Admin'"
-              variant="secondary"
-              size="sm"
-              wcag-label="Demo super admin button"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
-            />
-            <RuneButton
+            >
+              {{ language === 'de' ? 'Super Admin' : 'Super Admin' }}
+            </button>
+            <button
               @click="setDemoCredentials('schooladmin')"
-              :text="language === 'de' ? 'Schul-Admin' : 'School Admin'"
-              variant="secondary"
-              size="sm"
-              wcag-label="Demo school admin button"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
-            />
-            <RuneButton
+            >
+              {{ language === 'de' ? 'Schul-Admin' : 'School Admin' }}
+            </button>
+            <button
               @click="setDemoCredentials('student')"
-              :text="language === 'de' ? 'Schüler' : 'Student'"
-              variant="secondary"
-              size="sm"
-              wcag-label="Demo student button"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
-            />
-            <RuneButton
+            >
+              {{ language === 'de' ? 'Schüler' : 'Student' }}
+            </button>
+            <button
               @click="setDemoCredentials('parent')"
-              :text="language === 'de' ? 'Eltern' : 'Parent'"
-              variant="secondary"
-              size="sm"
-              wcag-label="Demo parent button"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
-            />
-            <RuneButton
+            >
+              {{ language === 'de' ? 'Eltern' : 'Parent' }}
+            </button>
+            <button
               @click="setDemoCredentials('teacher')"
-              :text="language === 'de' ? 'Lehrer' : 'Teacher'"
-              variant="secondary"
-              size="sm"
-              wcag-label="Demo teacher button"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
-            />
-            <RuneButton
+            >
+              {{ language === 'de' ? 'Lehrer' : 'Teacher' }}
+            </button>
+            <button
               @click="setDemoCredentials('schoolstaff')"
-              :text="language === 'de' ? 'Schulpersonal' : 'School Staff'"
-              variant="secondary"
-              size="sm"
-              wcag-label="Demo school staff button"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
-            />
-            <RuneButton
+            >
+              {{ language === 'de' ? 'Schulpersonal' : 'School Staff' }}
+            </button>
+            <button
               @click="setDemoCredentials('librarian')"
-              :text="language === 'de' ? 'Bibliothekar' : 'Librarian'"
-              variant="secondary"
-              size="sm"
-              wcag-label="Demo librarian button"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
-            />
-            <RuneButton
+            >
+              {{ language === 'de' ? 'Bibliothekar' : 'Librarian' }}
+            </button>
+            <button
               @click="setDemoCredentials('principal')"
-              :text="language === 'de' ? 'Direktor' : 'Principal'"
-              variant="secondary"
-              size="sm"
-              wcag-label="Demo principal button"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
-            />
-            <RuneButton
+            >
+              {{ language === 'de' ? 'Direktor' : 'Principal' }}
+            </button>
+            <button
               @click="setDemoCredentials('inspector')"
-              :text="language === 'de' ? 'Inspektor' : 'Inspector'"
-              variant="secondary"
-              size="sm"
-              wcag-label="Demo inspector button"
               class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-left transition-all"
-            />
+            >
+              {{ language === 'de' ? 'Inspektor' : 'Inspector' }}
+            </button>
           </div>
           <p class="text-center mt-2 text-slate-200" style="font-family: 'Inter', system-ui, sans-serif;">
             {{ language === 'de' ? 'Passwort: demo123 (für alle Rollen)' : 'Password: demo123 (for all roles)' }}
@@ -178,22 +174,20 @@
 
       <!-- Language and Theme Toggle -->
       <div class="flex justify-center space-x-4">
-        <RuneButton
+        <button
           @click="toggleLanguage"
-          :text="language === 'de' ? 'English' : 'Deutsch'"
-          variant="tertiary"
-          size="sm"
-          :icon="{ left: 'globe-alt' }"
-          wcag-label="Toggle language button"
-        />
-        <RuneButton
+          class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400"
+          style="font-family: 'Inter', system-ui, sans-serif;"
+        >
+          {{ language === 'de' ? 'English' : 'Deutsch' }}
+        </button>
+        <button
           @click="toggleTheme"
-          :text="isDarkMode ? (language === 'de' ? 'Hell' : 'Light') : (language === 'de' ? 'Dunkel' : 'Dark')"
-          variant="tertiary"
-          size="sm"
-          :icon="{ left: isDarkMode ? 'sun' : 'moon' }"
-          wcag-label="Toggle theme button"
-        />
+          class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400"
+          style="font-family: 'Inter', system-ui, sans-serif;"
+        >
+          {{ isDarkMode ? (language === 'de' ? 'Hell' : 'Light') : (language === 'de' ? 'Dunkel' : 'Dark') }}
+        </button>
       </div>
     </div>
   </div>
@@ -205,7 +199,6 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 import { GraduationCap, Eye, EyeOff } from 'lucide-vue-next'
-import { RuneButton, RuneInput, RuneCheckbox, RuneLink } from '@ist/commonui-components'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -220,7 +213,7 @@ const isLoading = ref(false)
 const showPassword = ref(false)
 
 const isDarkMode = computed(() => themeStore.isDarkMode)
-const language = computed(() => themeStore.language)
+const language = themeStore.language
 
 const setDemoCredentials = (role: string) => {
   const demoCredentials = {
@@ -257,7 +250,7 @@ const handleLogin = async () => {
 }
 
 const toggleLanguage = () => {
-  themeStore.setLanguage(language.value === 'en' ? 'de' : 'en')
+  themeStore.setLanguage(language === 'en' ? 'de' : 'en')
 }
 
 const toggleTheme = () => {

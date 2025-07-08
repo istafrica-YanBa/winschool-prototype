@@ -1,11 +1,13 @@
 <template>
   <div class="advanced-modules bg-gray-50 dark:bg-gray-900 min-h-screen p-3 sm:p-6">
     <!-- Breadcrumb Navigation -->
-    <RuneBreadcrumbs
-      truncate
-      max-width=""
-      :items="breadcrumbItems"
-    />
+    <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-8">
+      <a href="/dashboard" class="hover:underline">Home</a>
+      <span class="mx-2">/</span>
+      <a href="/dashboard/advanced-system" class="hover:underline">Advanced System</a>
+      <span class="mx-2">/</span>
+      <span>Advanced Modules</span>
+    </div>
     
     <!-- Header -->
     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
@@ -198,28 +200,23 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import { RuneBreadcrumbs } from '@ist/commonui-components'
 import { 
   Settings, Plus, LifeBuoy, CheckCircle, Circle, Eye, X, Play,
   Shield, BookOpen, BarChart3,
 } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
-const language = computed(() => themeStore.language)
+const language = themeStore.language
 
-// Breadcrumb items for RuneBreadcrumbs
-const breadcrumbItems = [
-  { label: 'Home', href: '/dashboard' },
-  { label: 'Advanced System', href: '/dashboard' },
-  { label: 'Advanced Modules', href: '' }
-]
+// Remove comments and logic about RuneBreadcrumbs
+// Remove any import or usage of RuneBreadcrumbs
 
 const filterCategory = ref('')
 const filterStatus = ref('')
 
 const moduleStats = [
   {
-    title: language.value === 'de' ? 'Aktivierte Module' : 'Enabled Modules',
+    title: language === 'de' ? 'Aktivierte Module' : 'Enabled Modules',
     value: '12',
     change: '+2 this month',
     changeColor: 'text-green-500',
@@ -227,7 +224,7 @@ const moduleStats = [
     iconBg: 'bg-green-600'
   },
   {
-    title: language.value === 'de' ? 'Verfügbare Module' : 'Available Modules',
+    title: language === 'de' ? 'Verfügbare Module' : 'Available Modules',
     value: '28',
     change: '+5 new modules',
     changeColor: 'text-blue-500',
@@ -235,7 +232,7 @@ const moduleStats = [
     iconBg: 'bg-blue-600'
   },
   {
-    title: language.value === 'de' ? 'Beta Module' : 'Beta Modules',
+    title: language === 'de' ? 'Beta Module' : 'Beta Modules',
     value: '4',
     change: '2 ready for production',
     changeColor: 'text-yellow-500',
@@ -243,7 +240,7 @@ const moduleStats = [
     iconBg: 'bg-yellow-600'
   },
   {
-    title: language.value === 'de' ? 'Systemauslastung' : 'System Load',
+    title: language === 'de' ? 'Systemauslastung' : 'System Load',
     value: '68%',
     change: 'Optimized performance',
     changeColor: 'text-green-500',
@@ -255,38 +252,38 @@ const moduleStats = [
 const moduleCategories = [
   {
     id: 1,
-    title: language.value === 'de' ? 'Akademische Module' : 'Academic Modules',
-    description: language.value === 'de' ? 'Lernanalysen und Bewertungstools' : 'Learning analytics and assessment tools',
+    title: language === 'de' ? 'Akademische Module' : 'Academic Modules',
+    description: language === 'de' ? 'Lernanalysen und Bewertungstools' : 'Learning analytics and assessment tools',
     icon: BookOpen,
     iconBg: 'bg-blue-600',
     modules: [
-      { id: 101, name: language.value === 'de' ? 'Erweiterte Analytics' : 'Advanced Analytics', enabled: true },
-      { id: 102, name: language.value === 'de' ? 'KI-Bewertung' : 'AI Assessment', enabled: true },
-      { id: 103, name: language.value === 'de' ? 'Lernpfade' : 'Learning Paths', enabled: false }
+      { id: 101, name: language === 'de' ? 'Erweiterte Analytics' : 'Advanced Analytics', enabled: true },
+      { id: 102, name: language === 'de' ? 'KI-Bewertung' : 'AI Assessment', enabled: true },
+      { id: 103, name: language === 'de' ? 'Lernpfade' : 'Learning Paths', enabled: false }
     ]
   },
   {
     id: 2,
-    title: language.value === 'de' ? 'Administrative Module' : 'Administrative Modules',
-    description: language.value === 'de' ? 'Verwaltung und Compliance-Tools' : 'Management and compliance tools',
+    title: language === 'de' ? 'Administrative Module' : 'Administrative Modules',
+    description: language === 'de' ? 'Verwaltung und Compliance-Tools' : 'Management and compliance tools',
     icon: Shield,
     iconBg: 'bg-green-600',
     modules: [
-      { id: 201, name: language.value === 'de' ? 'DSGVO-Compliance' : 'GDPR Compliance', enabled: true },
-      { id: 202, name: language.value === 'de' ? 'Audit-Trail' : 'Audit Trail', enabled: true },
-      { id: 203, name: language.value === 'de' ? 'Backup-Manager' : 'Backup Manager', enabled: false }
+      { id: 201, name: language === 'de' ? 'DSGVO-Compliance' : 'GDPR Compliance', enabled: true },
+      { id: 202, name: language === 'de' ? 'Audit-Trail' : 'Audit Trail', enabled: true },
+      { id: 203, name: language === 'de' ? 'Backup-Manager' : 'Backup Manager', enabled: false }
     ]
   },
   {
     id: 3,
-    title: language.value === 'de' ? 'Berichtsmodule' : 'Reporting Modules',
-    description: language.value === 'de' ? 'Erweiterte Berichte und Visualisierungen' : 'Advanced reports and visualizations',
+    title: language === 'de' ? 'Berichtsmodule' : 'Reporting Modules',
+    description: language === 'de' ? 'Erweiterte Berichte und Visualisierungen' : 'Advanced reports and visualizations',
     icon: BarChart3,
     iconBg: 'bg-purple-600',
     modules: [
-      { id: 301, name: language.value === 'de' ? 'Dashboard-Builder' : 'Dashboard Builder', enabled: true },
-      { id: 302, name: language.value === 'de' ? 'Exporttools' : 'Export Tools', enabled: true },
-      { id: 303, name: language.value === 'de' ? 'Echtzeitdaten' : 'Real-time Data', enabled: false }
+      { id: 301, name: language === 'de' ? 'Dashboard-Builder' : 'Dashboard Builder', enabled: true },
+      { id: 302, name: language === 'de' ? 'Exporttools' : 'Export Tools', enabled: true },
+      { id: 303, name: language === 'de' ? 'Echtzeitdaten' : 'Real-time Data', enabled: false }
     ]
   }
 ]
@@ -294,8 +291,8 @@ const moduleCategories = [
 const availableModules = [
   {
     id: 1,
-    name: language.value === 'de' ? 'Erweiterte Lernanalysen' : 'Advanced Learning Analytics',
-    description: language.value === 'de' ? 'KI-gestützte Lernanalytik' : 'AI-powered learning analytics',
+    name: language === 'de' ? 'Erweiterte Lernanalysen' : 'Advanced Learning Analytics',
+    description: language === 'de' ? 'KI-gestützte Lernanalytik' : 'AI-powered learning analytics',
     category: 'Academic',
     status: 'Enabled',
     version: '2.1.0',
@@ -303,8 +300,8 @@ const availableModules = [
   },
   {
     id: 2,
-    name: language.value === 'de' ? 'DSGVO-Compliance-Suite' : 'GDPR Compliance Suite',
-    description: language.value === 'de' ? 'Vollständige DSGVO-Compliance' : 'Complete GDPR compliance tools',
+    name: language === 'de' ? 'DSGVO-Compliance-Suite' : 'GDPR Compliance Suite',
+    description: language === 'de' ? 'Vollständige DSGVO-Compliance' : 'Complete GDPR compliance tools',
     category: 'Administrative',
     status: 'Enabled',
     version: '1.8.2',
@@ -312,8 +309,8 @@ const availableModules = [
   },
   {
     id: 3,
-    name: language.value === 'de' ? 'Interaktive Dashboards' : 'Interactive Dashboards',
-    description: language.value === 'de' ? 'Anpassbare Dashboard-Erstellung' : 'Customizable dashboard creation',
+    name: language === 'de' ? 'Interaktive Dashboards' : 'Interactive Dashboards',
+    description: language === 'de' ? 'Anpassbare Dashboard-Erstellung' : 'Customizable dashboard creation',
     category: 'Reporting',
     status: 'Enabled',
     version: '3.0.1',
@@ -321,8 +318,8 @@ const availableModules = [
   },
   {
     id: 4,
-    name: language.value === 'de' ? 'KI-Bewertungsassistent' : 'AI Assessment Assistant',
-    description: language.value === 'de' ? 'Automatisierte Bewertungshilfe' : 'Automated assessment assistance',
+    name: language === 'de' ? 'KI-Bewertungsassistent' : 'AI Assessment Assistant',
+    description: language === 'de' ? 'Automatisierte Bewertungshilfe' : 'Automated assessment assistance',
     category: 'Academic',
     status: 'Beta',
     version: '0.9.5',
@@ -330,8 +327,8 @@ const availableModules = [
   },
   {
     id: 5,
-    name: language.value === 'de' ? 'Erweiterte Backup-Lösung' : 'Advanced Backup Solution',
-    description: language.value === 'de' ? 'Automatische Datensicherung' : 'Automated data backup',
+    name: language === 'de' ? 'Erweiterte Backup-Lösung' : 'Advanced Backup Solution',
+    description: language === 'de' ? 'Automatische Datensicherung' : 'Automated data backup',
     category: 'Administrative',
     status: 'Disabled',
     version: '1.2.0',

@@ -141,7 +141,7 @@
               {{ language === 'de' ? 'Direkte Kontakte' : 'Direct Contacts' }}
             </h3>
             <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <p>📧 support@winschool.de</p>
+              <p> support@winschool.de</p>
               <p>📞 +49 30 1234 5678</p>
               <p>💬 Live Chat ({{ language === 'de' ? 'verfügbar' : 'available' }})</p>
             </div>

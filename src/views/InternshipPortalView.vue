@@ -1,11 +1,13 @@
 <template>
   <div class="space-y-6">
     <!-- Breadcrumb Navigation -->
-    <RuneBreadcrumbs
-      truncate
-      max-width=""
-      :items="breadcrumbItems"
-    />
+    <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+      <a href="/dashboard" class="hover:underline">Home</a>
+      <span class="mx-1">/</span>
+      <a href="/dashboard" class="hover:underline">Advanced</a>
+      <span class="mx-1">/</span>
+      <span>Internship Portal</span>
+    </div>
     
     <!-- Header -->
     <div class="flex justify-between items-center">
@@ -32,7 +34,7 @@
         {{ language === 'de' ? 'Bald verfügbar' : 'Coming Soon' }}
       </h2>
       <p class="text-blue-700 dark:text-blue-300 max-w-md mx-auto">
-        {{ language === 'de' ? 'Das Praktikumsportal wird bald verfügbar sein. Hier können Schüler Praktikumsplätze suchen und ihre Bewerbungen verwalten.' : 'The Internship Portal will be available soon. Students will be able to search for internship opportunities and manage their applications here.' }}
+        {{ language === 'de' ? 'Das Praktikumsportal wird bald verfügbar sein. Hier können Schüler Praktikumsplätze suchen und ihre Bewerbungen verwalten.' : 'The Internship Portal will be available soon. Students will be able to search for internships and manage their applications here.' }}
       </p>
     </div>
   </div>
@@ -42,15 +44,7 @@
 import { computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { Plus, Briefcase } from 'lucide-vue-next'
-import { RuneBreadcrumbs } from '@ist/commonui-components'
 
 const themeStore = useThemeStore()
-const language = computed(() => themeStore.language)
-
-// Breadcrumb items for RuneBreadcrumbs
-const breadcrumbItems = [
-  { label: 'Home', href: '/dashboard' },
-  { label: 'Advanced', href: '/dashboard' },
-  { label: 'Internship Portal', href: '' }
-]
+const language = themeStore.language
 </script> 

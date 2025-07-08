@@ -289,12 +289,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import { Plus, Eye, Trash2, X, CheckSquare, Users, FileText, Award } from 'lucide-vue-next'
 
 const themeStore = useThemeStore()
-const language = computed(() => themeStore.language)
+const language = themeStore.language
 
 const showRubricModal = ref(false)
 
@@ -303,32 +303,32 @@ const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'German', 'E
 const assessmentTypes = ref([
   {
     id: 1,
-    name: language.value === 'de' ? 'Rubrik-Bewertung' : 'Rubric Assessment',
-    description: language.value === 'de' ? 'Kriterienbasierte Bewertung' : 'Criteria-based assessment',
+    name: language === 'de' ? 'Rubrik-Bewertung' : 'Rubric Assessment',
+    description: language === 'de' ? 'Kriterienbasierte Bewertung' : 'Criteria-based assessment',
     icon: CheckSquare,
     iconBg: 'bg-primary-600',
     count: 12
   },
   {
     id: 2,
-    name: language.value === 'de' ? 'Kompetenz-Assessment' : 'Competency Assessment',
-    description: language.value === 'de' ? 'Fähigkeiten und Kompetenzen bewerten' : 'Assess skills and competencies',
+    name: language === 'de' ? 'Kompetenz-Assessment' : 'Competency Assessment',
+    description: language === 'de' ? 'Fähigkeiten und Kompetenzen bewerten' : 'Assess skills and competencies',
     icon: Award,
     iconBg: 'bg-green-600',
     count: 8
   },
   {
     id: 3,
-    name: language.value === 'de' ? 'Portfolio-Bewertung' : 'Portfolio Assessment',
-    description: language.value === 'de' ? 'Sammlung von Schülerarbeiten' : 'Collection of student work',
+    name: language === 'de' ? 'Portfolio-Bewertung' : 'Portfolio Assessment',
+    description: language === 'de' ? 'Sammlung von Schülerarbeiten' : 'Collection of student work',
     icon: FileText,
     iconBg: 'bg-blue-600',
     count: 15
   },
   {
     id: 4,
-    name: language.value === 'de' ? 'Peer-Assessment' : 'Peer Assessment',
-    description: language.value === 'de' ? 'Schüler bewerten sich gegenseitig' : 'Students assess each other',
+    name: language === 'de' ? 'Peer-Assessment' : 'Peer Assessment',
+    description: language === 'de' ? 'Schüler bewerten sich gegenseitig' : 'Students assess each other',
     icon: Users,
     iconBg: 'bg-purple-600',
     count: 6
@@ -436,23 +436,23 @@ const removeCriterion = (index: number) => {
 }
 
 const previewRubric = () => {
-  alert(language.value === 'de' ? 'Rubrik-Vorschau wird angezeigt' : 'Showing rubric preview')
+  alert(language === 'de' ? 'Rubrik-Vorschau wird angezeigt' : 'Showing rubric preview')
 }
 
 const saveRubric = () => {
-  alert(language.value === 'de' ? 'Rubrik gespeichert!' : 'Rubric saved!')
+  alert(language === 'de' ? 'Rubrik gespeichert!' : 'Rubric saved!')
 }
 
 const reviewPortfolio = (portfolio: any) => {
-  alert(`${language.value === 'de' ? 'Portfolio bewerten für' : 'Review portfolio for'} ${portfolio.studentName}`)
+  alert(`${language === 'de' ? 'Portfolio bewerten für' : 'Review portfolio for'} ${portfolio.studentName}`)
 }
 
 const createPeerAssessment = () => {
-  alert(language.value === 'de' ? 'Neues Peer-Assessment erstellen' : 'Create new peer assessment')
+  alert(language === 'de' ? 'Neues Peer-Assessment erstellen' : 'Create new peer assessment')
 }
 
 const viewPeerAssessment = (assessment: any) => {
-  alert(`${language.value === 'de' ? 'Peer-Assessment anzeigen' : 'View peer assessment'}: ${assessment.title}`)
+  alert(`${language === 'de' ? 'Peer-Assessment anzeigen' : 'View peer assessment'}: ${assessment.title}`)
 }
 
 const getCompetencyLevelColor = (level: string) => {

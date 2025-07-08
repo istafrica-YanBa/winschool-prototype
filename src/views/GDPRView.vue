@@ -30,10 +30,11 @@
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             {{ language === 'de' ? 'Vorname' : 'First Name' }}
           </label>
-          <Input
+          <input
             v-model="searchFilters.firstName"
             :placeholder="language === 'de' ? 'Vorname eingeben...' : 'Enter first name...'"
-            wcagLabel="First Name Input"
+            class="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-50 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            @keyup.enter="performSearch"
           />
         </div>
         
@@ -41,10 +42,11 @@
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             {{ language === 'de' ? 'Nachname' : 'Last Name' }}
           </label>
-          <Input
+          <input
             v-model="searchFilters.lastName"
             :placeholder="language === 'de' ? 'Nachname eingeben...' : 'Enter last name...'"
-            wcagLabel="Last Name Input"
+            class="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-50 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            @keyup.enter="performSearch"
           />
         </div>
         
@@ -52,10 +54,11 @@
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             {{ language === 'de' ? 'Datum (Bis)' : 'Date (Until)' }}
           </label>
-          <Datepicker
+          <input
             v-model="searchFilters.date"
-            wcagLabel="Date Input"
-            :placeholder="language === 'de' ? 'Datum wählen...' : 'Pick a date...'"
+            type="date"
+            class="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-50 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            @change="performSearch"
           />
         </div>
       </div>
@@ -89,7 +92,7 @@
           <input type="checkbox"
             v-model="searchFilters.includeArchive"
             id="includeArchive"
-            wcagLabel="Include Archive Checkbox"
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded mr-2"
           />
           <label for="includeArchive" class="ml-2 text-sm font-medium text-slate-700 dark:text-slate-300">
             {{ language === 'de' ? 'In Archiv suchen' : 'Search in archive' }}
@@ -128,11 +131,72 @@
 
       <!-- Desktop Table View -->
       <div class="hidden md:block overflow-x-auto">
-        <Table
-          :columns="dataTableColumns"
-          :rows="dataTableRows"
-          :rowKey="'id'"
+        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+          <thead class="bg-slate-50 dark:bg-slate-800">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <input type="checkbox"
+                  v-model="selectAll"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
+                  @change="toggleAllUsers"
+                />
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                {{ language === 'de' ? 'Name' : 'Name' }}
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                {{ language === 'de' ? 'Rolle' : 'Role' }}
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                {{ language === 'de' ? 'E-Mail' : 'Email' }}
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                {{ language === 'de' ? 'Adresse' : 'Address' }}
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                {{ language === 'de' ? 'Beitrittsdatum' : 'Joining Date' }}
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+            <tr v-for="user in searchResults" :key="user.id">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <input type="checkbox"
+                  :checked="selectedUsers.includes(user.id)"
+                  @change="toggleUser(user.id)"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
+                />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <img
+                    :src="user.avatar"
+                    :alt="user.name"
+                    class="h-8 w-8 rounded-full object-cover mr-3"
         />
+                  <div class="flex-1 min-w-0">
+                    <p class="font-medium text-slate-800 dark:text-slate-50 truncate">{{ user.name }}</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">{{ user.email }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span :class="getRoleColor(user.role)" class="px-2 py-1 text-xs font-medium rounded-full">
+                  {{ getRoleDisplayName(user.role) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                {{ user.email }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-800 dark:text-slate-50">
+                {{ user.address.street }}, {{ user.address.city }}, {{ user.address.country }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                {{ formatDate(user.joiningDate) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Mobile Card View -->
@@ -144,13 +208,11 @@
                 :checked="selectedUsers.includes(user.id)"
                 @change="toggleUser(user.id)"
                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded mr-3"
-                wcagLabel="Select user checkbox"
               />
               <img
                 :src="user.avatar"
                 :alt="user.name"
                 class="h-10 w-10 rounded-full object-cover mr-3"
-                wcagLabel="User avatar for {{ user.name }}"
               />
               <div class="flex-1 min-w-0">
                 <h3 class="font-medium text-slate-800 dark:text-slate-50 truncate">{{ user.name }}</h3>
@@ -188,13 +250,13 @@
     </div>
 
     <!-- Export Modal -->
-    <Modal v-if="showExportModal" @close="showExportModal = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" wcagLabel="Export GDPR Report Modal" :show="showExportModal">
+    <div v-if="showExportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-md w-full p-6">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-50">
             {{ language === 'de' ? 'DSGVO-Bericht exportieren' : 'Export GDPR Report' }}
           </h3>
-          <button @click="showExportModal = false">
+          <button @click="showExportModal = false" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
             <X class="h-6 w-6" />
           </button>
         </div>
@@ -238,12 +300,12 @@
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               {{ language === 'de' ? 'Passwort für Export' : 'Export Password' }}
             </label>
-            <Input
+            <input
               v-model="exportOptions.password"
               type="password"
               :placeholder="language === 'de' ? 'Sicheres Passwort eingeben...' : 'Enter secure password...'"
+              class="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-50 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               required
-              wcagLabel="Export Password Input"
             />
           </div>
 
@@ -267,21 +329,17 @@
           </button>
         </div>
       </div>
-    </Modal>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
 import {
   Shield, Search, Download, FileText, Printer, X,
   User, Users, UserCheck, Building
 } from 'lucide-vue-next'
-import Input from '@/components/ui/input.vue'
-import Datepicker from '@/components/ui/datepicker.vue'
-import Modal from '@/components/ui/modal.vue'
-import Table from '@/components/ui/table.vue'
 
 // --- Domain Types ---
 interface User {
@@ -311,8 +369,8 @@ const searchFilters = ref({
   includeArchive: false
 })
 
-// User roles configuration
-const userRoles = ref([
+// Update userRoles to use a computed for label so it reacts to language changes
+const userRoles = computed(() => [
   {
     value: 'student',
     label: language.value === 'de' ? 'Schüler' : 'Student',
@@ -345,6 +403,7 @@ const searchResults = ref<User[]>([])
 const selectedUsers = ref<string[]>([])
 const hasSearched = ref(false)
 const showExportModal = ref(false)
+const selectAll = ref(false)
 
 // Export options
 const exportOptions = ref({
@@ -424,60 +483,6 @@ const canExport = computed(() => {
          selectedUsers.value.length > 0
 })
 
-const dataTableColumns = [
-  {
-    key: 'select',
-    label: '',
-    width: 48,
-    render: (row: User) => h('input', {
-      type: 'checkbox',
-      checked: selectedUsers.value.includes(row.id),
-      onChange: () => toggleUser(row.id),
-      'aria-label': 'Select user',
-    })
-  },
-  {
-    key: 'name',
-    label: language.value === 'de' ? 'Name' : 'Name',
-    render: (row: User) => h('div', { class: 'flex items-center' }, [
-      h('img', {
-        src: row.avatar,
-        alt: row.name,
-        class: 'h-8 w-8 rounded-full object-cover mr-3',
-        wcagLabel: `User avatar for ${row.name}`
-      }),
-      h('div', {}, [
-        h('p', { class: 'font-medium text-slate-800 dark:text-slate-50' }, row.name),
-        h('p', { class: 'text-sm text-slate-500 dark:text-slate-400' }, `ID: ${row.id}`)
-      ])
-    ])
-  },
-  {
-    key: 'role',
-    label: language.value === 'de' ? 'Rolle' : 'Role',
-    render: (row: User) => h('span', { class: getRoleColor(row.role) + ' px-2 py-1 text-xs font-medium rounded-full' }, getRoleDisplayName(row.role))
-  },
-  {
-    key: 'email',
-    label: language.value === 'de' ? 'E-Mail' : 'Email',
-  },
-  {
-    key: 'address',
-    label: language.value === 'de' ? 'Adresse' : 'Address',
-    render: (row: User) => h('div', { class: 'text-sm' }, [
-      h('p', {}, row.address.street),
-      h('p', {}, `${row.address.city}, ${row.address.country}`)
-    ])
-  },
-  {
-    key: 'joiningDate',
-    label: language.value === 'de' ? 'Beitrittsdatum' : 'Joining Date',
-    render: (row: User) => formatDate(row.joiningDate)
-  }
-]
-
-const dataTableRows = computed<User[]>(() => searchResults.value)
-
 // Methods
 const toggleRole = (roleValue: string): void => {
   const index = searchFilters.value.selectedRoles.indexOf(roleValue)
@@ -521,6 +526,7 @@ const performSearch = (): void => {
   
   searchResults.value = results
   selectedUsers.value = []
+  selectAll.value = false
 }
 
 const toggleUser = (userId: string): void => {
@@ -529,6 +535,14 @@ const toggleUser = (userId: string): void => {
     selectedUsers.value.splice(index, 1)
   } else {
     selectedUsers.value.push(userId)
+  }
+}
+
+const toggleAllUsers = (): void => {
+  if (selectAll.value) {
+    selectedUsers.value = searchResults.value.map(user => user.id)
+  } else {
+    selectedUsers.value = []
   }
 }
 
@@ -609,5 +623,6 @@ const generateReport = (): void => {
   showExportModal.value = false
   exportOptions.value.password = ''
   selectedUsers.value = []
+  selectAll.value = false
 }
 </script> 
